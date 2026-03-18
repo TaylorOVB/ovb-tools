@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OVB — Builders Risk Insurance Worksheet</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #E8E5E0; font-family: 'DM Sans', sans-serif; }
+
+  .sheet {
+    max-width: 820px;
+    margin: 32px auto 64px;
+    background: #F7F7F7;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+  }
+
+  /* HEADER */
+  .sheet-header {
+    background: #1E1C1A;
+    padding: 28px 36px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .sh-logo {
+    height: 36px;
+    width: auto;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .sh-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #C7AA8B;
+    margin-bottom: 6px;
+  }
+  .sh-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #F7F7F7;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .sh-right { text-align: right; }
+  .sh-coverage-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  .sh-coverage-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 26px;
+    font-weight: 500;
+    color: #C7AA8B;
+    letter-spacing: -0.02em;
+  }
+
+  /* BODY */
+  .sheet-body { padding: 0 36px 36px; }
+
+  .section { padding-top: 28px; }
+  .section + .section { border-top: 1px solid #E0DDD9; margin-top: 28px; }
+
+  .sec-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .sec-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: #C7AA8B;
+    background: #1E1C1A;
+    padding: 3px 7px;
+    border-radius: 3px;
+  }
+  .sec-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #1E1C1A;
+  }
+  .sec-desc {
+    font-size: 11px;
+    color: #999;
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  /* GRID */
+  .fg { display: grid; gap: 12px; }
+  .fg-2 { grid-template-columns: 1fr 1fr; }
+  .col2 { grid-column: span 2; }
+
+  /* FIELDS */
+  .f { display: flex; flex-direction: column; gap: 5px; }
+  .f label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #999;
+    font-weight: 500;
+  }
+  .f input, .f select, .f textarea {
+    background: #fff;
+    border: 1.5px solid #E0DDD9;
+    border-radius: 4px;
+    padding: 8px 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #1E1C1A;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .f input:focus, .f select:focus, .f textarea:focus { border-color: #C7AA8B; }
+  .f input::placeholder, .f textarea::placeholder { color: #C4C0BB; }
+  .f textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
+  .f select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 28px;
+  }
+
+  .money-wrap { position: relative; }
+  .money-sym { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #888; font-size: 13px; pointer-events: none; }
+  .money-wrap input { padding-left: 22px; }
+
+  /* PILLS */
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+  .pill {
+    padding: 6px 13px;
+    border-radius: 4px;
+    border: 1.5px solid #E0DDD9;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: #666;
+    transition: all 0.15s;
+    user-select: none;
+    line-height: 1;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .pill:hover { border-color: #C7AA8B; color: #1E1C1A; }
+  .pill.active { background: #1E1C1A; border-color: #1E1C1A; color: #F7F7F7; }
+  .pill.active-warn { background: #D4714A; border-color: #D4714A; color: #fff; }
+
+  /* FLAGS */
+  .flag-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #FFF5F1;
+    border: 1.5px solid #D4714A;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    grid-column: span 2;
+  }
+  .flag-icon { font-size: 14px; flex-shrink: 0; }
+  .flag-text { font-size: 12px; color: #1E1C1A; line-height: 1.5; }
+  .flag-text strong { color: #C0401A; }
+
+  /* CALC */
+  .calc-box {
+    background: #1E1C1A;
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-top: 16px;
+  }
+  .calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .calc-row:last-child { border-bottom: none; padding-top: 14px; margin-top: 4px; }
+  .calc-lbl { font-family: 'DM Mono', monospace; font-size: 10px; color: #888; letter-spacing: 0.05em; }
+  .calc-val { font-family: 'DM Mono', monospace; font-size: 13px; color: #F7F7F7; }
+  .calc-total-lbl { font-family: 'DM Mono', monospace; font-size: 11px; color: #C7AA8B; font-weight: 600; letter-spacing: 0.08em; }
+  .calc-total-val { font-family: 'DM Mono', monospace; font-size: 22px; color: #C7AA8B; font-weight: 700; }
+  .calc-sub { font-size: 10px; color: #888; margin-top: 10px; font-family: 'DM Mono', monospace; line-height: 1.6; }
+
+  /* AGENT SUMMARY */
+  .send-box {
+    border: 1.5px dashed #C7AA8B;
+    border-radius: 4px;
+    padding: 16px 18px;
+    margin-top: 14px;
+    background: rgba(199,170,139,0.04);
+  }
+  .send-box-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #C7AA8B;
+    margin-bottom: 10px;
+  }
+  .send-summary {
+    font-size: 12px;
+    color: #1E1C1A;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    font-family: 'DM Mono', monospace;
+  }
+  .copy-btn {
+    margin-top: 10px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1.5px solid #C7AA8B;
+    background: transparent;
+    color: #C7AA8B;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: #C7AA8B; color: #1E1C1A; }
+
+  /* BOTTOM BAR */
+  .bottom-bar {
+    background: #fff;
+    border-top: 1px solid #E0DDD9;
+    padding: 12px 36px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+  }
+  .btn {
+    padding: 9px 18px;
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    letter-spacing: 0.02em;
+    transition: all 0.15s;
+  }
+  .btn-ghost { background: transparent; border: 1.5px solid #D0CBC4; color: #888; }
+  .btn-ghost:hover { border-color: #999; color: #1E1C1A; }
+  .btn-primary { background: #1E1C1A; color: #F7F7F7; }
+  .btn-primary:hover { background: #333; }
+
+  /* INNER GRID HELPER */
+  .inner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  @media print {
+    html, body { background: white; }
+    .sheet { margin: 0; box-shadow: none; border-radius: 0; max-width: 100%; }
+    .bottom-bar { display: none; }
+    .copy-btn { display: none; }
+    .sheet-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .calc-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sec-num { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .flag-row { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pill.active, .pill.active-warn { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .send-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+const fmtMoney = (v) => {
+  const n = parseFloat((v || "").toString().replace(/,/g, ""));
+  if (!n || isNaN(n)) return null;
+  return "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+};
+const parseMoney = (v) => parseFloat((v || "").toString().replace(/,/g, "")) || 0;
+
+const TYPE_LABELS = {
+  new_construction: "New Construction",
+  addition: "Addition",
+  remodel: "Remodel / Renovation",
+  addition_remodel: "Addition + Remodel",
+};
+
+function Field({ label, col2, children }) {
+  return (
+    <div className="f" style={col2 ? { gridColumn: "span 2" } : {}}>
+      <label>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function MoneyInput({ placeholder, value, onChange }) {
+  return (
+    <div className="money-wrap">
+      <span className="money-sym">$</span>
+      <input placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function PillGroup({ options, value, onChange }) {
+  return (
+    <div className="pills">
+      {options.map(({ label, val, warn }) => {
+        const isActive = value === val;
+        let cls = "pill";
+        if (isActive) cls += warn ? " active-warn" : " active";
+        return (
+          <span key={val} className={cls} onClick={() => onChange(val)}>{label}</span>
+        );
+      })}
+    </div>
+  );
+}
+
+function FlagRow({ icon, children }) {
+  return (
+    <div className="flag-row">
+      <span className="flag-icon">{icon}</span>
+      <span className="flag-text">{children}</span>
+    </div>
+  );
+}
+
+function App() {
+  const [proj, setProj] = useState({
+    client: "", address: "", city: "", type: "addition", startDate: "", endDate: "",
+  });
+  const [hw, setHw] = useState({
+    carrierName: "", policyNum: "", agentName: "", agentPhone: "",
+    dwellingCoverage: "", underConstrClause: "", constructionNotified: "", notes: "",
+  });
+  const [cv, setCv] = useState({
+    existingReplCost: "", newWorkHardCost: "", softCosts: "", existingSourceNote: "",
+  });
+  const [pol, setPol] = useState({
+    carrier: "", policyNum: "", agentName: "", agentPhone: "",
+    namedInsured: "", addlInsured: "", effectiveDate: "", expirationDate: "",
+    existingStructureCovered: "", softCostRider: "", theftCovered: "",
+    coinsurancePct: "", premiumAmt: "", notes: "",
+  });
+  const [copied, setCopied] = useState(false);
+  const [copiedHO, setCopiedHO] = useState(false);
+
+  const existing = parseMoney(cv.existingReplCost);
+  const newWork  = parseMoney(cv.newWorkHardCost);
+  const soft     = parseMoney(cv.softCosts);
+  const total    = existing + newWork + soft;
+  const fTotal   = fmtMoney(total) || "—";
+
+  // Build agent summary
+  const agentLines = [];
+  if (proj.client)    agentLines.push(`Project:   ${proj.client}`);
+  if (proj.address)   agentLines.push(`Property:  ${proj.address}${proj.city ? ", " + proj.city : ""}`);
+  if (proj.type)      agentLines.push(`Type:      ${TYPE_LABELS[proj.type] || proj.type}`);
+  if (proj.startDate) agentLines.push(`Timeline:  ${proj.startDate}  →  ${proj.endDate || "TBD"}`);
+  agentLines.push("");
+  if (existing) agentLines.push(`Existing Structure (replacement cost):  ${fmtMoney(cv.existingReplCost)}`);
+  if (cv.existingSourceNote) agentLines.push(`  Source: ${cv.existingSourceNote}`);
+  if (newWork)  agentLines.push(`New Work Hard Costs:                    ${fmtMoney(cv.newWorkHardCost)}`);
+  if (soft)     agentLines.push(`Soft Costs Rider:                       ${fmtMoney(cv.softCosts)}`);
+  if (total) {
+    agentLines.push(`────────────────────────────────────────────`);
+    agentLines.push(`Total Coverage Requested:               ${fTotal}`);
+  }
+  agentLines.push("");
+  agentLines.push("Requirements:");
+  agentLines.push("• Existing structure must be explicitly covered in policy");
+  agentLines.push("• Insure to 100% completed value (no coinsurance gap)");
+  if (soft) agentLines.push("• Soft costs rider included");
+  agentLines.push("• Theft and vandalism included");
+  const agentSummary = agentLines.join("\n");
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(agentSummary).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const hoMessage = [
+    `Hi${proj.client ? " — just a quick note regarding your project" : ""},`,
+    ``,
+    `As we get ready to move forward${proj.client ? ` on ${proj.client}` : ""}, I need to pull together a few details from your existing homeowner's insurance policy before we can bind the Builders Risk coverage for the project.`,
+    ``,
+    `Could you grab the following from your policy's declarations page (the one-page summary your insurer sends at renewal)?`,
+    ``,
+    `  1. Insurance carrier name`,
+    `  2. Policy number`,
+    `  3. Your agent's name and phone number`,
+    `  4. The "Dwelling Coverage" amount listed on the dec page`,
+    `     (This is the insured replacement value — not your home's market or purchase price)`,
+    `  5. Whether your policy has any "under construction" or "vacancy" clause`,
+    ``,
+    `Once I have those, I'll handle everything else with our insurance broker. This is a standard step on any addition or remodel — we just need to make sure your existing coverage stays intact while we're building.`,
+    ``,
+    `Also, as a heads up: before we break ground, you'll want to give your homeowner's carrier a quick call to let them know construction is starting. I'll remind you again closer to that date, but it's worth having it on your radar.`,
+    ``,
+    `Thanks — feel free to text or email this over whenever you have a chance.`,
+    ``,
+    `Taylor Whitesides`,
+    `Ogden Valley Builders`,
+    `385-288-7921`,
+  ].join("\n");
+
+  const handleCopyHO = () => {
+    navigator.clipboard.writeText(hoMessage).then(() => {
+      setCopiedHO(true);
+      setTimeout(() => setCopiedHO(false), 2000);
+    });
+  };
+
+  const handleReset = () => {
+    if (window.confirm("Reset all fields? This cannot be undone.")) {
+      setProj({ client: "", address: "", city: "", type: "addition", startDate: "", endDate: "" });
+      setHw({ carrierName: "", policyNum: "", agentName: "", agentPhone: "", dwellingCoverage: "", underConstrClause: "", constructionNotified: "", notes: "" });
+      setCv({ existingReplCost: "", newWorkHardCost: "", softCosts: "", existingSourceNote: "" });
+      setPol({ carrier: "", policyNum: "", agentName: "", agentPhone: "", namedInsured: "", addlInsured: "", effectiveDate: "", expirationDate: "", existingStructureCovered: "", softCostRider: "", theftCovered: "", coinsurancePct: "", premiumAmt: "", notes: "" });
+    }
+  };
+
+  const showHoFlag        = hw.underConstrClause === "yes" || hw.underConstrClause === "unknown";
+  const showNotNotified   = hw.constructionNotified === "no";
+  const showNoExisting    = pol.existingStructureCovered === "no";
+
+  return (
+    <div className="sheet">
+
+      {/* HEADER */}
+      <div className="sheet-header">
+        <div>
+          <img
+            src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png"
+            alt="Ogden Valley Builders"
+            className="sh-logo"
+          />
+          <div className="sh-eyebrow">GC License #14219939-5501</div>
+          <div className="sh-title">Builders Risk<br />Insurance Worksheet</div>
+        </div>
+        <div className="sh-right">
+          <div className="sh-coverage-label">Recommended Coverage</div>
+          <div className="sh-coverage-amount">{total > 0 ? fTotal : "$ ——"}</div>
+        </div>
+      </div>
+
+      <div className="sheet-body">
+
+        {/* 01 — PROJECT INFO */}
+        <div className="section">
+          <div className="sec-label">
+            <span className="sec-num">01</span>
+            <span className="sec-title">Project Information</span>
+          </div>
+          <div className="fg fg-2">
+            <Field label="Client / Project Name">
+              <input placeholder="Bush Addition — Rachael Bush" value={proj.client} onChange={e => setProj({...proj, client: e.target.value})} />
+            </Field>
+            <Field label="Project Type">
+              <PillGroup
+                value={proj.type}
+                onChange={v => setProj({...proj, type: v})}
+                options={Object.entries(TYPE_LABELS).map(([val, label]) => ({ val, label }))}
+              />
+            </Field>
+            <Field label="Property Address" col2>
+              <input placeholder="123 Valley Drive" value={proj.address} onChange={e => setProj({...proj, address: e.target.value})} />
+            </Field>
+            <Field label="City / State / Zip">
+              <input placeholder="Eden, UT 84310" value={proj.city} onChange={e => setProj({...proj, city: e.target.value})} />
+            </Field>
+            <div style={{gridColumn:"span 2"}}>
+              <div className="inner-grid">
+                <Field label="Est. Start Date">
+                  <input type="date" value={proj.startDate} onChange={e => setProj({...proj, startDate: e.target.value})} />
+                </Field>
+                <Field label="Est. Completion">
+                  <input type="date" value={proj.endDate} onChange={e => setProj({...proj, endDate: e.target.value})} />
+                </Field>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* HO MESSAGE */}
+        <div className="section">
+          <div className="sec-label">
+            <span className="sec-num">→</span>
+            <span className="sec-title">Homeowner Message</span>
+            <span className="sec-desc">Copy &amp; send to collect HO insurance details</span>
+          </div>
+          <div className="send-box">
+            <div className="send-box-label">Text or Email — Copy &amp; Send to Homeowner</div>
+            <div className="send-summary">{hoMessage}</div>
+            <button className="copy-btn" onClick={handleCopyHO}>
+              {copiedHO ? "✓ Copied" : "Copy to Clipboard"}
+            </button>
+          </div>
+        </div>
+
+        {/* 02 — HOMEOWNER EXISTING INSURANCE */}
+        <div className="section">
+          <div className="sec-label">
+            <span className="sec-num">02</span>
+            <span className="sec-title">Homeowner's Existing Insurance</span>
+            <span className="sec-desc">Gather before quoting</span>
+          </div>
+          <div className="fg fg-2">
+            <Field label="HO Carrier">
+              <input placeholder="State Farm, Farmers, USAA..." value={hw.carrierName} onChange={e => setHw({...hw, carrierName: e.target.value})} />
+            </Field>
+            <Field label="HO Policy Number">
+              <input placeholder="—" value={hw.policyNum} onChange={e => setHw({...hw, policyNum: e.target.value})} />
+            </Field>
+            <Field label="HO Agent Name">
+              <input placeholder="—" value={hw.agentName} onChange={e => setHw({...hw, agentName: e.target.value})} />
+            </Field>
+            <Field label="HO Agent Phone">
+              <input placeholder="—" value={hw.agentPhone} onChange={e => setHw({...hw, agentPhone: e.target.value})} />
+            </Field>
+            <Field label="Dwelling Coverage — from HO Dec Page" col2>
+              <MoneyInput
+                placeholder="Use insured dwelling amount — not Zillow, not purchase price"
+                value={hw.dwellingCoverage}
+                onChange={v => setHw({...hw, dwellingCoverage: v})}
+              />
+            </Field>
+            <Field label="Under Construction / Vacancy Clause in HO Policy?" col2>
+              <PillGroup
+                value={hw.underConstrClause}
+                onChange={v => setHw({...hw, underConstrClause: v})}
+                options={[
+                  { val: "none",    label: "No Clause" },
+                  { val: "yes",     label: "Has Clause",         warn: true },
+                  { val: "unknown", label: "Not Confirmed Yet",  warn: true },
+                ]}
+              />
+            </Field>
+            {showHoFlag && (
+              <FlagRow icon="⚠️">
+                <strong>Action required:</strong> Owner must contact their HO carrier before any demo, framing, or tie-in work begins. Many policies suspend coverage or exclude losses during active construction. Get written confirmation and document it in the project file.
+              </FlagRow>
+            )}
+            <Field label="HO Carrier Notified of Construction?" col2>
+              <PillGroup
+                value={hw.constructionNotified}
+                onChange={v => setHw({...hw, constructionNotified: v})}
+                options={[
+                  { val: "yes",     label: "Yes — Confirmed in Writing" },
+                  { val: "verbal",  label: "Yes — Verbal Only" },
+                  { val: "pending", label: "Pending" },
+                  { val: "no",      label: "Not Yet", warn: true },
+                ]}
+              />
+            </Field>
+            {showNotNotified && (
+              <FlagRow icon="🚨">
+                <strong>Do not begin work</strong> until the homeowner's carrier is notified. If a loss occurs and the carrier wasn't notified, the claim may be denied entirely.
+              </FlagRow>
+            )}
+            <Field label="Notes — Exclusions, Restrictions, Follow-ups" col2>
+              <textarea placeholder="e.g. Agent confirmed no under-construction clause per call 3/18/26. Vacancy limit 60 days." value={hw.notes} onChange={e => setHw({...hw, notes: e.target.value})} />
+            </Field>
+          </div>
+        </div>
+
+        {/* 03 — COVERAGE NEEDED */}
+        <div className="section">
+          <div className="sec-label">
+            <span className="sec-num">03</span>
+            <span className="sec-title">Coverage Needed</span>
+            <span className="sec-desc">Send to your agent to bind</span>
+          </div>
+          <div className="fg fg-2">
+            <Field label="Existing Structure — Replacement Cost">
+              <MoneyInput
+                placeholder="Use HO dec page dwelling value from §02"
+                value={cv.existingReplCost}
+                onChange={v => setCv({...cv, existingReplCost: v})}
+              />
+            </Field>
+            <Field label="Source of Existing Value">
+              <input placeholder="HO dec page / appraisal / cost estimator" value={cv.existingSourceNote} onChange={e => setCv({...cv, existingSourceNote: e.target.value})} />
+            </Field>
+            <Field label="New Work Hard Costs">
+              <MoneyInput
+                placeholder="Full contract or estimated cost of new scope"
+                value={cv.newWorkHardCost}
+                onChange={v => setCv({...cv, newWorkHardCost: v})}
+              />
+            </Field>
+            <Field label="Soft Costs Rider — optional, recommend on $300K+">
+              <MoneyInput
+                placeholder="Arch fees, permits, loan interest if rebuild needed"
+                value={cv.softCosts}
+                onChange={v => setCv({...cv, softCosts: v})}
+              />
+            </Field>
+          </div>
+
+          {total > 0 && (
+            <div className="calc-box">
+              <div className="calc-row">
+                <span className="calc-lbl">Existing Structure</span>
+                <span className="calc-val">{fmtMoney(cv.existingReplCost) || "—"}</span>
+              </div>
+              <div className="calc-row">
+                <span className="calc-lbl">New Work Hard Costs</span>
+                <span className="calc-val">{fmtMoney(cv.newWorkHardCost) || "—"}</span>
+              </div>
+              {soft > 0 && (
+                <div className="calc-row">
+                  <span className="calc-lbl">Soft Costs Rider</span>
+                  <span className="calc-val">{fmtMoney(cv.softCosts)}</span>
+                </div>
+              )}
+              <div className="calc-row">
+                <span className="calc-total-lbl">Total Coverage to Bind</span>
+                <span className="calc-total-val">{fTotal}</span>
+              </div>
+              <div className="calc-sub">
+                Insure to 100% of completed value — coinsurance clauses will prorate any claim if underinsured.{"\n"}
+                Existing structure coverage must be explicitly stated in the policy, not assumed.
+              </div>
+            </div>
+          )}
+
+          {total > 0 && (
+            <div className="send-box">
+              <div className="send-box-label">Agent Summary — Copy &amp; Send</div>
+              <div className="send-summary">{agentSummary}</div>
+              <button className="copy-btn" onClick={handleCopy}>
+                {copied ? "✓ Copied" : "Copy to Clipboard"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* 04 — POLICY DETAILS */}
+        <div className="section">
+          <div className="sec-label">
+            <span className="sec-num">04</span>
+            <span className="sec-title">Policy Details</span>
+            <span className="sec-desc">Complete once policy is bound</span>
+          </div>
+          <div className="fg fg-2">
+            <Field label="Builders Risk Carrier">
+              <input placeholder="Markel, Zurich, ICW Group..." value={pol.carrier} onChange={e => setPol({...pol, carrier: e.target.value})} />
+            </Field>
+            <Field label="Policy Number">
+              <input placeholder="—" value={pol.policyNum} onChange={e => setPol({...pol, policyNum: e.target.value})} />
+            </Field>
+            <Field label="Agent Name">
+              <input placeholder="—" value={pol.agentName} onChange={e => setPol({...pol, agentName: e.target.value})} />
+            </Field>
+            <Field label="Agent Phone / Email">
+              <input placeholder="—" value={pol.agentPhone} onChange={e => setPol({...pol, agentPhone: e.target.value})} />
+            </Field>
+            <Field label="Named Insured">
+              <input placeholder="OVB or Owner?" value={pol.namedInsured} onChange={e => setPol({...pol, namedInsured: e.target.value})} />
+            </Field>
+            <Field label="Additional Insured">
+              <input placeholder="Owner / Lender" value={pol.addlInsured} onChange={e => setPol({...pol, addlInsured: e.target.value})} />
+            </Field>
+            <Field label="Effective Date">
+              <input type="date" value={pol.effectiveDate} onChange={e => setPol({...pol, effectiveDate: e.target.value})} />
+            </Field>
+            <Field label="Expiration Date">
+              <input type="date" value={pol.expirationDate} onChange={e => setPol({...pol, expirationDate: e.target.value})} />
+            </Field>
+            <Field label="Annual Premium">
+              <MoneyInput placeholder="—" value={pol.premiumAmt} onChange={v => setPol({...pol, premiumAmt: v})} />
+            </Field>
+            <Field label="Coinsurance Requirement">
+              <PillGroup
+                value={pol.coinsurancePct}
+                onChange={v => setPol({...pol, coinsurancePct: v})}
+                options={["80%","90%","100%","None"].map(v => ({ val: v, label: v }))}
+              />
+            </Field>
+            <Field label="Existing Structure Explicitly Covered?" col2>
+              <PillGroup
+                value={pol.existingStructureCovered}
+                onChange={v => setPol({...pol, existingStructureCovered: v})}
+                options={[
+                  { val: "yes",   label: "Yes — Stated in Policy" },
+                  { val: "rider", label: "Yes — Via Rider" },
+                  { val: "no",    label: "Not Covered", warn: true },
+                ]}
+              />
+            </Field>
+            {showNoExisting && (
+              <FlagRow icon="🚨">
+                <strong>Do not proceed.</strong> Existing structure must be covered before work begins on any addition or remodel. Request a rider or find a different carrier.
+              </FlagRow>
+            )}
+            <Field label="Soft Costs Rider Included?">
+              <PillGroup
+                value={pol.softCostRider}
+                onChange={v => setPol({...pol, softCostRider: v})}
+                options={[{ val:"yes", label:"Yes" },{ val:"no", label:"No" },{ val:"na", label:"N/A" }]}
+              />
+            </Field>
+            <Field label="Theft & Vandalism Covered?">
+              <PillGroup
+                value={pol.theftCovered}
+                onChange={v => setPol({...pol, theftCovered: v})}
+                options={[{ val:"yes", label:"Yes" },{ val:"no", label:"No", warn:true }]}
+              />
+            </Field>
+            <Field label="Notes — Exclusions, Conditions, Mid-Project Review Date" col2>
+              <textarea placeholder="Policy exclusions, lender requirements, mid-project review at 50% completion..." value={pol.notes} onChange={e => setPol({...pol, notes: e.target.value})} />
+            </Field>
+          </div>
+        </div>
+
+      </div>{/* /sheet-body */}
+
+      <div className="bottom-bar">
+        <button className="btn btn-ghost" onClick={handleReset}>Reset</button>
+        <button className="btn btn-primary" onClick={() => window.print()}>Print / Save as PDF</button>
+      </div>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
