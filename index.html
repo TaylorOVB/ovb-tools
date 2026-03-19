@@ -69,26 +69,35 @@ html, body {
 
 /* HEADER */
 .home-header {
-  text-align: center;
-  padding: 28px 20px 20px;
+  padding: 24px 20px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid rgba(199,170,139,0.12);
+  margin-bottom: 4px;
 }
 .bear-wrap {
-  display: inline-block;
-  margin-bottom: 12px;
+  display: block;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 14px rgba(199,170,139,0.25));
 }
 .bear-img {
-  width: 72px;
-  height: 72px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 20px rgba(199,170,139,0.3));
+  display: block;
   mix-blend-mode: screen;
 }
+.header-info {
+  flex: 1;
+  text-align: left;
+}
 .home-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
-  color: rgba(255,255,255,0.9);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: rgba(255,255,255,0.95);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 .home-sub {
   font-family: 'DM Mono', monospace;
@@ -98,6 +107,25 @@ html, body {
   text-transform: uppercase;
   margin-top: 3px;
 }
+.quick-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+.qd-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.06em;
+}
+.qd-icon { font-size: 10px; flex-shrink: 0; }
+.qd-val { color: rgba(255,255,255,0.7); }
+.qd-row a { color: rgba(199,170,139,0.8); text-decoration: none; }
+.qd-row a:hover { color: #C7AA8B; }
 
 /* APP GRID */
 .grid-section { padding: 0 20px; margin-bottom: 24px; }
@@ -257,8 +285,16 @@ html, body {
     <div class="bear-wrap">
       <img class="bear-img" src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="OVB" />
     </div>
-    <div class="home-title">OVB Tools</div>
-    <div class="home-sub">Ogden Valley Builders</div>
+    <div class="header-info">
+      <div class="home-title">OVB Tools</div>
+      <div class="home-sub">Ogden Valley Builders</div>
+      <div class="quick-details">
+        <div class="qd-row"><span class="qd-icon">🪪</span> GC License <span class="qd-val">#14219939-5501</span></div>
+        <div class="qd-row"><span class="qd-icon">📞</span> <a href="tel:+13852887921">(385) 288-7921</a></div>
+        <div class="qd-row"><span class="qd-icon">✉️</span> <a href="mailto:info@ogdenvalleybuilders.com">info@ogdenvalleybuilders.com</a></div>
+        <div class="qd-row"><span class="qd-icon">📍</span> <span class="qd-val">Weber &amp; Morgan County, UT</span></div>
+      </div>
+    </div>
   </div>
 
   <!-- OVB TOOLS -->
@@ -347,7 +383,7 @@ html, body {
         <span class="app-label">DOPL License</span>
       </a>
 
-      <a class="app-item" href="onestop.ogdencity.com" target="_blank">
+      <a class="app-item" href="https://op.ogdencity.com" target="_blank">
         <div class="app-icon" style="background: linear-gradient(145deg, #1A5276, #0E2F44); box-shadow: 0 4px 14px rgba(26,82,118,0.35);">
           <span>🏙️</span>
         </div>
@@ -361,7 +397,7 @@ html, body {
         <span class="app-label">Weber Permits</span>
       </a>
 
-      <a class="app-item" href="https://frontier.co.weber.ut.us/p/Home/MyProjects" target="_blank">
+      <a class="app-item" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank">
         <div class="app-icon" style="background: linear-gradient(145deg, #3A5E2D, #244018); box-shadow: 0 4px 14px rgba(58,94,45,0.35);">
           <span>📐</span>
         </div>
