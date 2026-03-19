@@ -51,7 +51,8 @@ html, body {
 }
 
 /* STATUS BAR */
-.status-bar {
+
+  .status-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -61,7 +62,9 @@ html, body {
   color: rgba(255,255,255,0.7);
   letter-spacing: 0.02em;
 }
-.status-time { font-size: 16px; font-weight: 700; }
+.status-time { font-size: 16px; font-weight: 700; display: block; }
+  .status-date { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.08em; font-family: 'DM Mono', monospace; display: block; margin-top: 2px; }
+  .status-left { display: flex; flex-direction: column; }
 .status-icons { display: flex; gap: 6px; align-items: center; font-size: 11px; }
 
 /* HEADER */
@@ -241,7 +244,7 @@ html, body {
 
   <!-- STATUS BAR -->
   <div class="status-bar">
-    <span class="status-time" id="clock">--:--</span>
+    <div class="status-left"><span class="status-time" id="clock">--:--</span><span class="status-date" id="dateline"></span></div>
     <div class="status-icons">
       <span>●●●●</span>
       <span>WiFi</span>
@@ -278,38 +281,6 @@ html, body {
         </div>
         <span class="app-label">Builders Risk</span>
       </a>
-
-      <div class="app-item dimmed">
-        <div class="app-icon ic-dark" style="position:relative">
-          <span>📋</span>
-          <span class="app-badge-soon">Soon</span>
-        </div>
-        <span class="app-label">Sub Bid Compare</span>
-      </div>
-
-      <div class="app-item dimmed">
-        <div class="app-icon ic-dark" style="position:relative">
-          <span>✅</span>
-          <span class="app-badge-soon">Soon</span>
-        </div>
-        <span class="app-label">Sub Vetting</span>
-      </div>
-
-      <div class="app-item dimmed">
-        <div class="app-icon ic-dark" style="position:relative">
-          <span>🏆</span>
-          <span class="app-badge-soon">Soon</span>
-        </div>
-        <span class="app-label">Commissioning</span>
-      </div>
-
-      <div class="app-item dimmed">
-        <div class="app-icon ic-dark" style="position:relative">
-          <span>📊</span>
-          <span class="app-badge-soon">Soon</span>
-        </div>
-        <span class="app-label">Change Order</span>
-      </div>
 
     </div>
   </div>
@@ -364,6 +335,77 @@ html, body {
     </div>
   </div>
 
+  <!-- QUICK LINKS -->
+  <div class="grid-section">
+    <div class="grid-label">Quick Links</div>
+    <div class="app-grid">
+
+      <a class="app-item" href="https://secure.utah.gov/llv/search/index.html" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #8B5E3C, #6B4423); box-shadow: 0 4px 14px rgba(139,94,60,0.35);">
+          <span>🏛️</span>
+        </div>
+        <span class="app-label">DOPL License</span>
+      </a>
+
+      <a class="app-item" href="https://op.ogdencity.com" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #1A5276, #0E2F44); box-shadow: 0 4px 14px rgba(26,82,118,0.35);">
+          <span>🏙️</span>
+        </div>
+        <span class="app-label">Ogden City</span>
+      </a>
+
+      <a class="app-item" href="https://frontier.co.weber.ut.us/Home" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #2D5A8E, #1A3A5C); box-shadow: 0 4px 14px rgba(45,90,142,0.35);">
+          <span>📐</span>
+        </div>
+        <span class="app-label">Weber Permits</span>
+      </a>
+
+      <a class="app-item" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #3A5E2D, #244018); box-shadow: 0 4px 14px rgba(58,94,45,0.35);">
+          <span>📐</span>
+        </div>
+        <span class="app-label">Morgan Permits</span>
+      </a>
+
+      <a class="app-item" href="https://maps.google.com" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #E84E0F, #B83A00); box-shadow: 0 4px 14px rgba(232,78,15,0.35);">
+          <span>📍</span>
+        </div>
+        <span class="app-label">Google Maps</span>
+      </a>
+
+      <a class="app-item" href="https://mail.google.com" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #D93025, #A50E00); box-shadow: 0 4px 14px rgba(217,48,37,0.35);">
+          <span>✉️</span>
+        </div>
+        <span class="app-label">Gmail</span>
+      </a>
+
+      <a class="app-item" href="https://www.bankofutah.com" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #1A3A5C, #0D1E2E); box-shadow: 0 4px 14px rgba(26,58,92,0.35);">
+          <span>🏦</span>
+        </div>
+        <span class="app-label">Bank of Utah</span>
+      </a>
+
+      <a class="app-item" href="https://claude.ai" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #C7AA8B, #A08060); box-shadow: 0 4px 14px rgba(199,170,139,0.35);">
+          <span>🤖</span>
+        </div>
+        <span class="app-label">Claude</span>
+      </a>
+
+      <a class="app-item" href="https://chat.openai.com" target="_blank">
+        <div class="app-icon" style="background: linear-gradient(145deg, #10A37F, #0A7A5F); box-shadow: 0 4px 14px rgba(16,163,127,0.35);">
+          <span>💬</span>
+        </div>
+        <span class="app-label">ChatGPT</span>
+      </a>
+
+    </div>
+  </div>
+
   <!-- DOCK -->
   <div class="dock-wrap">
     <div class="dock">
@@ -402,12 +444,16 @@ html, body {
 </div>
 
 <script>
+  // Clock + date
   function updateClock() {
     const now = new Date();
     let h = now.getHours(), m = now.getMinutes();
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
     document.getElementById('clock').textContent = h + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('dateline').textContent = days[now.getDay()] + ' ' + months[now.getMonth()] + ' ' + now.getDate();
   }
   updateClock();
   setInterval(updateClock, 10000);
