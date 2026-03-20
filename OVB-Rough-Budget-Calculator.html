@@ -70,6 +70,7 @@
     .mod-label { font-size: 12px; color: rgba(247,247,247,0.6); flex: 1; line-height: 1.3; }
     .modifier-row.checked .mod-label { color: var(--smoke); }
     .mod-badge { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--tan); background: rgba(199,170,139,0.08); padding: 3px 7px; border-radius: 4px; white-space: nowrap; }
+    .mod-badge.negative { color: var(--green); background: rgba(76,175,135,0.08); }
     .mod-note { margin-top: 12px; font-size: 10px; color: rgba(247,247,247,0.22); line-height: 1.5; }
 
     /* Preview column */
@@ -87,8 +88,8 @@
     .pdf-doc { background: #FFFFFF; font-family: 'DM Sans', sans-serif; color: #1E1C1A; padding: 44px 48px 40px; position: relative; }
     .pdf-header-bar { background: #1E1C1A; margin: -44px -48px 32px; padding: 20px 48px 18px; display: flex; align-items: center; justify-content: space-between; }
     .pdf-logo-row { display: flex; align-items: center; gap: 13px; }
-    .pdf-bear { width: 50px; height: 50px; object-fit: contain; mix-blend-mode: screen; }
-    .pdf-wordmark { height: 30px; filter: brightness(0) invert(1); opacity: 0.88; }
+    .pdf-bear { width: 34px; height: 34px; object-fit: contain; mix-blend-mode: screen; }
+    .pdf-wordmark { height: 16px; filter: brightness(0) invert(1); opacity: 0.88; }
     .pdf-contact-right { text-align: right; }
     .pdf-contact-line { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(199,170,139,0.65); letter-spacing: 0.04em; line-height: 1.75; }
 
@@ -129,7 +130,9 @@
     .pdf-mod-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #F2F2F2; font-size: 12px; color: #555; }
     .pdf-mod-item:last-child { border-bottom: none; }
     .pdf-mod-dot { width: 5px; height: 5px; background: #C7AA8B; border-radius: 50%; flex-shrink: 0; }
+    .pdf-mod-dot.negative { background: #4CAF87; }
     .pdf-mod-badge { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 10px; color: #C7AA8B; }
+    .pdf-mod-badge.negative { color: #4CAF87; }
 
     .pdf-value-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-bottom: 22px; }
     .pdf-value-card { border: 1px solid #EBEBEB; border-radius: 3px; padding: 11px 12px; }
@@ -171,7 +174,7 @@
         { value: 'high',    label: 'High-End',      low: 360, high: 460, desc: 'Custom millwork, natural stone, premium fixtures throughout' },
       ],
       defaultContingency: 7,
-      modifiers: ['multi-story','site-access','well-septic','utilities'],
+      modifiers: ['multi-story','site-access','well-septic','utilities','extra-bath-nc'],
     },
     'addition': {
       label: 'Addition', icon: '➕',
@@ -181,7 +184,7 @@
         { value: 'high',     label: 'High-End',   low: 370, high: 470, desc: 'Custom, matching or exceeding existing quality' },
       ],
       defaultContingency: 10,
-      modifiers: ['multi-story','site-access','structural','pre1980'],
+      modifiers: ['no-plumbing','add-full-bath','add-master-bath','add-half-bath','multi-story','site-access','structural','pre1980'],
     },
     'remodel': {
       label: 'Remodel / Reno', icon: '🔨',
@@ -191,7 +194,7 @@
         { value: 'full',     label: 'Full Gut',  low: 155, high: 260, desc: 'Down to studs, structural changes possible' },
       ],
       defaultContingency: 12,
-      modifiers: ['structural','pre1980','basement','site-access'],
+      modifiers: ['add-full-bath','add-master-bath','add-half-bath','kitchen-reloc','structural','pre1980','basement','site-access'],
     },
     'adu': {
       label: 'ADU', icon: '🏡',
@@ -206,13 +209,22 @@
   };
 
   const MODIFIERS = {
-    'multi-story':  { label: 'Multi-Story / Complex Layout',           pct: 12, flat: 0,     badge: '+12%'  },
-    'site-access':  { label: 'Difficult Site / Access Challenges',     pct: 7,  flat: 0,     badge: '+7%'   },
-    'structural':   { label: 'Structural Changes Required',            pct: 15, flat: 0,     badge: '+15%'  },
-    'pre1980':      { label: 'Pre-1980 Home',                          pct: 13, flat: 0,     badge: '+13%'  },
-    'basement':     { label: 'Basement Involved',                      pct: 10, flat: 0,     badge: '+10%'  },
-    'well-septic':  { label: 'Well & Septic Required',                 pct: 0,  flat: 32000, badge: '+$32K' },
-    'utilities':    { label: 'Utility Connections (elec, water, gas)', pct: 0,  flat: 16000, badge: '+$16K' },
+    // ── Cost reducers ──────────────────────────────────────────────────────
+    'no-plumbing':     { label: 'Dry addition — no new plumbing or bathrooms (bedroom, office, living space)', pct: -22, flat: 0,     badge: '-22%',  negative: true  },
+    // ── Bathroom additions ─────────────────────────────────────────────────
+    'add-full-bath':   { label: 'Full bathroom included in scope',                  pct: 0,   flat: 22000, badge: '+$22K' },
+    'add-master-bath': { label: 'Master suite / ensuite bath',                      pct: 0,   flat: 38000, badge: '+$38K' },
+    'add-half-bath':   { label: 'Half bath / powder room',                          pct: 0,   flat: 9000,  badge: '+$9K'  },
+    'extra-bath-nc':   { label: 'Additional full bath beyond standard (2 bath base)',pct: 0,  flat: 20000, badge: '+$20K' },
+    // ── Scope & site ───────────────────────────────────────────────────────
+    'kitchen-reloc':   { label: 'Kitchen relocation or new kitchen run',            pct: 15,  flat: 0,     badge: '+15%'  },
+    'multi-story':     { label: 'Multi-Story / Complex Layout',                     pct: 12,  flat: 0,     badge: '+12%'  },
+    'site-access':     { label: 'Difficult Site / Access Challenges',               pct: 7,   flat: 0,     badge: '+7%'   },
+    'structural':      { label: 'Structural Changes Required',                      pct: 15,  flat: 0,     badge: '+15%'  },
+    'pre1980':         { label: 'Pre-1980 Home',                                    pct: 13,  flat: 0,     badge: '+13%'  },
+    'basement':        { label: 'Basement Involved',                                pct: 10,  flat: 0,     badge: '+10%'  },
+    'well-septic':     { label: 'Well & Septic Required',                           pct: 0,   flat: 32000, badge: '+$32K' },
+    'utilities':       { label: 'Utility Connections (elec, water, gas)',           pct: 0,   flat: 16000, badge: '+$16K' },
   };
 
   function getOvbFee(cost) {
@@ -235,7 +247,7 @@
       if (activeMods[key]) {
         pctMod  += MODIFIERS[key].pct;
         flatMod += MODIFIERS[key].flat;
-        appliedMods.push({ key, label: MODIFIERS[key].label, badge: MODIFIERS[key].badge });
+        appliedMods.push({ key, label: MODIFIERS[key].label, badge: MODIFIERS[key].badge, negative: !!MODIFIERS[key].negative });
       }
     });
     const hardLow  = baseLow  * (1 + pctMod / 100) + flatMod;
@@ -350,9 +362,9 @@
             <div className="pdf-sec-label">Scope Adjustments Applied</div>
             {calc.appliedMods.map(m => (
               <div key={m.key} className="pdf-mod-item">
-                <div className="pdf-mod-dot" />
+                <div className={`pdf-mod-dot${m.negative ? ' negative' : ''}`} />
                 {m.label}
-                <span className="pdf-mod-badge">{m.badge}</span>
+                <span className={`pdf-mod-badge${m.negative ? ' negative' : ''}`}>{m.badge}</span>
               </div>
             ))}
           </div>
@@ -494,11 +506,11 @@
                       <div key={key} className={`modifier-row${isChecked ? ' checked' : ''}`} onClick={() => toggleMod(key)}>
                         <div className="mod-check"><div className="check-mark" /></div>
                         <div className="mod-label">{mod.label}</div>
-                        <div className="mod-badge">{mod.badge}</div>
+                        <div className={`mod-badge${mod.negative ? ' negative' : ''}`}>{mod.badge}</div>
                       </div>
                     );
                   })}
-                  <div className="mod-note">Percentage modifiers stack on hard costs. Flat modifiers add after PSF calculation.</div>
+                  <div className="mod-note">Percentage modifiers stack on hard costs. Flat modifiers add after PSF calculation. Green badges reduce the estimate.</div>
                 </div>
               </div>
             )}
