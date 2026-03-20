@@ -72,6 +72,12 @@
     .mod-badge { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--tan); background: rgba(199,170,139,0.08); padding: 3px 7px; border-radius: 4px; white-space: nowrap; }
     .mod-badge.negative { color: var(--green); background: rgba(76,175,135,0.08); }
     .mod-note { margin-top: 12px; font-size: 10px; color: rgba(247,247,247,0.22); line-height: 1.5; }
+    .modifier-row.locked-row { cursor: default; border-color: rgba(199,170,139,0.35); background: rgba(199,170,139,0.05); opacity: 0.85; }
+    .modifier-row.locked-row:hover { border-color: rgba(199,170,139,0.35); }
+    .mod-lock { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; opacity: 0.6; }
+    .mod-badge.locked { color: rgba(199,170,139,0.7); background: rgba(199,170,139,0.06); }
+    .pdf-mod-dot.locked { background: rgba(199,170,139,0.4); }
+    .pdf-mod-badge.locked { color: rgba(199,170,139,0.6); }
 
     /* Preview column */
     .preview-col { position: sticky; top: 70px; }
@@ -206,9 +212,22 @@
       defaultContingency: 8,
       modifiers: ['site-access','well-septic'],
     },
+    'basement-finish': {
+      label: 'Basement Finish', icon: '⬇️',
+      levels: [
+        { value: 'standard', label: 'Standard',  low: 42,  high: 62,  desc: 'Egress window, LVP, drywall, basic bath rough-in — functional finish' },
+        { value: 'mid',      label: 'Mid-Grade',  low: 65,  high: 88,  desc: 'Bedroom, full bath, wet bar area, quality finishes' },
+        { value: 'high',     label: 'High-End',   low: 90,  high: 120, desc: 'Home theater, custom bar, ensuite bath, heated floors, premium throughout' },
+      ],
+      defaultContingency: 12,
+      lockedModifiers: ['slab-plumbing'],
+      modifiers: ['add-full-bath','add-master-bath','add-half-bath','egress-window','pre1980','structural'],
+    },
   };
 
   const MODIFIERS = {
+    // ── Locked baseline (always-on, no toggle) ─────────────────────────────
+    'slab-plumbing':   { label: 'Slab penetrations & plumbing rough-in modifications', pct: 0, flat: 9000, badge: '+$9K', locked: true },
     // ── Cost reducers ──────────────────────────────────────────────────────
     'no-plumbing':     { label: 'Dry addition — no new plumbing or bathrooms (bedroom, office, living space)', pct: -22, flat: 0,     badge: '-22%',  negative: true  },
     // ── Bathroom additions ─────────────────────────────────────────────────
@@ -216,6 +235,7 @@
     'add-master-bath': { label: 'Master suite / ensuite bath',                      pct: 0,   flat: 38000, badge: '+$38K' },
     'add-half-bath':   { label: 'Half bath / powder room',                          pct: 0,   flat: 9000,  badge: '+$9K'  },
     'extra-bath-nc':   { label: 'Additional full bath beyond standard (2 bath base)',pct: 0,  flat: 20000, badge: '+$20K' },
+    'egress-window':   { label: 'Egress window cut & install',                      pct: 0,   flat: 4500,  badge: '+$4.5K'},
     // ── Scope & site ───────────────────────────────────────────────────────
     'kitchen-reloc':   { label: 'Kitchen relocation or new kitchen run',            pct: 15,  flat: 0,     badge: '+15%'  },
     'multi-story':     { label: 'Multi-Story / Complex Layout',                     pct: 12,  flat: 0,     badge: '+12%'  },
@@ -243,6 +263,13 @@
     let baseHigh = levelData.high * sf;
     let pctMod = 0, flatMod = 0;
     const appliedMods = [];
+    // Always-on locked modifiers
+    (typeData.lockedModifiers || []).forEach(key => {
+      pctMod  += MODIFIERS[key].pct;
+      flatMod += MODIFIERS[key].flat;
+      appliedMods.push({ key, label: MODIFIERS[key].label, badge: MODIFIERS[key].badge, locked: true });
+    });
+    // Optional modifiers
     (typeData.modifiers || []).forEach(key => {
       if (activeMods[key]) {
         pctMod  += MODIFIERS[key].pct;
@@ -362,9 +389,10 @@
             <div className="pdf-sec-label">Scope Adjustments Applied</div>
             {calc.appliedMods.map(m => (
               <div key={m.key} className="pdf-mod-item">
-                <div className={`pdf-mod-dot${m.negative ? ' negative' : ''}`} />
-                {m.label}
-                <span className={`pdf-mod-badge${m.negative ? ' negative' : ''}`}>{m.badge}</span>
+                <div className={`pdf-mod-dot${m.negative ? ' negative' : m.locked ? ' locked' : ''}`} />
+                {m.locked ? <span style={{ fontStyle: 'italic' }}>{m.label}</span> : m.label}
+                {m.locked && <span style={{ fontSize: 9, color: '#BBB', marginLeft: 4 }}>(baseline)</span>}
+                <span className={`pdf-mod-badge${m.negative ? ' negative' : m.locked ? ' locked' : ''}`}>{m.badge}</span>
               </div>
             ))}
           </div>
@@ -499,6 +527,18 @@
               <div className="section">
                 <div className="section-header"><div className="section-num">2</div><div className="section-title">Scope Modifiers</div></div>
                 <div className="section-body">
+                  {/* Locked baseline modifiers */}
+                  {(typeData.lockedModifiers || []).map(key => {
+                    const mod = MODIFIERS[key];
+                    return (
+                      <div key={key} className="modifier-row locked-row">
+                        <div className="mod-lock">🔒</div>
+                        <div className="mod-label" style={{ color: 'rgba(247,247,247,0.75)' }}>{mod.label}</div>
+                        <div className="mod-badge locked">{mod.badge} · baseline</div>
+                      </div>
+                    );
+                  })}
+                  {/* Optional modifiers */}
                   {typeData.modifiers.map(key => {
                     const mod = MODIFIERS[key];
                     const isChecked = !!activeMods[key];
@@ -510,7 +550,7 @@
                       </div>
                     );
                   })}
-                  <div className="mod-note">Percentage modifiers stack on hard costs. Flat modifiers add after PSF calculation. Green badges reduce the estimate.</div>
+                  <div className="mod-note">🔒 Baseline items are always included. Percentage modifiers stack on hard costs. Flat modifiers add after PSF calculation. Green badges reduce the estimate.</div>
                 </div>
               </div>
             )}
