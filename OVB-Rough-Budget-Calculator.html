@@ -220,14 +220,13 @@
         { value: 'high',     label: 'High-End',   low: 90,  high: 120, desc: 'Home theater, custom bar, ensuite bath, heated floors, premium throughout' },
       ],
       defaultContingency: 12,
-      lockedModifiers: ['slab-plumbing'],
-      modifiers: ['add-full-bath','add-master-bath','add-half-bath','egress-window','pre1980','structural'],
+      modifiers: ['slab-plumbing','add-full-bath','add-master-bath','add-half-bath','egress-window','pre1980','structural'],
     },
   };
 
   const MODIFIERS = {
-    // ── Locked baseline (always-on, no toggle) ─────────────────────────────
-    'slab-plumbing':   { label: 'Slab penetrations & plumbing rough-in modifications', pct: 0, flat: 9000, badge: '+$9K', locked: true },
+    // ── Slab & plumbing ────────────────────────────────────────────────────
+    'slab-plumbing':   { label: 'Slab penetrations & plumbing rough-in modifications', pct: 0, flat: 9000, badge: '+$9K' },
     // ── Cost reducers ──────────────────────────────────────────────────────
     'no-plumbing':     { label: 'Dry addition — no new plumbing or bathrooms (bedroom, office, living space)', pct: -22, flat: 0,     badge: '-22%',  negative: true  },
     // ── Bathroom additions ─────────────────────────────────────────────────
@@ -263,13 +262,6 @@
     let baseHigh = levelData.high * sf;
     let pctMod = 0, flatMod = 0;
     const appliedMods = [];
-    // Always-on locked modifiers
-    (typeData.lockedModifiers || []).forEach(key => {
-      pctMod  += MODIFIERS[key].pct;
-      flatMod += MODIFIERS[key].flat;
-      appliedMods.push({ key, label: MODIFIERS[key].label, badge: MODIFIERS[key].badge, locked: true });
-    });
-    // Optional modifiers
     (typeData.modifiers || []).forEach(key => {
       if (activeMods[key]) {
         pctMod  += MODIFIERS[key].pct;
@@ -389,10 +381,9 @@
             <div className="pdf-sec-label">Scope Adjustments Applied</div>
             {calc.appliedMods.map(m => (
               <div key={m.key} className="pdf-mod-item">
-                <div className={`pdf-mod-dot${m.negative ? ' negative' : m.locked ? ' locked' : ''}`} />
-                {m.locked ? <span style={{ fontStyle: 'italic' }}>{m.label}</span> : m.label}
-                {m.locked && <span style={{ fontSize: 9, color: '#BBB', marginLeft: 4 }}>(baseline)</span>}
-                <span className={`pdf-mod-badge${m.negative ? ' negative' : m.locked ? ' locked' : ''}`}>{m.badge}</span>
+                <div className={`pdf-mod-dot${m.negative ? ' negative' : ''}`} />
+                {m.label}
+                <span className={`pdf-mod-badge${m.negative ? ' negative' : ''}`}>{m.badge}</span>
               </div>
             ))}
           </div>
@@ -527,18 +518,6 @@
               <div className="section">
                 <div className="section-header"><div className="section-num">2</div><div className="section-title">Scope Modifiers</div></div>
                 <div className="section-body">
-                  {/* Locked baseline modifiers */}
-                  {(typeData.lockedModifiers || []).map(key => {
-                    const mod = MODIFIERS[key];
-                    return (
-                      <div key={key} className="modifier-row locked-row">
-                        <div className="mod-lock">🔒</div>
-                        <div className="mod-label" style={{ color: 'rgba(247,247,247,0.75)' }}>{mod.label}</div>
-                        <div className="mod-badge locked">{mod.badge} · baseline</div>
-                      </div>
-                    );
-                  })}
-                  {/* Optional modifiers */}
                   {typeData.modifiers.map(key => {
                     const mod = MODIFIERS[key];
                     const isChecked = !!activeMods[key];
@@ -550,7 +529,7 @@
                       </div>
                     );
                   })}
-                  <div className="mod-note">🔒 Baseline items are always included. Percentage modifiers stack on hard costs. Flat modifiers add after PSF calculation. Green badges reduce the estimate.</div>
+                  <div className="mod-note">Percentage modifiers stack on hard costs. Flat modifiers add after PSF calculation. Green badges reduce the estimate.</div>
                 </div>
               </div>
             )}
