@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -16,112 +15,75 @@
 html, body { min-height: 100vh; font-family: 'DM Sans', sans-serif; overflow-x: hidden; background: #1A1F2E; }
 
 .wallpaper {
-position: fixed; inset: 0;
-background:
-radial-gradient(ellipse at 20% 20%, rgba(199,170,139,0.12) 0%, transparent 50%),
-radial-gradient(ellipse at 80% 80%, rgba(56,89,138,0.2) 0%, transparent 50%),
-radial-gradient(ellipse at 50% 50%, rgba(26,31,46,1) 0%, #111520 100%);
-z-index: 0;
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(199,170,139,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(56,89,138,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(26,31,46,1) 0%, #111520 100%);
+  z-index: 0;
 }
 .wallpaper::after {
-content: ‘’;
-position: absolute; inset: 0;
-background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23noise)’ opacity=‘0.04’/%3E%3C/svg%3E”);
-opacity: 0.4; pointer-events: none;
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4; pointer-events: none;
 }
 
 .screen {
-position: relative; z-index: 1; min-height: 100vh;
-display: flex; flex-direction: column;
-padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0);
+  position: relative; z-index: 1; min-height: 100vh;
+  display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0);
 }
 
-/* STATUS BAR */
 .status-bar {
-display: flex; justify-content: space-between; align-items: flex-start;
-padding: 14px 24px 0;
-font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); letter-spacing: 0.02em;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 14px 24px 0;
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); letter-spacing: 0.02em;
 }
 .status-left { display: flex; flex-direction: column; }
 .status-time { font-size: 16px; font-weight: 700; display: block; }
-.status-date { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.08em; font-family: ‘DM Mono’, monospace; display: block; margin-top: 2px; }
+.status-date { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.08em; font-family: 'DM Mono', monospace; display: block; margin-top: 2px; }
 .status-icons { display: flex; gap: 6px; align-items: center; font-size: 11px; }
 
-/* HEADER */
 .home-header {
-padding: 24px 20px 20px;
-display: flex; align-items: center; gap: 18px;
-border-bottom: 1px solid rgba(199,170,139,0.12);
-margin-bottom: 4px;
+  padding: 24px 20px 20px;
+  display: flex; align-items: center; gap: 18px;
+  border-bottom: 1px solid rgba(199,170,139,0.12);
+  margin-bottom: 4px;
 }
-.bear-wrap {
-display: block; flex-shrink: 0;
-filter: drop-shadow(0 4px 14px rgba(199,170,139,0.25));
-}
-.bear-img {
-width: 60px; height: 60px; object-fit: contain;
-display: block; mix-blend-mode: screen;
-}
-.header-info { flex: 1; text-align: left; }
-.home-title {
-font-size: 15px; font-weight: 700;
-color: rgba(255,255,255,0.95); letter-spacing: -0.01em; line-height: 1.2;
-}
-.home-sub {
-font-family: ‘DM Mono’, monospace; font-size: 9px;
-color: rgba(199,170,139,0.7); letter-spacing: 0.18em;
-text-transform: uppercase; margin-top: 3px;
-}
+.bear-wrap { display: block; flex-shrink: 0; filter: drop-shadow(0 4px 14px rgba(199,170,139,0.25)); }
+.bear-img { width: 60px; height: 60px; object-fit: contain; display: block; mix-blend-mode: screen; }
+.header-info { flex: 1; }
+.home-title { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.95); letter-spacing: -0.01em; line-height: 1.2; }
+.home-sub { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(199,170,139,0.7); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 3px; }
 .quick-details { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
-.qd-row {
-display: flex; align-items: center; gap: 6px;
-font-family: ‘DM Mono’, monospace; font-size: 9px;
-color: rgba(255,255,255,0.45); letter-spacing: 0.06em;
-}
+.qd-row { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em; }
 .qd-icon { font-size: 10px; flex-shrink: 0; }
 .qd-val { color: rgba(255,255,255,0.7); }
 .qd-row a { color: rgba(199,170,139,0.8); text-decoration: none; }
 .qd-row a:hover { color: #C7AA8B; }
 
-/* GRID */
 .grid-section { padding: 0 20px; margin-bottom: 24px; }
-.grid-label {
-font-family: ‘DM Mono’, monospace; font-size: 9px;
-letter-spacing: 0.2em; text-transform: uppercase;
-color: rgba(255,255,255,0.3); margin-bottom: 12px; padding-left: 4px;
-}
+.grid-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 12px; padding-left: 4px; }
 .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 12px; }
 
-/* APP ICON */
-.app-item {
-display: flex; flex-direction: column; align-items: center; gap: 7px;
-text-decoration: none; cursor: pointer;
--webkit-tap-highlight-color: transparent;
-}
+.app-item { display: flex; flex-direction: column; align-items: center; gap: 7px; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .app-item:active .app-icon { transform: scale(0.92); opacity: 0.85; }
 .app-icon {
-width: 64px; height: 64px; border-radius: 15px;
-display: flex; align-items: center; justify-content: center;
-font-size: 28px; transition: transform 0.12s, opacity 0.12s;
-position: relative; overflow: hidden; flex-shrink: 0;
+  width: 64px; height: 64px; border-radius: 15px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; transition: transform 0.12s, opacity 0.12s;
+  position: relative; overflow: hidden; flex-shrink: 0;
 }
 .app-icon::before {
-content: ‘’; position: absolute; top: 0; left: 0; right: 0; height: 50%;
-background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
-border-radius: 15px 15px 0 0; pointer-events: none;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+  border-radius: 15px 15px 0 0; pointer-events: none; z-index: 2;
 }
-.app-label {
-font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.85);
-text-align: center; line-height: 1.2; max-width: 64px; word-break: break-word;
-}
-.app-badge {
-position: absolute; top: -4px; right: -4px;
-background: #6FCF97; color: #1A1F2E;
-font-size: 7px; font-weight: 800; font-family: ‘DM Mono’, monospace;
-padding: 1px 4px; border-radius: 6px; letter-spacing: 0.05em; text-transform: uppercase;
-}
+.app-icon img { width: 38px; height: 38px; object-fit: contain; border-radius: 4px; position: relative; z-index: 1; }
+.app-label { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.85); text-align: center; line-height: 1.2; max-width: 64px; word-break: break-word; }
+.app-badge { position: absolute; top: -4px; right: -4px; background: #6FCF97; color: #1A1F2E; font-size: 7px; font-weight: 800; font-family: 'DM Mono', monospace; padding: 1px 4px; border-radius: 6px; letter-spacing: 0.05em; text-transform: uppercase; z-index: 3; }
 
-/* ICON COLORS */
 .ic-blue   { background: linear-gradient(145deg, #2979FF, #1A56DB); box-shadow: 0 4px 14px rgba(41,121,255,0.35); }
 .ic-orange { background: linear-gradient(145deg, #FF6B35, #E84E0F); box-shadow: 0 4px 14px rgba(255,107,53,0.35); }
 .ic-tan    { background: linear-gradient(145deg, #C7AA8B, #A08060); box-shadow: 0 4px 14px rgba(199,170,139,0.35); }
@@ -129,35 +91,29 @@ padding: 1px 4px; border-radius: 6px; letter-spacing: 0.05em; text-transform: up
 .ic-teal   { background: linear-gradient(145deg, #00BCD4, #0097A7); box-shadow: 0 4px 14px rgba(0,188,212,0.35); }
 .ic-gold   { background: linear-gradient(145deg, #F2C94C, #E0A800); box-shadow: 0 4px 14px rgba(242,201,76,0.35); }
 .ic-navy   { background: linear-gradient(145deg, #1E3A5F, #0F1E35); box-shadow: 0 4px 14px rgba(30,58,95,0.4); border: 1px solid rgba(255,255,255,0.08); }
+.ic-white  { background: linear-gradient(145deg, #F7F7F7, #E0DDD9); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+.ic-dark   { background: linear-gradient(145deg, #2A2826, #1A1816); box-shadow: 0 4px 14px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); }
 
-/* DOCK */
 .dock-wrap { margin-top: auto; padding: 16px 20px 28px; }
 .dock {
-background: rgba(255,255,255,0.08);
-backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-border: 1px solid rgba(255,255,255,0.1);
-border-radius: 28px; padding: 14px 20px;
-display: flex; justify-content: space-around; align-items: center;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 28px; padding: 14px 20px;
+  display: flex; justify-content: space-around; align-items: center;
 }
 
-/* FOOTER */
-.footer {
-text-align: center; font-family: ‘DM Mono’, monospace;
-font-size: 9px; letter-spacing: 0.12em; color: #444; line-height: 1.8;
-border-top: 1px solid rgba(199,170,139,0.08); padding: 16px 20px 24px;
-}
+.footer { text-align: center; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: #444; line-height: 1.8; border-top: 1px solid rgba(199,170,139,0.08); padding: 16px 20px 24px; }
 
 @media (min-width: 500px) { .app-grid { grid-template-columns: repeat(5, 1fr); } .app-icon { width: 68px; height: 68px; } }
 @media (min-width: 768px) { .app-grid { grid-template-columns: repeat(6, 1fr); } }
 </style>
-
 </head>
 <body>
 <div class="wallpaper"></div>
 <div class="screen">
 
   <!-- STATUS BAR -->
-
   <div class="status-bar">
     <div class="status-left">
       <span class="status-time" id="clock">--:--</span>
@@ -167,7 +123,6 @@ border-top: 1px solid rgba(199,170,139,0.08); padding: 16px 20px 24px;
   </div>
 
   <!-- HEADER -->
-
   <div class="home-header">
     <div class="bear-wrap">
       <img class="bear-img" src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="OVB" />
@@ -185,163 +140,183 @@ border-top: 1px solid rgba(199,170,139,0.08); padding: 16px 20px 24px;
   </div>
 
   <!-- OVB TOOLS -->
-
   <div class="grid-section" style="padding-top:24px;">
     <div class="grid-label">OVB Tools</div>
     <div class="app-grid">
-      
-  <a class="app-item" href="/OVB-Discovery-Call.html">
-    <div class="app-icon ic-tan" style="position:relative">
-      <span>📞</span>
+
+      <a class="app-item" href="/OVB-Discovery-Call.html">
+        <div class="app-icon ic-tan" style="position:relative">
+          <span>📞</span>
+        </div>
+        <span class="app-label">Discovery Call</span>
+      </a>
+
+      <a class="app-item" href="/OVB-Builders-Risk-Worksheet.html">
+        <div class="app-icon ic-blue" style="position:relative">
+          <span>🏗️</span>
+        </div>
+        <span class="app-label">Builders Risk</span>
+      </a>
+
     </div>
-    <span class="app-label">Discovery Call</span>
-  </a>
-
-  <a class="app-item" href="/OVB-Builders-Risk-Worksheet.html">
-    <div class="app-icon ic-blue" style="position:relative">
-      <span>🏗️</span>    
-    </div>
-    <span class="app-label">Builders Risk</span>
-  </a>
-
-</div>
-
-
   </div>
 
   <!-- FIELD APPS -->
-
   <div class="grid-section">
     <div class="grid-label">Field Apps</div>
     <div class="app-grid">
 
-  <a class="app-item" href="#" onclick="openApp('jobtread://', 'https://app.jobtread.com'); return false;">
-    <div class="app-icon ic-orange"><span>🔧</span></div>
-    <span class="app-label">JobTread</span>
-  </a>
+      <!-- JobTread: upload jobtread-logo.png to GitHub repo root, it'll serve at /jobtread-logo.png -->
+      <!-- Falls back to wrench emoji if file isn't uploaded yet -->
+      <a class="app-item" href="#" onclick="openApp('jobtread://', 'https://app.jobtread.com'); return false;">
+        <div class="app-icon ic-orange">
+          <img src="/jobtread-logo.png" alt="JobTread"
+            onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-size:26px;position:relative;z-index:1\'>🔧</span>')" />
+        </div>
+        <span class="app-label">JobTread</span>
+      </a>
 
-  <a class="app-item" href="#" onclick="openApp('gmail://', 'https://mail.google.com'); return false;">
-    <div class="app-icon" style="background: linear-gradient(145deg, #D93025, #A50E00); box-shadow: 0 4px 14px rgba(217,48,37,0.35);"><span>✉️</span></div>
-    <span class="app-label">Gmail</span>
-  </a>
+      <a class="app-item" href="#" onclick="openApp('gmail://', 'https://mail.google.com'); return false;">
+        <div class="app-icon ic-white">
+          <img src="https://logo.clearbit.com/gmail.com" alt="Gmail" />
+        </div>
+        <span class="app-label">Gmail</span>
+      </a>
 
-  <a class="app-item" href="#" onclick="openApp('notion://', 'https://www.notion.so'); return false;">
-    <div class="app-icon" style="background: linear-gradient(145deg, #F7F7F7, #E0DDD9); box-shadow: 0 4px 14px rgba(0,0,0,0.3);"><span>📓</span></div>
-    <span class="app-label">Notion</span>
-  </a>
+      <a class="app-item" href="#" onclick="openApp('notion://', 'https://www.notion.so'); return false;">
+        <div class="app-icon ic-white">
+          <img src="https://logo.clearbit.com/notion.so" alt="Notion" />
+        </div>
+        <span class="app-label">Notion</span>
+      </a>
 
-  <a class="app-item" href="#" onclick="openApp('googledrive://', 'https://drive.google.com'); return false;">
-    <div class="app-icon ic-gold"><span>📁</span></div>
-    <span class="app-label">Google Drive</span>
-  </a>
+      <a class="app-item" href="#" onclick="openApp('googledrive://', 'https://drive.google.com'); return false;">
+        <div class="app-icon ic-white">
+          <img src="https://logo.clearbit.com/drive.google.com" alt="Google Drive" />
+        </div>
+        <span class="app-label">Google Drive</span>
+      </a>
 
-  <a class="app-item" href="https://app.qbo.intuit.com" target="_blank" rel="noopener">
-    <div class="app-icon ic-green"><span>💰</span></div>
-    <span class="app-label">QuickBooks</span>
-  </a>
+      <a class="app-item" href="https://app.qbo.intuit.com" target="_blank" rel="noopener">
+        <div class="app-icon ic-white">
+          <img src="https://logo.clearbit.com/quickbooks.intuit.com" alt="QuickBooks" />
+        </div>
+        <span class="app-label">QuickBooks</span>
+      </a>
 
-  <a class="app-item" href="https://webflow.com" target="_blank" rel="noopener">
-    <div class="app-icon ic-teal"><span>🌐</span></div>
-    <span class="app-label">Webflow</span>
-  </a>
-      
-   <a class="app-item" href="https://www.canva.com" target="_blank">
-    <div class="app-icon" ic-aqua><span>🎨</span></div>
-    <div class="app-label">Canva</div>
-  </a>
+      <a class="app-item" href="https://www.canva.com" target="_blank" rel="noopener">
+        <div class="app-icon ic-white">
+          <img src="https://logo.clearbit.com/canva.com" alt="Canva" />
+        </div>
+        <span class="app-label">Canva</span>
+      </a>
 
-  <a class="app-item" href="https://www.ogdenvalleybuilders.com" target="_blank" rel="noopener">
-    <div class="app-icon ic-navy"><span>🏔️</span></div>
-    <span class="app-label">OVB Website</span>
-  </a>
+      <a class="app-item" href="https://webflow.com" target="_blank" rel="noopener">
+        <div class="app-icon ic-dark">
+          <img src="https://logo.clearbit.com/webflow.com" alt="Webflow" />
+        </div>
+        <span class="app-label">Webflow</span>
+      </a>
 
-</div>
+      <a class="app-item" href="https://www.ogdenvalleybuilders.com" target="_blank" rel="noopener">
+        <div class="app-icon ic-navy"><span>🏔️</span></div>
+        <span class="app-label">OVB Website</span>
+      </a>
 
+    </div>
   </div>
 
   <!-- QUICK LINKS -->
-
   <div class="grid-section">
     <div class="grid-label">Quick Links</div>
     <div class="app-grid">
-      
-  <a class="app-item" href="https://secure.utah.gov/llv/search/index.html" target="_blank" rel="noopener">
-    <div class="app-icon" style="background: linear-gradient(145deg, #8B5E3C, #6B4423); box-shadow: 0 4px 14px rgba(139,94,60,0.35);"><span>🏛️</span></div>
-    <span class="app-label">DOPL License</span>
-  </a>
 
-  <a class="app-item" href="https://secure.utah.gov/scr/" target="_blank" rel="noopener">
-    <div class="app-icon" style="background: linear-gradient(145deg, #5A3A8E, #3A1A6E); box-shadow: 0 4px 14px rgba(90,58,142,0.35);"><span>📋</span></div>
-    <span class="app-label">UT Construction Registry</span>
-  </a>
+      <a class="app-item" href="https://secure.utah.gov/llv/search/index.html" target="_blank" rel="noopener">
+        <div class="app-icon" style="background:linear-gradient(145deg,#8B5E3C,#6B4423);box-shadow:0 4px 14px rgba(139,94,60,0.35);"><span>🏛️</span></div>
+        <span class="app-label">DOPL License</span>
+      </a>
 
-  <a class="app-item" href="https://op.ogdencity.com" target="_blank" rel="noopener">
-    <div class="app-icon" style="background: linear-gradient(145deg, #1A5276, #0E2F44); box-shadow: 0 4px 14px rgba(26,82,118,0.35);"><span>🏙️</span></div>
-    <span class="app-label">Ogden City</span>
-  </a>
+      <a class="app-item" href="https://secure.utah.gov/scr/" target="_blank" rel="noopener">
+        <div class="app-icon" style="background:linear-gradient(145deg,#5A3A8E,#3A1A6E);box-shadow:0 4px 14px rgba(90,58,142,0.35);"><span>📋</span></div>
+        <span class="app-label">UT Sub Registry</span>
+      </a>
 
-  <a class="app-item" href="https://frontier.co.weber.ut.us/Home" target="_blank" rel="noopener">
-    <div class="app-icon" style="background: linear-gradient(145deg, #2D5A8E, #1A3A5C); box-shadow: 0 4px 14px rgba(45,90,142,0.35);"><span>📐</span></div>
-    <span class="app-label">Weber Permits</span>
-  </a>
+      <a class="app-item" href="https://op.ogdencity.com" target="_blank" rel="noopener">
+        <div class="app-icon" style="background:linear-gradient(145deg,#1A5276,#0E2F44);box-shadow:0 4px 14px rgba(26,82,118,0.35);"><span>🏙️</span></div>
+        <span class="app-label">Ogden City</span>
+      </a>
 
-  <a class="app-item" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank" rel="noopener">
-    <div class="app-icon" style="background: linear-gradient(145deg, #3A5E2D, #244018); box-shadow: 0 4px 14px rgba(58,94,45,0.35);"><span>📐</span></div>
-    <span class="app-label">Morgan Permits</span>
-  </a>
+      <a class="app-item" href="https://frontier.co.weber.ut.us/Home" target="_blank" rel="noopener">
+        <div class="app-icon" style="background:linear-gradient(145deg,#2D5A8E,#1A3A5C);box-shadow:0 4px 14px rgba(45,90,142,0.35);"><span>📐</span></div>
+        <span class="app-label">Weber Permits</span>
+      </a>
 
-  <a class="app-item" href="#" onclick="openApp('comgooglemaps://', 'https://maps.google.com'); return false;">
-    <div class="app-icon" style="background: linear-gradient(145deg, #E84E0F, #B83A00); box-shadow: 0 4px 14px rgba(232,78,15,0.35);"><span>📍</span></div>
-    <span class="app-label">Google Maps</span>
-  </a>
+      <a class="app-item" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank" rel="noopener">
+        <div class="app-icon" style="background:linear-gradient(145deg,#3A5E2D,#244018);box-shadow:0 4px 14px rgba(58,94,45,0.35);"><span>📐</span></div>
+        <span class="app-label">Morgan Permits</span>
+      </a>
 
-  <a class="app-item" href="https://www.bankofutah.com" target="_blank" rel="noopener">
-    <div class="app-icon" style="background: linear-gradient(145deg, #1A3A5C, #0D1E2E); box-shadow: 0 4px 14px rgba(26,58,92,0.35);"><span>🏦</span></div>
-    <span class="app-label">Bank of Utah</span>
-  </a>
+      <a class="app-item" href="#" onclick="openApp('comgooglemaps://', 'https://maps.google.com'); return false;">
+        <div class="app-icon ic-white">
+          <img src="https://logo.clearbit.com/maps.google.com" alt="Google Maps" />
+        </div>
+        <span class="app-label">Google Maps</span>
+      </a>
 
-  <a class="app-item" href="https://claude.ai" target="_blank" rel="noopener">
-    <div class="app-icon ic-tan"><span>🤖</span></div>
-    <span class="app-label">Claude</span>
-  </a>
+      <a class="app-item" href="https://www.bankofutah.com" target="_blank" rel="noopener">
+        <div class="app-icon ic-white">
+          <img src="https://logo.clearbit.com/bankofutah.com" alt="Bank of Utah" />
+        </div>
+        <span class="app-label">Bank of Utah</span>
+      </a>
 
-  <a class="app-item" href="https://chat.openai.com" target="_blank" rel="noopener">
-    <div class="app-icon" style="background: linear-gradient(145deg, #10A37F, #0A7A5F); box-shadow: 0 4px 14px rgba(16,163,127,0.35);"><span>💬</span></div>
-    <span class="app-label">ChatGPT</span>
-  </a>
+      <a class="app-item" href="https://claude.ai" target="_blank" rel="noopener">
+        <div class="app-icon ic-dark">
+          <img src="https://logo.clearbit.com/anthropic.com" alt="Claude" />
+        </div>
+        <span class="app-label">Claude</span>
+      </a>
 
-</div>
-```
+      <a class="app-item" href="https://chat.openai.com" target="_blank" rel="noopener">
+        <div class="app-icon ic-dark">
+          <img src="https://logo.clearbit.com/openai.com" alt="ChatGPT" />
+        </div>
+        <span class="app-label">ChatGPT</span>
+      </a>
 
+    </div>
   </div>
 
   <!-- DOCK -->
-
   <div class="dock-wrap">
     <div class="dock">
 
-  <a class="app-item" href="#" onclick="openApp('jobtread://', 'https://app.jobtread.com'); return false;">
-    <div class="app-icon ic-orange" style="width:56px;height:56px;border-radius:13px;"><span style="font-size:24px;">🔧</span></div>
-    <span class="app-label">JobTread</span>
-  </a>
+      <a class="app-item" href="#" onclick="openApp('jobtread://', 'https://app.jobtread.com'); return false;">
+        <div class="app-icon ic-orange" style="width:56px;height:56px;border-radius:13px;">
+          <img src="/jobtread-logo.png" alt="JobTread" style="width:32px;height:32px;"
+            onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-size:22px;position:relative;z-index:1\'>🔧</span>')" />
+        </div>
+        <span class="app-label">JobTread</span>
+      </a>
 
-  <a class="app-item" href="/OVB-Discovery-Call.html">
-    <div class="app-icon ic-tan" style="width:56px;height:56px;border-radius:13px;"><span style="font-size:24px;">📞</span></div>
-    <span class="app-label">Discovery</span>
-  </a>
+      <a class="app-item" href="/OVB-Discovery-Call.html">
+        <div class="app-icon ic-tan" style="width:56px;height:56px;border-radius:13px;"><span style="font-size:24px;">📞</span></div>
+        <span class="app-label">Discovery</span>
+      </a>
 
-  <a class="app-item" href="/OVB-Builders-Risk-Worksheet.html">
-    <div class="app-icon ic-blue" style="width:56px;height:56px;border-radius:13px;"><span style="font-size:24px;">🏗️</span></div>
-    <span class="app-label">Builders Risk</span>
-  </a>
+      <a class="app-item" href="/OVB-Builders-Risk-Worksheet.html">
+        <div class="app-icon ic-blue" style="width:56px;height:56px;border-radius:13px;"><span style="font-size:24px;">🏗️</span></div>
+        <span class="app-label">Builders Risk</span>
+      </a>
 
-  <a class="app-item" href="#" onclick="openApp('notion://', 'https://www.notion.so'); return false;">
-    <div class="app-icon" style="width:56px;height:56px;border-radius:13px;background:linear-gradient(145deg,#F7F7F7,#E0DDD9);box-shadow:0 4px 14px rgba(0,0,0,0.3);"><span style="font-size:24px;">📓</span></div>
-    <span class="app-label">Notion</span>
-  </a>
+      <a class="app-item" href="#" onclick="openApp('notion://', 'https://www.notion.so'); return false;">
+        <div class="app-icon ic-white" style="width:56px;height:56px;border-radius:13px;">
+          <img src="https://logo.clearbit.com/notion.so" alt="Notion" style="width:32px;height:32px;" />
+        </div>
+        <span class="app-label">Notion</span>
+      </a>
 
-</div>
-
+    </div>
   </div>
 
   <div class="footer">
@@ -352,18 +327,14 @@ border-top: 1px solid rgba(199,170,139,0.08); padding: 16px 20px 24px;
 </div>
 
 <script>
-  // Deep link handler — tries native app, falls back to web
   function openApp(appUrl, webUrl) {
     var start = Date.now();
     setTimeout(function() {
-      if (Date.now() - start < 2000) {
-        window.open(webUrl, '_blank');
-      }
+      if (Date.now() - start < 2000) window.open(webUrl, '_blank');
     }, 600);
     window.location.href = appUrl;
   }
 
-  // Clock + date
   function updateClock() {
     var now = new Date();
     var h = now.getHours(), m = now.getMinutes();
