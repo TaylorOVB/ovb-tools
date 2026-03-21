@@ -195,7 +195,6 @@ async function createCustomer(grantKey, params) {
   customFieldValues[F.status]             = '1. New Lead';
   if (params.customerType)   customFieldValues[F.customerType]    = params.customerType;
   if (params.budgetRange)    customFieldValues[F.budgetRange]     = normalizeBudget(params.budgetRange);
-  if (params.projectType)    customFieldValues[F.needs]           = params.projectType;
   if (params.leadSource)     customFieldValues[F.leadSource]      = params.leadSource;
   if (params.referredBy)     customFieldValues[F.referredBy]      = params.referredBy;
   if (params.contactMethod)  customFieldValues[F.preferredContact]= params.contactMethod;
