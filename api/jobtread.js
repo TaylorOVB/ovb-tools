@@ -48,10 +48,9 @@ async function pave(grantKey, queryObj) {
   return data;
 }
 
-// ─── Get org info (two-step: grant → org) ────────────────────────────────────
+// ─── Get org info ─────────────────────────────────────────────────────────────
 
 async function getOrgInfo(grantKey) {
-  // Step 1: get org ID from currentGrant
   const grantData = await pave(grantKey, {
     currentGrant: {
       id: {},
@@ -63,7 +62,6 @@ async function getOrgInfo(grantKey) {
            ?? grantData?.currentGrant?.organization;
   if (!org?.id) throw new Error('Could not get org from currentGrant. Check grant key.');
 
-  // Step 2: get custom fields using org ID
   const orgData = await pave(grantKey, {
     organization: {
       $: { id: org.id },
@@ -80,37 +78,42 @@ async function getOrgInfo(grantKey) {
   return { ...org, ...full };
 }
 
-// ─── Create customer ──────────────────────────────────────────────────────────
+// ─── Create customer (5-step) ─────────────────────────────────────────────────
 
 async function createCustomer(grantKey, params) {
-  // 1. Get org ID + custom field definitions
+  const results = { steps: {} };
+
+  // ── Step 1: Get org ID + custom field definitions ──────────────────────────
   const org = await getOrgInfo(grantKey);
   const orgId = org?.id;
   if (!orgId) throw new Error('Could not retrieve org ID. Verify grant key.');
+  results.steps.orgId = orgId;
 
-  // 2. Create the customer account
+  // ── Step 2: Create the customer account (name only) ────────────────────────
   const createData = await pave(grantKey, {
     createAccount: {
       $: {
         name: params.name,
         type: 'customer',
         organizationId: orgId,
-        ...(params.email && { email: params.email }),
-        ...(params.phone && { phone: params.phone }),
       },
-      createdAccount: { id: {}, name: {}, type: {} },
+      createdAccount: { id: {}, name: {} },
     },
   });
 
   const account =
     createData?.query?.createAccount?.createdAccount ??
     createData?.createAccount?.createdAccount;
-  if (!account?.id) throw new Error('Account created but no ID returned. Check JobTread.');
+  if (!account?.id) throw new Error('Account created but no ID returned.');
 
   const accountId = account.id;
+  results.accountId   = accountId;
+  results.accountName = account.name;
+  results.url         = `https://app.jobtread.com/accounts/${accountId}`;
+  results.steps.accountCreated = true;
 
-  // 3. Set custom fields
-  // Field names match exactly what's in JT Settings → Custom Fields → CUSTOMER ACCOUNTS
+  // ── Step 3: Set custom fields on customer account ──────────────────────────
+  // Field names match exactly JT Settings → Custom Fields → CUSTOMER ACCOUNTS
   const fieldDefs = org?.customFields?.nodes ?? [];
   const FIELD_MAP = {
     'Status':                   'Lead',
@@ -123,7 +126,7 @@ async function createCustomer(grantKey, params) {
     'Financing Type':           params.financing,
     'Decision Makers':          params.decisionMakers,
     'Competing Bids':           params.competingBids,
-    'Timeline / Urgency':       params.timeline,       // exact name — spaces around slash
+    'Timeline / Urgency':       params.timeline,
     'Project Location':         params.county ? `${params.county} County` : undefined,
     'DQ Flag':                  params.dqFlag,
     'Qualification Score':      params.qualificationScore,
@@ -141,16 +144,62 @@ async function createCustomer(grantKey, params) {
     await pave(grantKey, {
       updateAccount: {
         $: { id: accountId, customFieldValues },
-        account: { id: {}, name: {} },
+        account: { id: {} },
       },
-    }).catch(err => console.warn('[jobtread proxy] Custom fields non-fatal:', err.message));
+    }).catch(err => {
+      console.warn('[jobtread proxy] Custom fields non-fatal:', err.message);
+      results.steps.customFieldsError = err.message;
+    });
+  }
+  results.steps.customFieldsSet = Object.keys(customFieldValues).length;
+
+  // ── Step 4: Create contact (name, email, phone) ────────────────────────────
+  if (params.name || params.email || params.phone) {
+    await pave(grantKey, {
+      createContact: {
+        $: {
+          accountId,
+          name: params.name,
+          ...(params.email && { email: params.email }),
+          ...(params.phone && { phone: params.phone }),
+        },
+        createdContact: { id: {}, name: {} },
+      },
+    }).then(() => {
+      results.steps.contactCreated = true;
+    }).catch(err => {
+      console.warn('[jobtread proxy] Contact non-fatal:', err.message);
+      results.steps.contactError = err.message;
+    });
   }
 
-  return {
-    accountId,
-    accountName: account.name,
-    url: `https://app.jobtread.com/accounts/${accountId}`,
-    customFieldsSet: Object.keys(customFieldValues).length,
-    fieldDefsFound: fieldDefs.length,
-  };
+  // ── Step 5: Create location (project address) ──────────────────────────────
+  if (params.address) {
+    // Parse address into street + city if possible
+    // Expects format like "123 Main St, Ogden" or "123 Main St, Ogden, UT 84401"
+    const parts = params.address.split(',').map(s => s.trim());
+    const street = parts[0] || params.address;
+    const city   = parts[1] || '';
+    const state  = parts[2] || 'UT';
+
+    await pave(grantKey, {
+      createLocation: {
+        $: {
+          accountId,
+          name: params.address,
+          address1: street,
+          ...(city  && { city }),
+          ...(state && { state }),
+        },
+        createdLocation: { id: {}, name: {} },
+      },
+    }).then(() => {
+      results.steps.locationCreated = true;
+    }).catch(err => {
+      console.warn('[jobtread proxy] Location non-fatal:', err.message);
+      results.steps.locationError = err.message;
+    });
+  }
+
+  return results;
 }
