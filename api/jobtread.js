@@ -48,6 +48,21 @@ async function pave(grantKey, queryObj) {
   return data;
 }
 
+// ─── Value mappers (Discovery Call → JT exact picklist values) ────────────────
+
+// Budget Range: JT uses space-hyphen-space, lowercase k on $800k, no Under $50K
+const BUDGET_MAP = {
+  'Under $50K':   'Under $100K',   // DQ but still needs a valid JT value
+  'Under $100K':  'Under $100K',
+  '$100K–$200K':  '$100K - $200K',
+  '$200K–$400K':  '$200K - $400K',
+  '$400K–$600K':  '$400K - $600K',
+  '$600K–$800K':  '$600K - $800K',
+  '$800K–$1M':    '$800k - $1M',
+  '$1M+':         '$1M+',
+  'Not Sure':     'Not Sure',
+};
+
 // ─── Get org info ─────────────────────────────────────────────────────────────
 
 async function getOrgInfo(grantKey) {
@@ -87,7 +102,6 @@ async function createCustomer(grantKey, params) {
   const org = await getOrgInfo(grantKey);
   const orgId = org?.id;
   if (!orgId) throw new Error('Could not retrieve org ID. Verify grant key.');
-  results.steps.orgId = orgId;
 
   // ── Step 2: Create the customer account (name only) ────────────────────────
   const createData = await pave(grantKey, {
@@ -112,13 +126,13 @@ async function createCustomer(grantKey, params) {
   results.url         = `https://app.jobtread.com/accounts/${accountId}`;
   results.steps.accountCreated = true;
 
-  // ── Step 3: Set custom fields on customer account ──────────────────────────
-  // Field names match exactly JT Settings → Custom Fields → CUSTOMER ACCOUNTS
+  // ── Step 3: Set custom fields ──────────────────────────────────────────────
   const fieldDefs = org?.customFields?.nodes ?? [];
+
   const FIELD_MAP = {
     'Status':                   'Lead',
     'Customer Type':            'Residential',
-    'Budget Range':             params.budgetRange,
+    'Budget Range':             BUDGET_MAP[params.budgetRange] || params.budgetRange,
     'Needs':                    params.projectType,
     'Lead Source':              params.leadSource,
     'Referred By':              params.referredBy,
@@ -146,37 +160,34 @@ async function createCustomer(grantKey, params) {
         $: { id: accountId, customFieldValues },
         account: { id: {} },
       },
+    }).then(() => {
+      results.steps.customFieldsSet = Object.keys(customFieldValues).length;
     }).catch(err => {
       console.warn('[jobtread proxy] Custom fields non-fatal:', err.message);
       results.steps.customFieldsError = err.message;
     });
   }
-  results.steps.customFieldsSet = Object.keys(customFieldValues).length;
 
   // ── Step 4: Create contact (name, email, phone) ────────────────────────────
-  if (params.name || params.email || params.phone) {
-    await pave(grantKey, {
-      createContact: {
-        $: {
-          accountId,
-          name: params.name,
-          ...(params.email && { email: params.email }),
-          ...(params.phone && { phone: params.phone }),
-        },
-        createdContact: { id: {}, name: {} },
+  await pave(grantKey, {
+    createContact: {
+      $: {
+        accountId,
+        name: params.name,
+        ...(params.email && { email: params.email }),
+        ...(params.phone && { phone: params.phone }),
       },
-    }).then(() => {
-      results.steps.contactCreated = true;
-    }).catch(err => {
-      console.warn('[jobtread proxy] Contact non-fatal:', err.message);
-      results.steps.contactError = err.message;
-    });
-  }
+      createdContact: { id: {}, name: {} },
+    },
+  }).then(() => {
+    results.steps.contactCreated = true;
+  }).catch(err => {
+    console.warn('[jobtread proxy] Contact non-fatal:', err.message);
+    results.steps.contactError = err.message;
+  });
 
   // ── Step 5: Create location (project address) ──────────────────────────────
   if (params.address) {
-    // Parse address into street + city if possible
-    // Expects format like "123 Main St, Ogden" or "123 Main St, Ogden, UT 84401"
     const parts = params.address.split(',').map(s => s.trim());
     const street = parts[0] || params.address;
     const city   = parts[1] || '';
