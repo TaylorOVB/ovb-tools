@@ -62,7 +62,7 @@ async function getOrgInfo(grantKey) {
       name: {},
       customFields: {
         $: { size: 50 },
-        nodes: { id: {}, name: {}, entityType: {} },
+        nodes: { id: {}, name: {}, },
       },
     },
   });
