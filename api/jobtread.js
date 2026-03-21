@@ -48,17 +48,17 @@ async function pave(grantKey, queryObj) {
   return data;
 }
 
-// ─── Value mappers (Discovery Call → JT exact picklist values) ────────────────
+// ─── Value mappers ────────────────────────────────────────────────────────────
 
-// Budget Range: JT uses space-hyphen-space, lowercase k on $800k, no Under $50K
+// Discovery Call budget values → exact JT picklist values
 const BUDGET_MAP = {
-  'Under $50K':   'Under $100K',   // DQ but still needs a valid JT value
+  'Under $50K':   'Under $100K',
   'Under $100K':  'Under $100K',
-  '$100K–$200K':  '$100K-$200K',
-  '$200K–$400K':  '$200K-$400K',
-  '$400K–$600K':  '$400K-$600K',
-  '$600K–$800K':  '$600K-$800K',
-  '$800K–$1M':    '$800K-$1M',
+  '$100K–$200K':  '$100K - $200K',
+  '$200K–$400K':  '$200K - $400K',
+  '$400K–$600K':  '$400K - $600K',
+  '$600K–$800K':  '$600K - $800K',
+  '$800K–$1M':    '$800k - $1M',
   '$1M+':         '$1M+',
   'Not Sure':     'Not Sure',
 };
@@ -93,17 +93,17 @@ async function getOrgInfo(grantKey) {
   return { ...org, ...full };
 }
 
-// ─── Create customer (5-step) ─────────────────────────────────────────────────
+// ─── Create customer ──────────────────────────────────────────────────────────
 
 async function createCustomer(grantKey, params) {
   const results = { steps: {} };
 
-  // ── Step 1: Get org ID + custom field definitions ──────────────────────────
+  // Step 1: org ID + field defs
   const org = await getOrgInfo(grantKey);
   const orgId = org?.id;
   if (!orgId) throw new Error('Could not retrieve org ID. Verify grant key.');
 
-  // ── Step 2: Create the customer account (name only) ────────────────────────
+  // Step 2: create account (name only — no extra fields at creation)
   const createData = await pave(grantKey, {
     createAccount: {
       $: {
@@ -126,12 +126,12 @@ async function createCustomer(grantKey, params) {
   results.url         = `https://app.jobtread.com/accounts/${accountId}`;
   results.steps.accountCreated = true;
 
-  // ── Step 3: Set custom fields ──────────────────────────────────────────────
+  // Step 3: set custom fields
+  // Exact picklist values from JT Settings → Custom Fields → CUSTOMER ACCOUNTS
   const fieldDefs = org?.customFields?.nodes ?? [];
-
   const FIELD_MAP = {
     'Status':                   '1. New Lead',
-    'Customer Type':            'Homeowner - Primary Residence',
+    'Customer Type':            params.customerType || 'Homeowner - Primary Residence',
     'Budget Range':             BUDGET_MAP[params.budgetRange] || params.budgetRange,
     'Needs':                    params.projectType,
     'Lead Source':              params.leadSource,
@@ -158,40 +158,61 @@ async function createCustomer(grantKey, params) {
     await pave(grantKey, {
       updateAccount: {
         $: { id: accountId, customFieldValues },
-        account: { id: {} },
+        // No return fields requested — avoids the non-null error on account.$
       },
     }).then(() => {
       results.steps.customFieldsSet = Object.keys(customFieldValues).length;
     }).catch(err => {
-      console.warn('[jobtread proxy] Custom fields non-fatal:', err.message);
+      console.warn('[jobtread proxy] Custom fields:', err.message);
       results.steps.customFieldsError = err.message;
     });
   }
 
-  // ── Step 4: Create contact (name, email, phone) ────────────────────────────
+  // Step 4: create contact (name + email only — phone goes separately)
   await pave(grantKey, {
     createContact: {
       $: {
         accountId,
         name: params.name,
         ...(params.email && { email: params.email }),
-        ...(params.phone && { phone: params.phone }),
       },
       createdContact: { id: {}, name: {} },
     },
-  }).then(() => {
+  }).then(d => {
+    const contactId =
+      d?.query?.createContact?.createdContact?.id ??
+      d?.createContact?.createdContact?.id;
     results.steps.contactCreated = true;
+    results.steps.contactId = contactId;
+
+    // Step 4b: add phone to the contact if we have one and got an ID back
+    if (contactId && params.phone) {
+      pave(grantKey, {
+        createPhoneNumber: {
+          $: {
+            contactId,
+            number: params.phone,
+            type: 'mobile',
+          },
+          createdPhoneNumber: { id: {} },
+        },
+      }).then(() => {
+        results.steps.phoneCreated = true;
+      }).catch(err => {
+        results.steps.phoneError = err.message;
+      });
+    }
   }).catch(err => {
-    console.warn('[jobtread proxy] Contact non-fatal:', err.message);
+    console.warn('[jobtread proxy] Contact:', err.message);
     results.steps.contactError = err.message;
   });
 
-  // ── Step 5: Create location (project address) ──────────────────────────────
+  // Step 5: create location (project address)
   if (params.address) {
     const parts = params.address.split(',').map(s => s.trim());
     const street = parts[0] || params.address;
     const city   = parts[1] || '';
-    const state  = parts[2] || 'UT';
+    const state  = 'UT';
 
     await pave(grantKey, {
       createLocation: {
@@ -199,15 +220,15 @@ async function createCustomer(grantKey, params) {
           accountId,
           name: params.address,
           address1: street,
-          ...(city  && { city }),
-          ...(state && { state }),
+          ...(city && { city }),
+          state,
         },
         createdLocation: { id: {}, name: {} },
       },
     }).then(() => {
       results.steps.locationCreated = true;
     }).catch(err => {
-      console.warn('[jobtread proxy] Location non-fatal:', err.message);
+      console.warn('[jobtread proxy] Location:', err.message);
       results.steps.locationError = err.message;
     });
   }
