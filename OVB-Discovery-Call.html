@@ -1,597 +1,807 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>OVB Tools</title>
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="OVB Tools" />
-<meta name="theme-color" content="#1E1C1A" />
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: #1E1C1A; font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
+  <meta name="theme-color" content="#1E1C1A" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <title>Discovery Call — OVB Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #1E1C1A;
+      --card:   #2A2826;
+      --footer: #141210;
+      --tan:    #C7AA8B;
+      --tan-d:  rgba(199,170,139,0.12);
+      --smoke:  #F7F7F7;
+      --red:    #D4714A;
+      --green:  #4CAF84;
+      --border: rgba(199,170,139,0.13);
+      --muted:  rgba(247,247,247,0.42);
+      --r:      4px;
+      --mono:   'DM Mono', monospace;
+      --sans:   'DM Sans', sans-serif;
+    }
+    html, body { min-height: 100vh; background: var(--bg); }
+    body {
+      font-family: var(--sans);
+      font-size: 13px;
+      color: var(--smoke);
+      padding-bottom: 72px;
+      -webkit-font-smoothing: antialiased;
+    }
 
-.app { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
+    /* ── Header ── */
+    .hdr {
+      background: var(--footer);
+      border-bottom: 1px solid var(--border);
+      padding: 11px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .hdr-back {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--tan);
+      text-decoration: none;
+      opacity: 0.65;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+    .hdr-back:hover { opacity: 1; }
+    .hdr-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .hdr-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      background: var(--tan-d);
+      color: var(--tan);
+      border: 1px solid rgba(199,170,139,0.22);
+      border-radius: var(--r);
+      padding: 2px 8px;
+    }
 
-/* HEADER */
-.header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(199,170,139,0.2);
-}
-.header-left { display: flex; align-items: center; gap: 14px; }
-.header-logo { height: 28px; width: auto; }
-.header-divider { width: 1px; height: 28px; background: rgba(199,170,139,0.3); }
-.header-title { font-size: 13px; font-weight: 600; color: #F7F7F7; letter-spacing: 0.04em; }
-.header-sub { font-size: 10px; color: #888; font-family: 'DM Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+    /* ── Layout ── */
+    .wrap {
+      display: grid;
+      grid-template-columns: 1fr 272px;
+      gap: 14px;
+      padding: 18px 20px;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    @media (max-width: 820px) {
+      .wrap { grid-template-columns: 1fr; padding: 12px; }
+      .sidebar { order: -1; }
+    }
 
-/* SCORE BADGE */
-.score-badge {
-  padding: 8px 16px; border-radius: 4px;
-  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  transition: all 0.3s;
-}
-.score-hot     { background: #2D5A3D; color: #6FCF97; border: 1px solid #6FCF97; }
-.score-warm    { background: #5A4A2D; color: #F2994A; border: 1px solid #F2994A; }
-.score-cold    { background: #2D3A5A; color: #56CCF2; border: 1px solid #56CCF2; }
-.score-filler  { background: #3A3A2D; color: #E2C96E; border: 1px solid #E2C96E; }
-.score-dq      { background: #5A2D2D; color: #EB5757; border: 1px solid #EB5757; }
-.score-blank   { background: rgba(199,170,139,0.08); color: #666; border: 1px solid rgba(199,170,139,0.15); }
+    /* ── Section card ── */
+    .sec {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .sec-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sec-num {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 500;
+      background: var(--bg);
+      color: var(--tan);
+      border-radius: var(--r);
+      padding: 3px 8px;
+      letter-spacing: 0.08em;
+      flex-shrink: 0;
+    }
+    .sec-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .sec-body { padding: 16px; }
 
-/* TWO COL LAYOUT */
-.layout { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
-@media (max-width: 720px) { .layout { grid-template-columns: 1fr; } }
+    /* ── Fields ── */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .flabel {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--smoke);
+      font-family: var(--sans);
+      font-size: 13px;
+      padding: 8px 11px;
+      outline: none;
+      transition: border-color 0.13s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus { border-color: rgba(199,170,139,0.38); }
+    .field input::placeholder,
+    .field textarea::placeholder { color: rgba(247,247,247,0.18); }
+    .field textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C7AA8B' opacity='.45'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 11px center;
+      padding-right: 30px;
+      cursor: pointer;
+    }
+    .field select option { background: #2A2826; }
+    .field input[type="date"] { color-scheme: dark; cursor: pointer; }
+    .frow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 480px) { .frow { grid-template-columns: 1fr; } }
 
-/* CARD */
-.card {
-  background: #2A2826;
-  border-radius: 4px;
-  border: 1px solid rgba(199,170,139,0.12);
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-.card-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 16px;
-  background: rgba(199,170,139,0.05);
-  border-bottom: 1px solid rgba(199,170,139,0.1);
-}
-.card-num {
-  font-family: 'DM Mono', monospace; font-size: 9px;
-  color: #C7AA8B; background: #1E1C1A;
-  padding: 2px 6px; border-radius: 3px; letter-spacing: 0.1em;
-}
-.card-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F7F7F7; }
-.card-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    /* ── Pills ── */
+    .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 11px;
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.11s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      line-height: 1.4;
+    }
+    .pill:hover { border-color: rgba(199,170,139,0.28); color: var(--smoke); }
+    .pill.on  { background: var(--bg); border-color: var(--bg); color: var(--smoke); }
+    .pill.bad { background: var(--red); border-color: var(--red); color: #fff; }
 
-/* QUESTION BLOCK */
-.q-block { display: flex; flex-direction: column; gap: 6px; }
-.q-prompt {
-  font-size: 12px; color: #C7AA8B; font-style: italic; line-height: 1.4;
-  padding: 8px 10px;
-  background: rgba(199,170,139,0.06);
-  border-left: 2px solid rgba(199,170,139,0.4);
-  border-radius: 0 3px 3px 0;
-}
-.q-label {
-  font-family: 'DM Mono', monospace; font-size: 9px;
-  letter-spacing: 0.12em; text-transform: uppercase; color: #888; font-weight: 500;
-}
-.q-input, .q-select, .q-textarea {
-  background: #1E1C1A; border: 1.5px solid rgba(199,170,139,0.2);
-  border-radius: 4px; padding: 8px 11px;
-  font-family: 'DM Sans', sans-serif; font-size: 13px; color: #F7F7F7;
-  outline: none; width: 100%; transition: border-color 0.15s;
-}
-.q-input:focus, .q-select:focus, .q-textarea:focus { border-color: #C7AA8B; }
-.q-input::placeholder, .q-textarea::placeholder { color: #444; }
-.q-textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
-.q-select {
-  appearance: none; -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 12px center; padding-right: 28px;
-  cursor: pointer;
-}
-.q-select option { background: #1E1C1A; color: #F7F7F7; }
+    /* ── Flag ── */
+    .flag {
+      margin-top: 8px;
+      padding: 7px 11px;
+      background: #FFF5F1;
+      border: 1.5px solid var(--red);
+      border-radius: var(--r);
+      font-size: 12px;
+      color: var(--red);
+      font-weight: 500;
+    }
 
-/* PILLS */
-.pills { display: flex; gap: 6px; flex-wrap: wrap; }
-.pill {
-  padding: 5px 12px; border-radius: 4px;
-  border: 1.5px solid rgba(199,170,139,0.2);
-  font-size: 11px; font-weight: 500; cursor: pointer;
-  background: #1E1C1A; color: #888;
-  transition: all 0.15s; user-select: none; line-height: 1;
-  font-family: 'DM Sans', sans-serif;
-}
-.pill:hover { border-color: #C7AA8B; color: #C7AA8B; }
-.pill.on { background: #C7AA8B; border-color: #C7AA8B; color: #1E1C1A; font-weight: 600; }
-.pill.on-warn { background: #EB5757; border-color: #EB5757; color: #fff; font-weight: 600; }
+    /* ── Sidebar ── */
+    .score-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      position: sticky;
+      top: 56px;
+    }
+    .sp-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sp-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+    .badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: var(--r);
+      letter-spacing: 0.05em;
+    }
+    .badge.hot    { background: rgba(76,175,132,0.14); color: #4CAF84; border: 1px solid rgba(76,175,132,0.28); }
+    .badge.warm   { background: rgba(199,170,139,0.14); color: var(--tan); border: 1px solid rgba(199,170,139,0.28); }
+    .badge.cold   { background: rgba(247,247,247,0.06); color: var(--muted); border: 1px solid rgba(247,247,247,0.1); }
+    .badge.dq     { background: rgba(212,113,74,0.14); color: var(--red); border: 1px solid rgba(212,113,74,0.28); }
+    .badge.filler { background: rgba(199,170,139,0.07); color: rgba(199,170,139,0.55); border: 1px solid rgba(199,170,139,0.14); }
 
-/* STICKY RIGHT PANEL */
-.right-panel { position: sticky; top: 16px; }
+    .sp-pts {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .pt-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+    }
+    .pt-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: rgba(247,247,247,0.14);
+    }
+    .pt-dot.on { background: var(--green); }
+    .pt-val { margin-left: auto; opacity: 0.5; }
+    .pt-val.on { opacity: 1; color: var(--green); }
 
-/* SCORE CARD */
-.score-card {
-  background: #2A2826; border-radius: 4px;
-  border: 1px solid rgba(199,170,139,0.12);
-  overflow: hidden; margin-bottom: 12px;
-}
-.score-card-header {
-  padding: 12px 16px;
-  background: rgba(199,170,139,0.05);
-  border-bottom: 1px solid rgba(199,170,139,0.1);
-  font-family: 'DM Mono', monospace; font-size: 9px;
-  letter-spacing: 0.15em; text-transform: uppercase; color: #C7AA8B;
-}
-.score-card-body { padding: 16px; }
-.score-main {
-  text-align: center; padding: 16px 0;
-  border-bottom: 1px solid rgba(199,170,139,0.1);
-  margin-bottom: 14px;
-}
-.score-label-sm { font-family: 'DM Mono', monospace; font-size: 9px; color: #666; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
-.score-value { font-size: 18px; font-weight: 700; letter-spacing: 0.05em; }
-.score-hot-txt  { color: #6FCF97; }
-.score-warm-txt { color: #F2994A; }
-.score-cold-txt { color: #56CCF2; }
-.score-filler-txt { color: #E2C96E; }
-.score-dq-txt   { color: #EB5757; }
-.score-blank-txt { color: #555; }
+    /* JT result banner */
+    .jt-banner {
+      margin: 8px 14px;
+      padding: 7px 10px;
+      border-radius: var(--r);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .jt-banner.ok  { background: rgba(76,175,132,0.1); border: 1px solid rgba(76,175,132,0.22); color: #4CAF84; }
+    .jt-banner.err { background: rgba(212,113,74,0.1); border: 1px solid rgba(212,113,74,0.22); color: var(--red); }
+    .jt-banner a   { color: inherit; font-weight: 600; text-decoration: none; border-bottom: 1px solid currentColor; }
 
-.signal-list { display: flex; flex-direction: column; gap: 6px; }
-.signal-item { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; line-height: 1.4; }
-.signal-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
-.signal-green { background: #6FCF97; }
-.signal-yellow { background: #E2C96E; }
-.signal-red { background: #EB5757; }
-.signal-gray { background: #555; }
-.signal-text { color: #888; }
+    .sp-sum { padding: 12px 14px; }
+    .sp-sum-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .sp-sum-lbl {
+      font-family: var(--mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+    .copy-btn {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: var(--r);
+      border: 1px solid rgba(199,170,139,0.28);
+      background: transparent;
+      color: var(--tan);
+      cursor: pointer;
+      transition: all 0.11s;
+    }
+    .copy-btn:hover { background: var(--tan-d); }
+    .copy-btn.done  { color: var(--green); border-color: rgba(76,175,132,0.28); }
+    .sum-text {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      line-height: 1.65;
+      color: rgba(247,247,247,0.6);
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
 
-/* JT SUMMARY */
-.jt-card {
-  background: #2A2826; border-radius: 4px;
-  border: 1px solid rgba(199,170,139,0.12);
-  overflow: hidden;
-}
-.jt-header {
-  padding: 12px 16px;
-  background: rgba(199,170,139,0.05);
-  border-bottom: 1px solid rgba(199,170,139,0.1);
-  display: flex; justify-content: space-between; align-items: center;
-}
-.jt-header-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: #C7AA8B; }
-.jt-body { padding: 14px; }
-.jt-summary { font-family: 'DM Mono', monospace; font-size: 10px; color: #888; line-height: 1.9; white-space: pre-wrap; }
-.jt-field { color: #C7AA8B; }
+    /* ── Sticky bar ── */
+    .bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #fff;
+      border-top: 1px solid #E4E2DF;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 200;
+    }
+    .bbtn {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: var(--r);
+      border: none;
+      cursor: pointer;
+      transition: all 0.11s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .bbtn.print { background: #1E1C1A; color: #F7F7F7; }
+    .bbtn.print:hover { background: #2e2c2a; }
+    .bbtn.reset { background: transparent; border: 1px solid #D2D0CB; color: #777; }
+    .bbtn.reset:hover { border-color: #aaa; color: #333; }
+    .bbtn.jt {
+      margin-left: auto;
+      background: #1E1C1A;
+      border: 1.5px solid #C7AA8B;
+      color: #C7AA8B;
+      min-width: 176px;
+      text-align: center;
+    }
+    .bbtn.jt:hover:not(:disabled) { background: rgba(199,170,139,0.08); }
+    .bbtn.jt:disabled { opacity: 0.3; cursor: not-allowed; }
+    .bbtn.jt.spinning { opacity: 0.55; cursor: wait; }
+    .bbtn.jt.done { border-color: #4CAF84; color: #4CAF84; }
+    .bbtn.jt.fail { border-color: var(--red); color: var(--red); }
 
-.copy-btn {
-  padding: 5px 12px; border-radius: 3px;
-  border: 1px solid rgba(199,170,139,0.4);
-  background: transparent; color: #C7AA8B;
-  font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600;
-  cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s;
-}
-.copy-btn:hover { background: #C7AA8B; color: #1E1C1A; }
-
-/* NEXT STEP */
-.next-step {
-  padding: 12px 14px;
-  background: rgba(199,170,139,0.06);
-  border: 1px solid rgba(199,170,139,0.2);
-  border-radius: 4px; margin-top: 12px;
-}
-.next-step-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: #C7AA8B; margin-bottom: 6px; }
-.next-step-text { font-size: 12px; color: #F7F7F7; line-height: 1.5; }
-
-/* BOTTOM BAR */
-.bottom-bar {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: #141210; border-top: 1px solid rgba(199,170,139,0.15);
-  padding: 10px 24px; display: flex; justify-content: flex-end; gap: 8px; z-index: 50;
-}
-.btn { padding: 9px 18px; border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; border: none; letter-spacing: 0.02em; transition: all 0.15s; }
-.btn-ghost { background: transparent; border: 1.5px solid rgba(199,170,139,0.25); color: #888; }
-.btn-ghost:hover { border-color: #C7AA8B; color: #C7AA8B; }
-
-@media print {
-  html, body { background: white; }
-  .bottom-bar { display: none; }
-  .right-panel { position: static; }
-}
-</style>
+    /* ── Print ── */
+    @media print {
+      body { background: #fff; color: #1E1C1A; padding: 0; }
+      .hdr-back, .bar { display: none !important; }
+      .sidebar { position: static !important; }
+      .score-panel { position: static; }
+      .sec, .score-panel { background: #fff; border-color: #ddd; break-inside: avoid; }
+      .sec-num { background: #1E1C1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .pill.on { background: #1E1C1A !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .field input, .field textarea, .field select { background: #fff; border-color: #ddd; color: #1E1C1A; }
+      .sum-text { background: #f5f5f3; border-color: #ddd; color: #333; max-height: none; }
+    }
+  </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useMemo } = React;
+  <div id="root"></div>
 
-const NEEDS = [
-  "Pre Construction / Consulting",
-  "New Construction / Custom Build",
-  "Interior Remodel / Kitchen / Bathroom",
-  "Basement Finish / Apartment / Egress",
-  "Home Addition",
-  "Exterior Improvements / Roofing / Siding",
-  "ADU / Detached Structure",
-  "Commercial Remodel / Tenant Improvements",
-  "Multi-Family / Apartment",
-  "Warranty",
-];
+  <script type="text/babel">
+    const { useState } = React;
 
-const BUDGET_RANGES = [
-  "Under $50K",
-  "Under $100K",
-  "$100K - $200K",
-  "$200K - $400K",
-  "$400K - $600K",
-  "$600K - $800K",
-  "$800K - $1M",
-  "$1M+",
-  "Not Sure",
-];
+    // ─── Constants ───────────────────────────────────────────────────────────
 
-const LEAD_SOURCES = ["Website Form", "Google Search", "Referral — Past Client", "Referral — Agent", "Referral — Architect/Designer", "Referral — Friend/Family", "Social Media", "Paid Ad", "Drive By / Signage", "Other"];
-const FINANCING = ["Cash", "HELOC", "Construction Loan", "Not Sure"];
-const DECISION_MAKERS = ["Solo — decides alone", "Spouse / Partner involved", "Multiple stakeholders", "Unknown"];
-const COMPETING_BIDS = ["No — OVB only", "1-2 others", "3+ others", "Unknown"];
-const TIMELINE = ["ASAP — ready now", "1-3 months", "3-6 months", "6-12 months", "Planning phase / 12mo+", "Not sure"];
-const LOCATION = ["Weber County", "Morgan County", "Both", "Outside service area"];
-const CONTACT_METHOD = ["Call", "Text", "Email", "All options"];
-const NEXT_STEPS = ["Schedule site visit", "Send project questionnaire", "Request plans / drawings", "Follow up in 30 days", "Refer out / DQ", "No action — lead lost"];
+    const BUDGET_OPTS = [
+      'Under $50K','Under $100K','$100K–$200K','$200K–$400K',
+      '$400K–$600K','$600K–$800K','$800K–$1M','$1M+','Not Sure',
+    ];
 
-function PillGroup({ options, value, onChange, multi, warnValues }) {
-  const toggle = (v) => {
-    if (multi) {
-      const cur = value || [];
-      onChange(cur.includes(v) ? cur.filter(x => x !== v) : [...cur, v]);
-    } else {
-      onChange(value === v ? "" : v);
+    const PROJECT_TYPES = [
+      '','New Construction','Addition','Full Remodel',
+      'Kitchen Remodel','Bathroom Remodel','Basement Finish',
+      'Deck / Outdoor Living','Garage','ADU / In-Law Suite','Commercial','Other',
+    ];
+
+    const SCORE_ROWS = [
+      { label: 'Budget $200K+',      pts: 3, check: f => ['$200K–$400K','$400K–$600K','$600K–$800K','$800K–$1M','$1M+'].includes(f.budget) },
+      { label: 'Budget $100K–$200K', pts: 2, check: f => f.budget === '$100K–$200K', hideIf: f => ['$200K–$400K','$400K–$600K','$600K–$800K','$800K–$1M','$1M+'].includes(f.budget) },
+      { label: 'In Service Area',    pts: 2, check: f => f.county === 'Weber' || f.county === 'Morgan' },
+      { label: 'Active Timeline',    pts: 2, check: f => f.timeline === 'ASAP' || f.timeline === '1–3 Months' },
+      { label: 'No Competing Bids',  pts: 2, check: f => f.bids === 'No' },
+      { label: 'Single DM',          pts: 1, check: f => f.dm === 'Single DM' },
+      { label: 'Financing Ready',    pts: 1, check: f => f.financing === 'Cash' || f.financing === 'Financing Ready' },
+    ];
+
+    // ─── Scoring ─────────────────────────────────────────────────────────────
+
+    function calcScore(f) {
+      return SCORE_ROWS.reduce((sum, row) => sum + (row.check(f) ? row.pts : 0), 0);
     }
-  };
-  const isOn = (v) => multi ? (value || []).includes(v) : value === v;
-  return (
-    <div className="pills">
-      {options.map(v => (
-        <span key={v} className={`pill ${isOn(v) ? (warnValues && warnValues.includes(v) ? "on-warn" : "on") : ""}`} onClick={() => toggle(v)}>{v}</span>
-      ))}
-    </div>
-  );
-}
 
-function Qb({ prompt, label, children }) {
-  return (
-    <div className="q-block">
-      {prompt && <div className="q-prompt">"{prompt}"</div>}
-      {label && <div className="q-label">{label}</div>}
-      {children}
-    </div>
-  );
-}
-
-function score(d) {
-  if (d.budget === "Under $50K") return "DQ";
-  if (d.location === "Outside service area") return "Cold";
-  if ((d.needs || []).length === 0 && !d.budget) return "—";
-
-  let pts = 0;
-  const signals = [];
-
-  // Budget
-  if (["$200K - $400K","$400K - $600K","$600K - $800K","$800K - $1M","$1M+"].includes(d.budget)) { pts += 3; signals.push({ c:"green", t:"Strong budget range" }); }
-  else if (["$100K - $200K"].includes(d.budget)) { pts += 2; signals.push({ c:"yellow", t:"Acceptable budget range" }); }
-  else if (["Under $100K"].includes(d.budget)) { pts += 0; signals.push({ c:"yellow", t:"Below preferred minimum" }); }
-  else if (d.budget === "Not Sure") { pts += 0; signals.push({ c:"red", t:"Budget unknown — needs conversation" }); }
-
-  // Location
-  if (["Weber County","Morgan County","Both"].includes(d.location)) { pts += 2; signals.push({ c:"green", t:"In service area" }); }
-  else if (d.location === "Outside service area") { signals.push({ c:"red", t:"Outside service area" }); }
-
-  // Timeline
-  if (["ASAP — ready now","1-3 months","3-6 months"].includes(d.timeline)) { pts += 2; signals.push({ c:"green", t:"Active timeline" }); }
-  else if (["6-12 months"].includes(d.timeline)) { pts += 1; signals.push({ c:"yellow", t:"Future timeline" }); }
-  else if (["Planning phase / 12mo+","Not sure"].includes(d.timeline)) { signals.push({ c:"yellow", t:"Long-range / no timeline" }); }
-
-  // Decision maker
-  if (d.decisionMaker === "Solo — decides alone") { pts += 1; signals.push({ c:"green", t:"Single decision maker" }); }
-  else if (d.decisionMaker === "Spouse / Partner involved") { pts += 1; signals.push({ c:"yellow", t:"Spouse involved — both needed" }); }
-  else if (d.decisionMaker === "Multiple stakeholders") { signals.push({ c:"yellow", t:"Multiple stakeholders — longer close" }); }
-
-  // Competing bids
-  if (d.competingBids === "No — OVB only") { pts += 2; signals.push({ c:"green", t:"No competing bids" }); }
-  else if (d.competingBids === "1-2 others") { pts += 1; signals.push({ c:"yellow", t:"1-2 competing bids" }); }
-  else if (d.competingBids === "3+ others") { signals.push({ c:"red", t:"Shopping heavily — 3+ bids" }); }
-
-  // Financing
-  if (["Cash","HELOC"].includes(d.financing)) { pts += 1; signals.push({ c:"green", t:"Financing ready" }); }
-  else if (d.financing === "Construction Loan") { signals.push({ c:"yellow", t:"Construction loan — lender involved" }); }
-
-  // Filler check
-  if (d.budget === "Under $100K" && pts >= 5) return { score:"Filler", signals };
-
-  if (pts >= 9) return { score:"Hot", signals };
-  if (pts >= 6) return { score:"Warm", signals };
-  if (pts >= 3) return { score:"Cold", signals };
-  return { score:"Cold", signals };
-}
-
-const SCORE_STYLES = {
-  "Hot":    { cls:"score-hot",    txt:"score-hot-txt",    label:"🔥 Hot Lead" },
-  "Warm":   { cls:"score-warm",   txt:"score-warm-txt",   label:"🤙 Warm Lead" },
-  "Cold":   { cls:"score-cold",   txt:"score-cold-txt",   label:"❄️ Cold Lead" },
-  "Filler": { cls:"score-filler", txt:"score-filler-txt", label:"📋 Filler" },
-  "DQ":     { cls:"score-dq",     txt:"score-dq-txt",     label:"⛔ Disqualified" },
-  "—":      { cls:"score-blank",  txt:"score-blank-txt",  label:"— Not scored yet" },
-};
-
-const DOT_COLORS = { green:"signal-green", yellow:"signal-yellow", red:"signal-red", gray:"signal-gray" };
-
-function App() {
-  const [d, setD] = useState({
-    // Contact
-    name:"", phone:"", email:"", contactMethod:"",
-    referredBy:"", leadSource:"",
-    // Project
-    address:"", location:"",
-    needs:[], projectDesc:"",
-    // Qualification
-    budget:"", financing:"", decisionMaker:"", competingBids:"",
-    timeline:"", hasPlans:"",
-    // Call notes
-    keyNotes:"", objections:"", nextStep:"", appointmentDate:"",
-    // Meta
-    callerName:"",
-  });
-  const [copied, setCopied] = useState(false);
-  const set = (k) => (v) => setD(prev => ({...prev, [k]:v}));
-
-  const result = useMemo(() => {
-    const r = score(d);
-    if (typeof r === "string") return { score: r, signals: [] };
-    return r;
-  }, [d]);
-
-  const scoreStyle = SCORE_STYLES[result.score] || SCORE_STYLES["—"];
-
-  const nextStepText = {
-    "Schedule site visit": "Book a site visit. Get address confirmed, send calendar invite, confirm both decision makers will be present.",
-    "Send project questionnaire": "Send project questionnaire and follow up within 48 hours.",
-    "Request plans / drawings": "Ask client to send any existing plans, surveys, or drawings before site visit.",
-    "Follow up in 30 days": "Set a JT To-Do for 30-day follow up. Note the reason for delay.",
-    "Refer out / DQ": "Politely decline or refer to another contractor. Note reason in JT.",
-    "No action — lead lost": "Move to Lead Lost in JT. Note the reason.",
-  }[d.nextStep] || "";
-
-  const jt = [
-    `STATUS:           [Set in JT pipeline]`,
-    `BUDGET RANGE:     ${d.budget || "—"}`,
-    `NEEDS:            ${(d.needs||[]).join(", ") || "—"}`,
-    `LEAD SOURCE:      ${d.leadSource || "—"}`,
-    `REFERRED BY:      ${d.referredBy || "—"}`,
-    `PREF. CONTACT:    ${d.contactMethod || "—"}`,
-    ``,
-    `FINANCING TYPE:   ${d.financing || "—"}`,
-    `DECISION MAKERS:  ${d.decisionMaker || "—"}`,
-    `COMPETING BIDS:   ${d.competingBids || "—"}`,
-    `TIMELINE:         ${d.timeline || "—"}`,
-    `PROJECT LOCATION: ${d.location || "—"}`,
-    `QUAL. SCORE:      ${result.score}`,
-    `DQ FLAG:          ${result.score === "DQ" ? "Budget" : result.score === "Cold" && d.location === "Outside service area" ? "Location" : "None"}`,
-    ``,
-    `PROJECT ADDRESS:  ${d.address || "—"}`,
-    ``,
-    `SCOPE NOTES:`,
-    d.projectDesc || "—",
-    ``,
-    `KEY NOTES:`,
-    d.keyNotes || "—",
-    ``,
-    `OBJECTIONS:`,
-    d.objections || "—",
-    ``,
-    `NEXT STEP:        ${d.nextStep || "—"}`,
-    d.appointmentDate ? `APPT DATE/TIME:   ${d.appointmentDate}` : "",
-  ].filter(l => l !== null).join("\n");
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(jt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
-  };
-
-  const handleReset = () => {
-    if (window.confirm("Clear all fields and start a new call?")) {
-      setD({ name:"", phone:"", email:"", contactMethod:"", referredBy:"", leadSource:"", address:"", location:"", needs:[], projectDesc:"", budget:"", financing:"", decisionMaker:"", competingBids:"", timeline:"", hasPlans:"", keyNotes:"", objections:"", nextStep:"", appointmentDate:"", callerName:"" });
+    function calcLabel(f, pts) {
+      if (f.budget === 'Under $50K') return { text: 'DQ', cls: 'dq' };
+      if (f.county === 'Outside Area') return { text: 'Cold', cls: 'cold' };
+      if (f.budget === 'Under $100K' && f.leadSource === 'Referral') return { text: 'Filler', cls: 'filler' };
+      if (pts >= 9) return { text: 'Hot', cls: 'hot' };
+      if (pts >= 6) return { text: 'Warm', cls: 'warm' };
+      if (pts >= 1) return { text: 'Cold', cls: 'cold' };
+      return { text: '—', cls: 'cold' };
     }
-  };
 
-  return (
-    <div className="app">
-      {/* HEADER */}
-      <div className="header">
-        <div className="header-left">
-          <a href="/" style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'0.08em',color:'rgba(199,170,139,0.7)',textDecoration:'none',whiteSpace:'nowrap'}}>← Tools</a>
-          <div className="header-divider" />
-          <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png" alt="OVB" className="header-logo" />
-          <div className="header-divider" />
-          <div>
-            <div className="header-title">Discovery Call</div>
-            <div className="header-sub">Lead Qualification Tool</div>
-          </div>
+    // ─── JT Summary ──────────────────────────────────────────────────────────
+
+    function buildSummary(f, pts, lbl) {
+      const lines = [];
+      lines.push(`QUALIFICATION: ${lbl.text}${pts > 0 ? ` (${pts} pts)` : ''}`);
+      if (lbl.text === 'DQ') lines.push('⚠ DISQUALIFIED — Budget under $50K');
+      lines.push('');
+      if (f.budget)     lines.push(`BUDGET: ${f.budget}`);
+      if (f.projectType) lines.push(`PROJECT TYPE: ${f.projectType}`);
+      const loc = [f.address, f.county ? `${f.county} County` : ''].filter(Boolean).join(' — ');
+      if (loc)          lines.push(`LOCATION: ${loc}`);
+      if (f.timeline)   lines.push(`TIMELINE: ${f.timeline}`);
+      if (f.financing)  lines.push(`FINANCING: ${f.financing}`);
+      if (f.dm)         lines.push(`DECISION MAKERS: ${f.dm}`);
+      if (f.bids)       lines.push(`COMPETING BIDS: ${f.bids}`);
+      if (f.plans)      lines.push(`PLANS: ${f.plans}`);
+      lines.push('');
+      if (f.leadSource) lines.push(`LEAD SOURCE: ${f.leadSource}`);
+      if (f.referredBy) lines.push(`REFERRED BY: ${f.referredBy}`);
+      if (f.contact)    lines.push(`PREFERRED CONTACT: ${f.contact}`);
+      if (f.phone)      lines.push(`PHONE: ${f.phone}`);
+      if (f.email)      lines.push(`EMAIL: ${f.email}`);
+      lines.push('');
+      if (f.scope)  { lines.push('SCOPE:'); lines.push(f.scope); lines.push(''); }
+      if (f.notes)  { lines.push('NOTES:'); lines.push(f.notes); lines.push(''); }
+      if (f.obj)    { lines.push('OBJECTIONS:'); lines.push(f.obj); lines.push(''); }
+      if (f.next)   lines.push(`NEXT STEP: ${f.next}${f.apptDate ? ` — ${f.apptDate}` : ''}`);
+
+      // Collapse multiple blank lines
+      return lines.reduce((acc, l) => {
+        if (l === '' && acc.endsWith('\n\n')) return acc;
+        return acc + l + '\n';
+      }, '').trim();
+    }
+
+    // ─── Sub-components ───────────────────────────────────────────────────────
+
+    function Pill({ label, active, onClick, bad }) {
+      return (
+        <button
+          type="button"
+          className={`pill${active ? (bad ? ' bad' : ' on') : ''}`}
+          onClick={onClick}
+        >{label}</button>
+      );
+    }
+
+    function PillGroup({ options, value, onChange, badValue }) {
+      return (
+        <div className="pills">
+          {options.map(o => (
+            <Pill
+              key={o} label={o} active={value === o}
+              bad={o === badValue && value === o}
+              onClick={() => onChange(value === o ? '' : o)}
+            />
+          ))}
         </div>
-        <div className={`score-badge ${scoreStyle.cls}`}>{scoreStyle.label}</div>
-      </div>
+      );
+    }
 
-      <div className="layout">
-        {/* LEFT — CALL GUIDE */}
-        <div>
+    function Sec({ num, title, children }) {
+      return (
+        <div className="sec">
+          <div className="sec-hdr">
+            <span className="sec-num">{num}</span>
+            <span className="sec-title">{title}</span>
+          </div>
+          <div className="sec-body">{children}</div>
+        </div>
+      );
+    }
 
-          {/* 01 — WHO IS CALLING */}
-          <div className="card">
-            <div className="card-header">
-              <span className="card-num">01</span>
-              <span className="card-title">Who's Calling</span>
-            </div>
-            <div className="card-body">
-              <Qb prompt="Thanks for reaching out — can I get your name?" label="Full Name">
-                <input className="q-input" placeholder="Jane Smith" value={d.name} onChange={e => set("name")(e.target.value)} />
-              </Qb>
-              <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
-                <Qb label="Phone">
-                  <input className="q-input" placeholder="(801) 555-0100" value={d.phone} onChange={e => set("phone")(e.target.value)} />
-                </Qb>
-                <Qb label="Email">
-                  <input className="q-input" placeholder="jane@email.com" value={d.email} onChange={e => set("email")(e.target.value)} />
-                </Qb>
-              </div>
-              <Qb label="Preferred Contact Method">
-                <PillGroup options={CONTACT_METHOD} value={d.contactMethod} onChange={set("contactMethod")} />
-              </Qb>
-              <Qb prompt="How did you hear about us?" label="Lead Source">
-                <PillGroup options={LEAD_SOURCES} value={d.leadSource} onChange={set("leadSource")} />
-              </Qb>
-              <Qb label="Referred By (name)">
-                <input className="q-input" placeholder="e.g. Adam Steuart — Mountain Luxury" value={d.referredBy} onChange={e => set("referredBy")(e.target.value)} />
-              </Qb>
-            </div>
+    function F({ label, children }) {
+      return (
+        <div className="field">
+          {label && <label className="flabel">{label}</label>}
+          {children}
+        </div>
+      );
+    }
+
+    // ─── Main App ─────────────────────────────────────────────────────────────
+
+    function App() {
+      const EMPTY = {
+        name:'', phone:'', email:'', contact:'', leadSource:'', referredBy:'',
+        projectType:'', address:'', county:'', scope:'', plans:'',
+        budget:'', financing:'', dm:'', bids:'', timeline:'',
+        notes:'', obj:'', next:'', apptDate:'',
+      };
+
+      const [f, setF] = useState(EMPTY);
+      const [copied, setCopied] = useState(false);
+      const [jtState, setJtState] = useState('idle'); // idle | loading | done | fail
+      const [jtData,  setJtData]  = useState(null);
+      const [jtErr,   setJtErr]   = useState('');
+
+      const set = k => v => setF(p => ({ ...p, [k]: v }));
+      const setE = k => e => setF(p => ({ ...p, [k]: e.target.value }));
+      const tog = k => v => setF(p => ({ ...p, [k]: p[k] === v ? '' : v }));
+
+      const pts = calcScore(f);
+      const lbl = calcLabel(f, pts);
+      const summary = buildSummary(f, pts, lbl);
+
+      const handleCopy = () => {
+        navigator.clipboard.writeText(summary).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1600);
+        });
+      };
+
+      const handleReset = () => {
+        if (!window.confirm('Clear all fields and start over?')) return;
+        setF(EMPTY);
+        setJtState('idle');
+        setJtData(null);
+        setJtErr('');
+      };
+
+      const handleCreateJT = async () => {
+        if (!f.name.trim() || jtState === 'loading') return;
+        setJtState('loading');
+        setJtErr('');
+        try {
+          const res = await fetch('/api/jobtread', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              operation: 'createCustomer',
+              params: {
+                name:              f.name.trim(),
+                phone:             f.phone.trim(),
+                email:             f.email.trim(),
+                projectType:       f.projectType,
+                budgetRange:       f.budget,
+                leadSource:        f.leadSource,
+                referredBy:        f.referredBy,
+                contactMethod:     f.contact,
+                financing:         f.financing,
+                decisionMakers:    f.dm,
+                competingBids:     f.bids,
+                timeline:          f.timeline,
+                county:            f.county,
+                qualificationScore:`${lbl.text}${pts > 0 ? ` (${pts} pts)` : ''}`,
+                dqFlag:            lbl.text === 'DQ' ? 'Yes' : 'No',
+                notes:             summary,
+              },
+            }),
+          });
+          if (!res.ok) {
+            const e = await res.json().catch(() => ({}));
+            throw new Error(e.error || `HTTP ${res.status}`);
+          }
+          const data = await res.json();
+          setJtData(data);
+          setJtState('done');
+        } catch (err) {
+          setJtErr(err.message);
+          setJtState('fail');
+        }
+      };
+
+      const isDQ = lbl.text === 'DQ';
+
+      return (
+        <>
+          {/* HEADER */}
+          <div className="hdr">
+            <a href="/" className="hdr-back">← OVB Tools</a>
+            <span className="hdr-title">Discovery Call</span>
+            <span className="hdr-badge">OVB</span>
           </div>
 
-          {/* 02 — THE PROJECT */}
-          <div className="card">
-            <div className="card-header">
-              <span className="card-num">02</span>
-              <span className="card-title">The Project</span>
-            </div>
-            <div className="card-body">
-              <Qb prompt="Tell me a bit about what you're looking to get done." label="Project Type (select all that apply)">
-                <PillGroup options={NEEDS} value={d.needs} onChange={set("needs")} multi />
-              </Qb>
-              <Qb label="Project Address / City">
-                <input className="q-input" placeholder="e.g. 123 Elk Ridge Dr, Eden UT" value={d.address} onChange={e => set("address")(e.target.value)} />
-              </Qb>
-              <Qb label="Project County / Location">
-                <PillGroup options={LOCATION} value={d.location} onChange={set("location")} warnValues={["Outside service area"]} />
-              </Qb>
-              <Qb prompt="Walk me through what you're envisioning — size, scope, what's driving the project." label="Scope Notes">
-                <textarea className="q-textarea" placeholder="sq footage, rooms affected, existing structure, special requirements..." value={d.projectDesc} onChange={e => set("projectDesc")(e.target.value)} />
-              </Qb>
-              <Qb label="Do they have plans / drawings?">
-                <PillGroup options={["Yes — full plans","Yes — preliminary","No — need architect","No — design-build"]} value={d.hasPlans} onChange={set("hasPlans")} />
-              </Qb>
-            </div>
-          </div>
+          <div className="wrap">
 
-          {/* 03 — QUALIFICATION */}
-          <div className="card">
-            <div className="card-header">
-              <span className="card-num">03</span>
-              <span className="card-title">Qualification</span>
-            </div>
-            <div className="card-body">
-              <Qb prompt="Did you have a budget in mind for the project?" label="Budget Range">
-                <PillGroup options={BUDGET_RANGES} value={d.budget} onChange={set("budget")} warnValues={["Under $50K"]} />
-              </Qb>
-              <Qb prompt="Are you planning to finance this or pay cash?" label="Financing Type">
-                <PillGroup options={FINANCING} value={d.financing} onChange={set("financing")} />
-              </Qb>
-              <Qb prompt="Is it just you making this decision or is your spouse / partner involved?" label="Decision Makers">
-                <PillGroup options={DECISION_MAKERS} value={d.decisionMaker} onChange={set("decisionMaker")} />
-              </Qb>
-              <Qb prompt="Are you talking to other contractors right now or just reaching out to us?" label="Competing Bids">
-                <PillGroup options={COMPETING_BIDS} value={d.competingBids} onChange={set("competingBids")} />
-              </Qb>
-              <Qb prompt="What's your timeline — when are you hoping to start or be done by?" label="Timeline / Urgency">
-                <PillGroup options={TIMELINE} value={d.timeline} onChange={set("timeline")} />
-              </Qb>
-            </div>
-          </div>
+            {/* ── MAIN ── */}
+            <div className="main">
 
-          {/* 04 — CLOSE THE CALL */}
-          <div className="card">
-            <div className="card-header">
-              <span className="card-num">04</span>
-              <span className="card-title">Close the Call</span>
-            </div>
-            <div className="card-body">
-              <Qb label="Key Notes / Things to Remember">
-                <textarea className="q-textarea" placeholder="Anything important said — concerns, preferences, history, personality notes..." value={d.keyNotes} onChange={e => set("keyNotes")(e.target.value)} />
-              </Qb>
-              <Qb label="Objections Raised">
-                <textarea className="q-textarea" placeholder="Price concerns, bad past contractor experience, timeline conflict..." value={d.objections} onChange={e => set("objections")(e.target.value)} />
-              </Qb>
-              <Qb prompt="Here's what I'd like to do next..." label="Agreed Next Step">
-                <PillGroup options={NEXT_STEPS} value={d.nextStep} onChange={set("nextStep")} />
-              </Qb>
-              {(d.nextStep === "Schedule site visit" || d.nextStep === "Send project questionnaire" || d.nextStep === "Request plans / drawings") && (
-                <Qb label="Appointment / Follow-up Date & Time">
-                  <input className="q-input" type="datetime-local" value={d.appointmentDate} onChange={e => set("appointmentDate")(e.target.value)} />
-                </Qb>
-              )}
-            </div>
-          </div>
-
-        </div>{/* /left */}
-
-        {/* RIGHT PANEL */}
-        <div className="right-panel">
-
-          {/* SCORE */}
-          <div className="score-card">
-            <div className="score-card-header">Qualification Score</div>
-            <div className="score-card-body">
-              <div className="score-main">
-                <div className="score-label-sm">Current Assessment</div>
-                <div className={`score-value ${scoreStyle.txt}`}>{scoreStyle.label}</div>
-              </div>
-              {result.signals && result.signals.length > 0 && (
-                <div className="signal-list">
-                  {result.signals.map((s, i) => (
-                    <div key={i} className="signal-item">
-                      <div className={`signal-dot ${DOT_COLORS[s.c]}`} />
-                      <div className="signal-text">{s.t}</div>
-                    </div>
-                  ))}
+              {/* Section 1 */}
+              <Sec num="01" title="Who's Calling">
+                <div className="frow">
+                  <F label="Name *">
+                    <input type="text" placeholder="Full name" value={f.name} onChange={setE('name')} />
+                  </F>
+                  <F label="Phone">
+                    <input type="tel" placeholder="(385) ___-____" value={f.phone} onChange={setE('phone')} />
+                  </F>
                 </div>
-              )}
-              {result.signals && result.signals.length === 0 && (
-                <div style={{fontSize:11, color:"#555", fontFamily:"'DM Mono', monospace", textAlign:"center"}}>Fill in project details to score this lead</div>
-              )}
-              {d.nextStep && (
-                <div className="next-step">
-                  <div className="next-step-label">Next Step</div>
-                  <div className="next-step-text">{nextStepText}</div>
+                <F label="Email">
+                  <input type="email" placeholder="email@example.com" value={f.email} onChange={setE('email')} />
+                </F>
+                <F label="Preferred Contact">
+                  <PillGroup options={['Call','Text','Email']} value={f.contact} onChange={tog('contact')} />
+                </F>
+                <F label="Lead Source">
+                  <PillGroup
+                    options={['Referral','Google','Facebook','Instagram','Drive-By','Other']}
+                    value={f.leadSource}
+                    onChange={tog('leadSource')}
+                  />
+                </F>
+                {f.leadSource === 'Referral' && (
+                  <F label="Referred By">
+                    <input type="text" placeholder="Who referred them?" value={f.referredBy} onChange={setE('referredBy')} />
+                  </F>
+                )}
+              </Sec>
+
+              {/* Section 2 */}
+              <Sec num="02" title="The Project">
+                <F label="Project Type">
+                  <select value={f.projectType} onChange={setE('projectType')}>
+                    {PROJECT_TYPES.map(v => <option key={v} value={v}>{v || '— Select —'}</option>)}
+                  </select>
+                </F>
+                <F label="Address">
+                  <input type="text" placeholder="123 Main St, Ogden" value={f.address} onChange={setE('address')} />
+                </F>
+                <F label="County">
+                  <PillGroup
+                    options={['Weber','Morgan','Outside Area']}
+                    value={f.county}
+                    onChange={tog('county')}
+                    badValue="Outside Area"
+                  />
+                </F>
+                <F label="Project Scope">
+                  <textarea placeholder="Describe the project…" value={f.scope} onChange={setE('scope')} />
+                </F>
+                <F label="Plans Status">
+                  <PillGroup
+                    options={['No Plans','Conceptual','Permitted','Permitted + Engineering']}
+                    value={f.plans}
+                    onChange={tog('plans')}
+                  />
+                </F>
+              </Sec>
+
+              {/* Section 3 */}
+              <Sec num="03" title="Qualification">
+                <F label="Budget Range">
+                  <PillGroup options={BUDGET_OPTS} value={f.budget} onChange={tog('budget')} badValue="Under $50K" />
+                  {isDQ && <div className="flag">⚠ Budget under $50K — Disqualified</div>}
+                </F>
+                <F label="Financing">
+                  <PillGroup
+                    options={['Cash','Financing Ready','Exploring Options','Not Sure']}
+                    value={f.financing}
+                    onChange={tog('financing')}
+                  />
+                </F>
+                <div className="frow">
+                  <F label="Decision Makers">
+                    <PillGroup options={['Single DM','Multiple DMs','Unknown']} value={f.dm} onChange={tog('dm')} />
+                  </F>
+                  <F label="Competing Bids">
+                    <PillGroup options={['No','Yes','Unknown']} value={f.bids} onChange={tog('bids')} />
+                  </F>
                 </div>
-              )}
+                <F label="Timeline">
+                  <PillGroup
+                    options={['ASAP','1–3 Months','3–6 Months','6–12 Months','Just Planning']}
+                    value={f.timeline}
+                    onChange={tog('timeline')}
+                  />
+                </F>
+              </Sec>
+
+              {/* Section 4 */}
+              <Sec num="04" title="Close the Call">
+                <F label="Key Notes">
+                  <textarea placeholder="What stood out? Important context…" value={f.notes} onChange={setE('notes')} />
+                </F>
+                <F label="Objections">
+                  <textarea placeholder="Any hesitations or pushback?" value={f.obj} onChange={setE('obj')} style={{minHeight: 52}} />
+                </F>
+                <F label="Next Step">
+                  <PillGroup
+                    options={['Schedule Appointment','Send Info','Follow Up Later','Not Interested']}
+                    value={f.next}
+                    onChange={tog('next')}
+                  />
+                </F>
+                {f.next === 'Schedule Appointment' && (
+                  <F label="Appointment Date">
+                    <input type="date" value={f.apptDate} onChange={setE('apptDate')} />
+                  </F>
+                )}
+              </Sec>
             </div>
+
+            {/* ── SIDEBAR ── */}
+            <div className="sidebar">
+              <div className="score-panel">
+
+                {/* Score header */}
+                <div className="sp-hdr">
+                  <span className="sp-label">Qualification Score</span>
+                  <span className={`badge ${lbl.cls}`}>{lbl.text}{pts > 0 ? ` · ${pts}` : ''}</span>
+                </div>
+
+                {/* Point breakdown */}
+                <div className="sp-pts">
+                  {SCORE_ROWS.map((row, i) => {
+                    if (row.hideIf && row.hideIf(f)) return null;
+                    const earned = row.check(f);
+                    return (
+                      <div key={i} className="pt-row">
+                        <span className={`pt-dot${earned ? ' on' : ''}`} />
+                        <span style={{opacity: earned ? 1 : 0.5}}>{row.label}</span>
+                        <span className={`pt-val${earned ? ' on' : ''}`}>+{row.pts}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* JT result banner */}
+                {jtState === 'done' && jtData && (
+                  <div className="jt-banner ok">
+                    ✓ Created in JobTread
+                    {jtData.accountId && (
+                      <> · <a href={jtData.url} target="_blank" rel="noopener noreferrer">View ↗</a></>
+                    )}
+                  </div>
+                )}
+                {jtState === 'fail' && (
+                  <div className="jt-banner err">✗ {jtErr || 'JT error — see console'}</div>
+                )}
+
+                {/* JT Summary */}
+                <div className="sp-sum">
+                  <div className="sp-sum-hdr">
+                    <span className="sp-sum-lbl">JT Summary</span>
+                    <button type="button" className={`copy-btn${copied ? ' done' : ''}`} onClick={handleCopy}>
+                      {copied ? 'Copied ✓' : 'Copy'}
+                    </button>
+                  </div>
+                  <div className="sum-text">{summary || '— Fill in fields to build summary —'}</div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          {/* JT SUMMARY */}
-          <div className="jt-card">
-            <div className="jt-header">
-              <div className="jt-header-label">JobTread — Copy & Paste</div>
-              <button className="copy-btn" onClick={handleCopy}>{copied ? "✓ Copied" : "Copy"}</button>
-            </div>
-            <div className="jt-body">
-              <div className="jt-summary">{jt}</div>
-            </div>
+          {/* ── STICKY BAR ── */}
+          <div className="bar">
+            <button type="button" className="bbtn print" onClick={() => window.print()}>Print</button>
+            <button type="button" className="bbtn reset" onClick={handleReset}>Reset</button>
+            <button
+              type="button"
+              className={`bbtn jt${jtState === 'loading' ? ' spinning' : ''}${jtState === 'done' ? ' done' : ''}${jtState === 'fail' ? ' fail' : ''}`}
+              onClick={jtState === 'done' ? undefined : handleCreateJT}
+              disabled={!f.name.trim() || jtState === 'loading'}
+            >
+              {jtState === 'idle'    && '+ Create in JobTread'}
+              {jtState === 'loading' && 'Creating…'}
+              {jtState === 'done'    && '✓ Created in JobTread'}
+              {jtState === 'fail'    && '↺ Retry JobTread'}
+            </button>
           </div>
+        </>
+      );
+    }
 
-        </div>{/* /right */}
-      </div>{/* /layout */}
-
-      <div className="bottom-bar">
-        <button className="btn btn-ghost" onClick={handleReset}>New Call</button>
-      </div>
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-</script>
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
