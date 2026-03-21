@@ -130,8 +130,8 @@ async function createCustomer(grantKey, params) {
   const fieldDefs = org?.customFields?.nodes ?? [];
 
   const FIELD_MAP = {
-    'Status':                   'Lead',
-    'Customer Type':            'Residential',
+    'Status':                   '1. New Lead',
+    'Customer Type':            'Homeowner - Primary Residence',
     'Budget Range':             BUDGET_MAP[params.budgetRange] || params.budgetRange,
     'Needs':                    params.projectType,
     'Lead Source':              params.leadSource,
