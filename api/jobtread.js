@@ -186,7 +186,7 @@ async function createCustomer(grantKey, params) {
   var accountId = account.id;
   results.accountId   = accountId;
   results.accountName = account.name;
-  results.url         = 'https://app.jobtread.com/accounts/' + accountId;
+  results.url         = 'https://app.jobtread.com/customers/' + accountId;
   results.steps.accountCreated = true;
 
   // Step 3: set custom fields using hardcoded IDs
