@@ -1,815 +1,210 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
-  <meta name="theme-color" content="#1E1C1A" />
-  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
-  <title>Discovery Call — OVB Tools</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg:     #1E1C1A;
-      --card:   #2A2826;
-      --footer: #141210;
-      --tan:    #C7AA8B;
-      --tan-d:  rgba(199,170,139,0.12);
-      --smoke:  #F7F7F7;
-      --red:    #D4714A;
-      --green:  #4CAF84;
-      --border: rgba(199,170,139,0.13);
-      --muted:  rgba(247,247,247,0.42);
-      --r:      4px;
-      --mono:   'DM Mono', monospace;
-      --sans:   'DM Sans', sans-serif;
+// api/jobtread.js — OVB Tools · JobTread Proxy
+// Deploy at /api/jobtread.js in repo root.
+// Set JOBTREAD_GRANT_KEY in Vercel -> Settings -> Environment Variables.
+
+module.exports = async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const grantKey = process.env.JOBTREAD_GRANT_KEY;
+  if (!grantKey) return res.status(500).json({ error: 'JOBTREAD_GRANT_KEY not set in Vercel env vars' });
+
+  const { operation, params = {} } = req.body || {};
+  if (!operation) return res.status(400).json({ error: 'Missing operation' });
+
+  try {
+    let result;
+    switch (operation) {
+      case 'createCustomer': result = await createCustomer(grantKey, params); break;
+      case 'getOrgInfo':     result = await getOrgInfo(grantKey); break;
+      default: return res.status(400).json({ error: 'Unknown operation: ' + operation });
     }
-    html, body { min-height: 100vh; background: var(--bg); }
-    body {
-      font-family: var(--sans);
-      font-size: 13px;
-      color: var(--smoke);
-      padding-bottom: 72px;
-      -webkit-font-smoothing: antialiased;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('[jobtread proxy] ' + operation + ' error:', err.message);
+    return res.status(500).json({ error: err.message || 'Unknown error' });
+  }
+};
+
+// Hardcoded customer field IDs from OVB JT account
+// Sourced from getAccountFields on a populated customer 2026-03-21
+var F = {
+  status:             '22PC8F47A63H',
+  customerType:       '22PC8EvauCvJ',
+  budgetRange:        '22PTyjrdmBSZ',
+  needs:              '22PC8EwY5jUc',
+  leadSource:         '22PC8ExjK8js',
+  referredBy:         '22PC8F6kzjw6',
+  apptDateTime:       '22PRzSrKdQ9x',
+  preferredContact:   '22PDggcWaQ7c',
+  notes:              '22PC8F6Jsqf8',
+  financingType:      '22PTyk3VEJgw',
+  decisionMakers:     '22PTyk82js39',
+  competingBids:      '22PTykAq8fQQ',
+  timeline:           '22PTykFP3inv',
+  projectLocation:    '22PTykJYuX3a',
+  dqFlag:             '22PTykQuWm3Q',
+  qualificationScore: '22PTykURtF6Z',
+};
+
+function normalizeBudget(val) {
+  if (!val) return val;
+  if (val.indexOf('Under') !== -1) return 'Under $100K';
+  if (val === '$1M+') return '$1M+';
+  if (val === 'Not Sure') return 'Not Sure';
+  // Replace any dash variant with ' - '
+  var out = val.replace(/\s*[-–—]\s*/g, ' - ');
+  // JT uses lowercase k for $800k - $1M
+  out = out.replace('$800K - $1M', '$800k - $1M');
+  return out;
+}
+
+async function pave(grantKey, queryObj) {
+  var res = await fetch('https://api.jobtread.com/pave', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: Object.assign({ $: { grantKey } }, queryObj) }),
+  });
+  var text = await res.text();
+  if (!res.ok) throw new Error('Pave ' + res.status + ': ' + text.slice(0, 300));
+  var data;
+  try { data = JSON.parse(text); } catch (e) { throw new Error('Pave non-JSON: ' + text.slice(0, 200)); }
+  if (data && data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+  return data;
+}
+
+async function getOrgInfo(grantKey) {
+  var grantData = await pave(grantKey, {
+    currentGrant: {
+      id: {},
+      organization: { id: {}, name: {} },
+    },
+  });
+  var org = (grantData && grantData.query && grantData.query.currentGrant && grantData.query.currentGrant.organization)
+         || (grantData && grantData.currentGrant && grantData.currentGrant.organization);
+  if (!org || !org.id) throw new Error('Could not get org from currentGrant.');
+  return org;
+}
+
+async function createCustomer(grantKey, params) {
+  var results = { steps: {} };
+
+  // Step 1: get org ID
+  var org = await getOrgInfo(grantKey);
+  var orgId = org.id;
+  if (!orgId) throw new Error('Could not retrieve org ID.');
+
+  // Step 2: create account (name only)
+  var createData = await pave(grantKey, {
+    createAccount: {
+      $: {
+        name: params.name,
+        type: 'customer',
+        organizationId: orgId,
+      },
+      createdAccount: { id: {}, name: {} },
+    },
+  });
+
+  var account = (createData && createData.query && createData.query.createAccount && createData.query.createAccount.createdAccount)
+             || (createData && createData.createAccount && createData.createAccount.createdAccount);
+  if (!account || !account.id) throw new Error('Account created but no ID returned.');
+
+  var accountId = account.id;
+  results.accountId   = accountId;
+  results.accountName = account.name;
+  results.url         = 'https://app.jobtread.com/accounts/' + accountId;
+  results.steps.accountCreated = true;
+
+  // Step 3: set custom fields using hardcoded IDs
+  var customFieldValues = {};
+
+  customFieldValues[F.status]             = '1. New Lead';
+  if (params.customerType)   customFieldValues[F.customerType]    = params.customerType;
+  if (params.budgetRange)    customFieldValues[F.budgetRange]     = normalizeBudget(params.budgetRange);
+  if (params.projectType)    customFieldValues[F.needs]           = params.projectType;
+  if (params.leadSource)     customFieldValues[F.leadSource]      = params.leadSource;
+  if (params.referredBy)     customFieldValues[F.referredBy]      = params.referredBy;
+  if (params.contactMethod)  customFieldValues[F.preferredContact]= params.contactMethod;
+  if (params.notes)          customFieldValues[F.notes]           = params.notes;
+  if (params.financing)      customFieldValues[F.financingType]   = params.financing;
+  if (params.decisionMakers) customFieldValues[F.decisionMakers]  = params.decisionMakers;
+  if (params.competingBids)  customFieldValues[F.competingBids]   = params.competingBids;
+  if (params.timeline)       customFieldValues[F.timeline]        = params.timeline;
+  if (params.county)         customFieldValues[F.projectLocation] = params.county + ' County';
+  if (params.dqFlag)         customFieldValues[F.dqFlag]          = params.dqFlag;
+  if (params.qualificationScore) customFieldValues[F.qualificationScore] = params.qualificationScore;
+  if (params.apptDate)       customFieldValues[F.apptDateTime]    = params.apptDate;
+
+  results.steps.fieldsToSet = Object.keys(customFieldValues).length;
+
+  await pave(grantKey, {
+    updateAccount: {
+      $: { id: accountId, customFieldValues: customFieldValues },
+    },
+  }).then(function() {
+    results.steps.customFieldsSet = true;
+  }).catch(function(err) {
+    console.warn('[jobtread proxy] Custom fields:', err.message);
+    results.steps.customFieldsError = err.message;
+  });
+
+  // Step 4: create contact (name only)
+  await pave(grantKey, {
+    createContact: {
+      $: { accountId: accountId, name: params.name },
+      createdContact: { id: {}, name: {} },
+    },
+  }).then(function(d) {
+    var contactId = (d && d.query && d.query.createContact && d.query.createContact.createdContact && d.query.createContact.createdContact.id)
+                 || (d && d.createContact && d.createContact.createdContact && d.createContact.createdContact.id);
+    results.steps.contactCreated = true;
+
+    // Step 4b: add phone
+    if (contactId && params.phone) {
+      pave(grantKey, {
+        createPhoneNumber: {
+          $: { contactId: contactId, number: params.phone, type: 'mobile' },
+          createdPhoneNumber: { id: {} },
+        },
+      }).then(function() {
+        results.steps.phoneCreated = true;
+      }).catch(function(err) {
+        results.steps.phoneError = err.message;
+      });
     }
+  }).catch(function(err) {
+    console.warn('[jobtread proxy] Contact:', err.message);
+    results.steps.contactError = err.message;
+  });
 
-    /* ── Header ── */
-    .hdr {
-      background: var(--footer);
-      border-bottom: 1px solid var(--border);
-      padding: 11px 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .hdr-back {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--tan);
-      text-decoration: none;
-      opacity: 0.65;
-      letter-spacing: 0.04em;
-      flex-shrink: 0;
-    }
-    .hdr-back:hover { opacity: 1; }
-    .hdr-title {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    .hdr-badge {
-      margin-left: auto;
-      font-family: var(--mono);
-      font-size: 8px;
-      letter-spacing: 0.08em;
-      background: var(--tan-d);
-      color: var(--tan);
-      border: 1px solid rgba(199,170,139,0.22);
-      border-radius: var(--r);
-      padding: 2px 8px;
-    }
+  // Step 5: create location
+  if (params.address) {
+    var parts = params.address.split(',').map(function(s) { return s.trim(); });
+    var street = parts[0] || params.address;
+    var city   = parts[1] || '';
 
-    /* ── Layout ── */
-    .wrap {
-      display: grid;
-      grid-template-columns: 1fr 272px;
-      gap: 14px;
-      padding: 18px 20px;
-      max-width: 1040px;
-      margin: 0 auto;
-    }
-    @media (max-width: 820px) {
-      .wrap { grid-template-columns: 1fr; padding: 12px; }
-      .sidebar { order: -1; }
-    }
+    await pave(grantKey, {
+      createLocation: {
+        $: Object.assign(
+          { accountId: accountId, name: params.address, address1: street, state: 'UT' },
+          city ? { city: city } : {}
+        ),
+        createdLocation: { id: {}, name: {} },
+      },
+    }).then(function() {
+      results.steps.locationCreated = true;
+    }).catch(function(err) {
+      console.warn('[jobtread proxy] Location:', err.message);
+      results.steps.locationError = err.message;
+    });
+  }
 
-    /* ── Section card ── */
-    .sec {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      margin-bottom: 12px;
-      overflow: hidden;
-    }
-    .sec-hdr {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    .sec-num {
-      font-family: var(--mono);
-      font-size: 9px;
-      font-weight: 500;
-      background: var(--bg);
-      color: var(--tan);
-      border-radius: var(--r);
-      padding: 3px 8px;
-      letter-spacing: 0.08em;
-      flex-shrink: 0;
-    }
-    .sec-title {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-    .sec-body { padding: 16px; }
-
-    /* ── Fields ── */
-    .field { margin-bottom: 14px; }
-    .field:last-child { margin-bottom: 0; }
-    .flabel {
-      font-family: var(--mono);
-      font-size: 9px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      display: block;
-      margin-bottom: 6px;
-    }
-    .field input,
-    .field textarea,
-    .field select {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      color: var(--smoke);
-      font-family: var(--sans);
-      font-size: 13px;
-      padding: 8px 11px;
-      outline: none;
-      transition: border-color 0.13s;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    .field input:focus,
-    .field textarea:focus,
-    .field select:focus { border-color: rgba(199,170,139,0.38); }
-    .field input::placeholder,
-    .field textarea::placeholder { color: rgba(247,247,247,0.18); }
-    .field textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
-    .field select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C7AA8B' opacity='.45'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 11px center;
-      padding-right: 30px;
-      cursor: pointer;
-    }
-    .field select option { background: #2A2826; }
-    .field input[type="date"] { color-scheme: dark; cursor: pointer; }
-    .frow {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    @media (max-width: 480px) { .frow { grid-template-columns: 1fr; } }
-
-    /* ── Pills ── */
-    .pills { display: flex; flex-wrap: wrap; gap: 6px; }
-    .pill {
-      font-family: var(--sans);
-      font-size: 12px;
-      font-weight: 500;
-      padding: 5px 11px;
-      border-radius: var(--r);
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.11s;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      line-height: 1.4;
-    }
-    .pill:hover { border-color: rgba(199,170,139,0.28); color: var(--smoke); }
-    .pill.on  { background: var(--bg); border-color: var(--bg); color: var(--smoke); }
-    .pill.bad { background: var(--red); border-color: var(--red); color: #fff; }
-
-    /* ── Flag ── */
-    .flag {
-      margin-top: 8px;
-      padding: 7px 11px;
-      background: #FFF5F1;
-      border: 1.5px solid var(--red);
-      border-radius: var(--r);
-      font-size: 12px;
-      color: var(--red);
-      font-weight: 500;
-    }
-
-    /* ── Sidebar ── */
-    .score-panel {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      overflow: hidden;
-      position: sticky;
-      top: 56px;
-    }
-    .sp-hdr {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 11px 14px;
-      border-bottom: 1px solid var(--border);
-    }
-    .sp-label {
-      font-family: var(--mono);
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-    }
-    .badge {
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 500;
-      padding: 3px 9px;
-      border-radius: var(--r);
-      letter-spacing: 0.05em;
-    }
-    .badge.hot    { background: rgba(76,175,132,0.14); color: #4CAF84; border: 1px solid rgba(76,175,132,0.28); }
-    .badge.warm   { background: rgba(199,170,139,0.14); color: var(--tan); border: 1px solid rgba(199,170,139,0.28); }
-    .badge.cold   { background: rgba(247,247,247,0.06); color: var(--muted); border: 1px solid rgba(247,247,247,0.1); }
-    .badge.dq     { background: rgba(212,113,74,0.14); color: var(--red); border: 1px solid rgba(212,113,74,0.28); }
-    .badge.filler { background: rgba(199,170,139,0.07); color: rgba(199,170,139,0.55); border: 1px solid rgba(199,170,139,0.14); }
-
-    .sp-pts {
-      padding: 9px 14px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .pt-row {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-family: var(--mono);
-      font-size: 9px;
-      color: var(--muted);
-    }
-    .pt-dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      background: rgba(247,247,247,0.14);
-    }
-    .pt-dot.on { background: var(--green); }
-    .pt-val { margin-left: auto; opacity: 0.5; }
-    .pt-val.on { opacity: 1; color: var(--green); }
-
-    /* JT result banner */
-    .jt-banner {
-      margin: 8px 14px;
-      padding: 7px 10px;
-      border-radius: var(--r);
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .jt-banner.ok  { background: rgba(76,175,132,0.1); border: 1px solid rgba(76,175,132,0.22); color: #4CAF84; }
-    .jt-banner.err { background: rgba(212,113,74,0.1); border: 1px solid rgba(212,113,74,0.22); color: var(--red); }
-    .jt-banner a   { color: inherit; font-weight: 600; text-decoration: none; border-bottom: 1px solid currentColor; }
-
-    .sp-sum { padding: 12px 14px; }
-    .sp-sum-hdr {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .sp-sum-lbl {
-      font-family: var(--mono);
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-    }
-    .copy-btn {
-      font-family: var(--mono);
-      font-size: 8px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: var(--r);
-      border: 1px solid rgba(199,170,139,0.28);
-      background: transparent;
-      color: var(--tan);
-      cursor: pointer;
-      transition: all 0.11s;
-    }
-    .copy-btn:hover { background: var(--tan-d); }
-    .copy-btn.done  { color: var(--green); border-color: rgba(76,175,132,0.28); }
-    .sum-text {
-      font-family: var(--mono);
-      font-size: 9.5px;
-      line-height: 1.65;
-      color: rgba(247,247,247,0.6);
-      white-space: pre-wrap;
-      word-break: break-word;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 10px;
-      max-height: 280px;
-      overflow-y: auto;
-    }
-
-    /* ── Sticky bar ── */
-    .bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: #fff;
-      border-top: 1px solid #E4E2DF;
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      z-index: 200;
-    }
-    .bbtn {
-      font-family: var(--sans);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 8px 16px;
-      border-radius: var(--r);
-      border: none;
-      cursor: pointer;
-      transition: all 0.11s;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-    .bbtn.print { background: #1E1C1A; color: #F7F7F7; }
-    .bbtn.print:hover { background: #2e2c2a; }
-    .bbtn.reset { background: transparent; border: 1px solid #D2D0CB; color: #777; }
-    .bbtn.reset:hover { border-color: #aaa; color: #333; }
-    .bbtn.jt {
-      margin-left: auto;
-      background: #1E1C1A;
-      border: 1.5px solid #C7AA8B;
-      color: #C7AA8B;
-      min-width: 176px;
-      text-align: center;
-    }
-    .bbtn.jt:hover:not(:disabled) { background: rgba(199,170,139,0.08); }
-    .bbtn.jt:disabled { opacity: 0.3; cursor: not-allowed; }
-    .bbtn.jt.spinning { opacity: 0.55; cursor: wait; }
-    .bbtn.jt.done { border-color: #4CAF84; color: #4CAF84; }
-    .bbtn.jt.fail { border-color: var(--red); color: var(--red); }
-
-    /* ── Print ── */
-    @media print {
-      body { background: #fff; color: #1E1C1A; padding: 0; }
-      .hdr-back, .bar { display: none !important; }
-      .sidebar { position: static !important; }
-      .score-panel { position: static; }
-      .sec, .score-panel { background: #fff; border-color: #ddd; break-inside: avoid; }
-      .sec-num { background: #1E1C1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .pill.on { background: #1E1C1A !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .field input, .field textarea, .field select { background: #fff; border-color: #ddd; color: #1E1C1A; }
-      .sum-text { background: #f5f5f3; border-color: #ddd; color: #333; max-height: none; }
-    }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-
-  <script type="text/babel">
-    const { useState } = React;
-
-    // ─── Constants ───────────────────────────────────────────────────────────
-
-    const BUDGET_OPTS = [
-      'Under $100K','$100K–$200K','$200K–$400K',
-      '$400K–$600K','$600K–$800K','$800K–$1M','$1M+','Not Sure',
-    ];
-
-    const PROJECT_TYPES = [
-      '','New Construction','Addition','Full Remodel',
-      'Kitchen Remodel','Bathroom Remodel','Basement Finish',
-      'Deck / Outdoor Living','Garage','ADU / In-Law Suite','Commercial','Other',
-    ];
-
-    const SCORE_ROWS = [
-      { label: 'Budget $200K+',      pts: 3, check: f => ['$200K–$400K','$400K–$600K','$600K–$800K','$800K–$1M','$1M+'].includes(f.budget) },
-      { label: 'Budget $100K–$200K', pts: 2, check: f => f.budget === '$100K–$200K', hideIf: f => ['$200K–$400K','$400K–$600K','$600K–$800K','$800K–$1M','$1M+'].includes(f.budget) },
-      { label: 'In Service Area',    pts: 2, check: f => f.county === 'Weber' || f.county === 'Morgan' },
-      { label: 'Active Timeline',    pts: 2, check: f => f.timeline === 'ASAP' || f.timeline === '1–3 Months' },
-      { label: 'No Competing Bids',  pts: 2, check: f => f.bids === 'No' },
-      { label: 'Single DM',          pts: 1, check: f => f.dm === 'Single DM' },
-      { label: 'Financing Ready',    pts: 1, check: f => f.financing === 'Cash' || f.financing === 'Financing Ready' },
-    ];
-
-    // ─── Scoring ─────────────────────────────────────────────────────────────
-
-    function calcScore(f) {
-      return SCORE_ROWS.reduce((sum, row) => sum + (row.check(f) ? row.pts : 0), 0);
-    }
-
-    function calcLabel(f, pts) {
-      if (f.budget === 'Under $50K') return { text: 'DQ', cls: 'dq' };
-      if (f.county === 'Outside Area') return { text: 'Cold', cls: 'cold' };
-      if (f.budget === 'Under $100K' && f.leadSource === 'Referral') return { text: 'Filler', cls: 'filler' };
-      if (pts >= 9) return { text: 'Hot', cls: 'hot' };
-      if (pts >= 6) return { text: 'Warm', cls: 'warm' };
-      if (pts >= 1) return { text: 'Cold', cls: 'cold' };
-      return { text: '—', cls: 'cold' };
-    }
-
-    // ─── JT Summary ──────────────────────────────────────────────────────────
-
-    function buildSummary(f, pts, lbl) {
-      const lines = [];
-      lines.push(`QUALIFICATION: ${lbl.text}${pts > 0 ? ` (${pts} pts)` : ''}`);
-      if (lbl.text === 'DQ') lines.push('⚠ DISQUALIFIED — Budget under $50K');
-      lines.push('');
-      if (f.budget)     lines.push(`BUDGET: ${f.budget}`);
-      if (f.projectType) lines.push(`PROJECT TYPE: ${f.projectType}`);
-      const loc = [f.address, f.county ? `${f.county} County` : ''].filter(Boolean).join(' — ');
-      if (loc)          lines.push(`LOCATION: ${loc}`);
-      if (f.timeline)   lines.push(`TIMELINE: ${f.timeline}`);
-      if (f.financing)  lines.push(`FINANCING: ${f.financing}`);
-      if (f.dm)         lines.push(`DECISION MAKERS: ${f.dm}`);
-      if (f.bids)       lines.push(`COMPETING BIDS: ${f.bids}`);
-      if (f.plans)      lines.push(`PLANS: ${f.plans}`);
-      lines.push('');
-      if (f.leadSource) lines.push(`LEAD SOURCE: ${f.leadSource}`);
-      if (f.referredBy) lines.push(`REFERRED BY: ${f.referredBy}`);
-      if (f.contact)    lines.push(`PREFERRED CONTACT: ${f.contact}`);
-      if (f.phone)      lines.push(`PHONE: ${f.phone}`);
-      if (f.email)      lines.push(`EMAIL: ${f.email}`);
-      lines.push('');
-      if (f.scope)  { lines.push('SCOPE:'); lines.push(f.scope); lines.push(''); }
-      if (f.notes)  { lines.push('NOTES:'); lines.push(f.notes); lines.push(''); }
-      if (f.obj)    { lines.push('OBJECTIONS:'); lines.push(f.obj); lines.push(''); }
-      if (f.next)   lines.push(`NEXT STEP: ${f.next}${f.apptDate ? ` — ${f.apptDate}` : ''}`);
-
-      // Collapse multiple blank lines
-      return lines.reduce((acc, l) => {
-        if (l === '' && acc.endsWith('\n\n')) return acc;
-        return acc + l + '\n';
-      }, '').trim();
-    }
-
-    // ─── Sub-components ───────────────────────────────────────────────────────
-
-    function Pill({ label, active, onClick, bad }) {
-      return (
-        <button
-          type="button"
-          className={`pill${active ? (bad ? ' bad' : ' on') : ''}`}
-          onClick={onClick}
-        >{label}</button>
-      );
-    }
-
-    function PillGroup({ options, value, onChange, badValue }) {
-      return (
-        <div className="pills">
-          {options.map(o => (
-            <Pill
-              key={o} label={o} active={value === o}
-              bad={o === badValue && value === o}
-              onClick={() => onChange(value === o ? '' : o)}
-            />
-          ))}
-        </div>
-      );
-    }
-
-    function Sec({ num, title, children }) {
-      return (
-        <div className="sec">
-          <div className="sec-hdr">
-            <span className="sec-num">{num}</span>
-            <span className="sec-title">{title}</span>
-          </div>
-          <div className="sec-body">{children}</div>
-        </div>
-      );
-    }
-
-    function F({ label, children }) {
-      return (
-        <div className="field">
-          {label && <label className="flabel">{label}</label>}
-          {children}
-        </div>
-      );
-    }
-
-    // ─── Main App ─────────────────────────────────────────────────────────────
-
-    function App() {
-      const EMPTY = {
-        name:'', phone:'', email:'', contact:'', customerType:'', leadSource:'', referredBy:'',
-        projectType:'', address:'', county:'', scope:'', plans:'',
-        budget:'', financing:'', dm:'', bids:'', timeline:'',
-        notes:'', obj:'', next:'', apptDate:'',
-      };
-
-      const [f, setF] = useState(EMPTY);
-      const [copied, setCopied] = useState(false);
-      const [jtState, setJtState] = useState('idle'); // idle | loading | done | fail
-      const [jtData,  setJtData]  = useState(null);
-      const [jtErr,   setJtErr]   = useState('');
-
-      const set = k => v => setF(p => ({ ...p, [k]: v }));
-      const setE = k => e => setF(p => ({ ...p, [k]: e.target.value }));
-      const tog = k => v => setF(p => ({ ...p, [k]: p[k] === v ? '' : v }));
-
-      const pts = calcScore(f);
-      const lbl = calcLabel(f, pts);
-      const summary = buildSummary(f, pts, lbl);
-
-      const handleCopy = () => {
-        navigator.clipboard.writeText(summary).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1600);
-        });
-      };
-
-      const handleReset = () => {
-        if (!window.confirm('Clear all fields and start over?')) return;
-        setF(EMPTY);
-        setJtState('idle');
-        setJtData(null);
-        setJtErr('');
-      };
-
-      const handleCreateJT = async () => {
-        if (!f.name.trim() || jtState === 'loading') return;
-        setJtState('loading');
-        setJtErr('');
-        try {
-          const res = await fetch('/api/jobtread', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              operation: 'createCustomer',
-              params: {
-                name:              f.name.trim(),
-                phone:             f.phone.trim(),
-                email:             f.email.trim(),
-                projectType:       f.projectType,
-                budgetRange:       f.budget,
-                leadSource:        f.leadSource,
-                referredBy:        f.referredBy,
-                contactMethod:     f.contact,
-                customerType:      f.customerType,
-                financing:         f.financing,
-                decisionMakers:    f.dm,
-                competingBids:     f.bids,
-                timeline:          f.timeline,
-                county:            f.county,
-                qualificationScore:`${lbl.text}${pts > 0 ? ` (${pts} pts)` : ''}`,
-                dqFlag:            lbl.text === 'DQ' ? 'Yes' : 'No',
-                notes:             summary,
-              },
-            }),
-          });
-          if (!res.ok) {
-            const e = await res.json().catch(() => ({}));
-            throw new Error(e.error || `HTTP ${res.status}`);
-          }
-          const data = await res.json();
-          setJtData(data);
-          setJtState('done');
-        } catch (err) {
-          setJtErr(err.message);
-          setJtState('fail');
-        }
-      };
-
-      const isDQ = lbl.text === 'DQ';
-
-      return (
-        <>
-          {/* HEADER */}
-          <div className="hdr">
-            <a href="/" className="hdr-back">← OVB Tools</a>
-            <span className="hdr-title">Discovery Call</span>
-            <span className="hdr-badge">OVB</span>
-          </div>
-
-          <div className="wrap">
-
-            {/* ── MAIN ── */}
-            <div className="main">
-
-              {/* Section 1 */}
-              <Sec num="01" title="Who's Calling">
-                <div className="frow">
-                  <F label="Name *">
-                    <input type="text" placeholder="Full name" value={f.name} onChange={setE('name')} />
-                  </F>
-                  <F label="Phone">
-                    <input type="tel" placeholder="(385) ___-____" value={f.phone} onChange={setE('phone')} />
-                  </F>
-                </div>
-                <F label="Email">
-                  <input type="email" placeholder="email@example.com" value={f.email} onChange={setE('email')} />
-                </F>
-                <F label="Preferred Contact">
-                  <PillGroup options={['Call','Text','Email']} value={f.contact} onChange={tog('contact')} />
-                </F>
-                <F label="Customer Type">
-                  <PillGroup
-                    options={['Homeowner - Primary Residence','Homeowner - Investment Property','Realtor','Developer','Other']}
-                    value={f.customerType}
-                    onChange={tog('customerType')}
-                  />
-                </F>
-                <F label="Lead Source">
-                  <PillGroup
-                    options={['Referral','Google','Facebook','Instagram','Drive-By','Other']}
-                    value={f.leadSource}
-                    onChange={tog('leadSource')}
-                  />
-                </F>
-                {f.leadSource === 'Referral' && (
-                  <F label="Referred By">
-                    <input type="text" placeholder="Who referred them?" value={f.referredBy} onChange={setE('referredBy')} />
-                  </F>
-                )}
-              </Sec>
-
-              {/* Section 2 */}
-              <Sec num="02" title="The Project">
-                <F label="Project Type">
-                  <select value={f.projectType} onChange={setE('projectType')}>
-                    {PROJECT_TYPES.map(v => <option key={v} value={v}>{v || '— Select —'}</option>)}
-                  </select>
-                </F>
-                <F label="Address">
-                  <input type="text" placeholder="123 Main St, Ogden" value={f.address} onChange={setE('address')} />
-                </F>
-                <F label="County">
-                  <PillGroup
-                    options={['Weber','Morgan','Outside Area']}
-                    value={f.county}
-                    onChange={tog('county')}
-                    badValue="Outside Area"
-                  />
-                </F>
-                <F label="Project Scope">
-                  <textarea placeholder="Describe the project…" value={f.scope} onChange={setE('scope')} />
-                </F>
-                <F label="Plans Status">
-                  <PillGroup
-                    options={['No Plans','Conceptual','Permitted','Permitted + Engineering']}
-                    value={f.plans}
-                    onChange={tog('plans')}
-                  />
-                </F>
-              </Sec>
-
-              {/* Section 3 */}
-              <Sec num="03" title="Qualification">
-                <F label="Budget Range">
-                  <PillGroup options={BUDGET_OPTS} value={f.budget} onChange={tog('budget')} badValue="Under $50K" />
-                  {isDQ && <div className="flag">⚠ Budget under $50K — Disqualified</div>}
-                </F>
-                <F label="Financing">
-                  <PillGroup
-                    options={['Cash','Financing Ready','Exploring Options','Not Sure']}
-                    value={f.financing}
-                    onChange={tog('financing')}
-                  />
-                </F>
-                <div className="frow">
-                  <F label="Decision Makers">
-                    <PillGroup options={['Single DM','Multiple DMs','Unknown']} value={f.dm} onChange={tog('dm')} />
-                  </F>
-                  <F label="Competing Bids">
-                    <PillGroup options={['No','Yes','Unknown']} value={f.bids} onChange={tog('bids')} />
-                  </F>
-                </div>
-                <F label="Timeline">
-                  <PillGroup
-                    options={['ASAP','1–3 Months','3–6 Months','6–12 Months','Just Planning']}
-                    value={f.timeline}
-                    onChange={tog('timeline')}
-                  />
-                </F>
-              </Sec>
-
-              {/* Section 4 */}
-              <Sec num="04" title="Close the Call">
-                <F label="Key Notes">
-                  <textarea placeholder="What stood out? Important context…" value={f.notes} onChange={setE('notes')} />
-                </F>
-                <F label="Objections">
-                  <textarea placeholder="Any hesitations or pushback?" value={f.obj} onChange={setE('obj')} style={{minHeight: 52}} />
-                </F>
-                <F label="Next Step">
-                  <PillGroup
-                    options={['Schedule Appointment','Send Info','Follow Up Later','Not Interested']}
-                    value={f.next}
-                    onChange={tog('next')}
-                  />
-                </F>
-                {f.next === 'Schedule Appointment' && (
-                  <F label="Appointment Date">
-                    <input type="date" value={f.apptDate} onChange={setE('apptDate')} />
-                  </F>
-                )}
-              </Sec>
-            </div>
-
-            {/* ── SIDEBAR ── */}
-            <div className="sidebar">
-              <div className="score-panel">
-
-                {/* Score header */}
-                <div className="sp-hdr">
-                  <span className="sp-label">Qualification Score</span>
-                  <span className={`badge ${lbl.cls}`}>{lbl.text}{pts > 0 ? ` · ${pts}` : ''}</span>
-                </div>
-
-                {/* Point breakdown */}
-                <div className="sp-pts">
-                  {SCORE_ROWS.map((row, i) => {
-                    if (row.hideIf && row.hideIf(f)) return null;
-                    const earned = row.check(f);
-                    return (
-                      <div key={i} className="pt-row">
-                        <span className={`pt-dot${earned ? ' on' : ''}`} />
-                        <span style={{opacity: earned ? 1 : 0.5}}>{row.label}</span>
-                        <span className={`pt-val${earned ? ' on' : ''}`}>+{row.pts}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* JT result banner */}
-                {jtState === 'done' && jtData && (
-                  <div className="jt-banner ok">
-                    ✓ Created in JobTread
-                    {jtData.accountId && (
-                      <> · <a href={jtData.url} target="_blank" rel="noopener noreferrer">View ↗</a></>
-                    )}
-                  </div>
-                )}
-                {jtState === 'fail' && (
-                  <div className="jt-banner err">✗ {jtErr || 'JT error — see console'}</div>
-                )}
-
-                {/* JT Summary */}
-                <div className="sp-sum">
-                  <div className="sp-sum-hdr">
-                    <span className="sp-sum-lbl">JT Summary</span>
-                    <button type="button" className={`copy-btn${copied ? ' done' : ''}`} onClick={handleCopy}>
-                      {copied ? 'Copied ✓' : 'Copy'}
-                    </button>
-                  </div>
-                  <div className="sum-text">{summary || '— Fill in fields to build summary —'}</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* ── STICKY BAR ── */}
-          <div className="bar">
-            <button type="button" className="bbtn print" onClick={() => window.print()}>Print</button>
-            <button type="button" className="bbtn reset" onClick={handleReset}>Reset</button>
-            <button
-              type="button"
-              className={`bbtn jt${jtState === 'loading' ? ' spinning' : ''}${jtState === 'done' ? ' done' : ''}${jtState === 'fail' ? ' fail' : ''}`}
-              onClick={jtState === 'done' ? undefined : handleCreateJT}
-              disabled={!f.name.trim() || jtState === 'loading'}
-            >
-              {jtState === 'idle'    && '+ Create in JobTread'}
-              {jtState === 'loading' && 'Creating…'}
-              {jtState === 'done'    && '✓ Created in JobTread'}
-              {jtState === 'fail'    && '↺ Retry JobTread'}
-            </button>
-          </div>
-        </>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  </script>
-</body>
-</html>
+  return results;
+}
