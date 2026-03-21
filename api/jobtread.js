@@ -1,12 +1,8 @@
 // api/jobtread.js — OVB Tools · JobTread Proxy
 // Deploy at /api/jobtread.js in repo root.
 // Set JOBTREAD_GRANT_KEY in Vercel → Settings → Environment Variables.
-//
-// Operations (POST body):
-//   { operation: 'createCustomer', params: { name, phone, email, ...fields, notes } }
-//   { operation: 'getOrgInfo' }  ← run once to verify connection + see field IDs
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -34,7 +30,7 @@ export default async function handler(req, res) {
     console.error(`[jobtread proxy] ${operation} error:`, err.message);
     return res.status(500).json({ error: err.message || 'Unknown error' });
   }
-}
+};
 
 // ─── Pave API helper ──────────────────────────────────────────────────────────
 
@@ -52,21 +48,36 @@ async function pave(grantKey, queryObj) {
   return data;
 }
 
-// ─── Get org info ─────────────────────────────────────────────────────────────
+// ─── Get org info (two-step: grant → org) ────────────────────────────────────
 
 async function getOrgInfo(grantKey) {
-  const data = await pave(grantKey, {
+  // Step 1: get org ID from currentGrant
+  const grantData = await pave(grantKey, {
+    currentGrant: {
+      id: {},
+      organization: { id: {}, name: {} },
+    },
+  });
+
+  const org = grantData?.query?.currentGrant?.organization
+           ?? grantData?.currentGrant?.organization;
+  if (!org?.id) throw new Error('Could not get org from currentGrant. Check grant key.');
+
+  // Step 2: get custom fields using org ID
+  const orgData = await pave(grantKey, {
     organization: {
-      $: {},
+      $: { id: org.id },
       id: {},
       name: {},
       customFields: {
         $: { size: 50 },
-        nodes: { id: {}, name: {}, },
+        nodes: { id: {}, name: {} },
       },
     },
   });
-  return data?.query?.organization ?? data?.organization ?? {};
+
+  const full = orgData?.query?.organization ?? orgData?.organization ?? {};
+  return { ...org, ...full };
 }
 
 // ─── Create customer (multi-step) ─────────────────────────────────────────────
@@ -98,9 +109,7 @@ async function createCustomer(grantKey, params) {
 
   const accountId = account.id;
 
-  // 3. Set custom fields — matched by name against your JT field definitions
-  // Field names here must match exactly what's in JobTread Settings → Custom Fields.
-  // Run { operation: 'getOrgInfo' } to see all names and IDs in your account.
+  // 3. Set custom fields matched by name to your JT field definitions
   const fieldDefs = org?.customFields?.nodes ?? [];
   const FIELD_MAP = {
     'Budget Range':             params.budgetRange,
