@@ -22,6 +22,7 @@ module.exports = async function handler(req, res) {
     switch (operation) {
       case 'createCustomer': result = await createCustomer(grantKey, params); break;
       case 'getOrgInfo':     result = await getOrgInfo(grantKey); break;
+      case 'getAccountFields': result = await getAccountFields(grantKey, params.accountId); break;
       default: return res.status(400).json({ error: `Unknown operation: ${operation}` });
     }
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -50,7 +51,6 @@ async function pave(grantKey, queryObj) {
 
 // ─── Value mappers ────────────────────────────────────────────────────────────
 
-// Discovery Call budget values → exact JT picklist values
 const BUDGET_MAP = {
   'Under $50K':   'Under $100K',
   'Under $100K':  'Under $100K',
@@ -72,25 +72,31 @@ async function getOrgInfo(grantKey) {
       organization: { id: {}, name: {} },
     },
   });
-
   const org = grantData?.query?.currentGrant?.organization
            ?? grantData?.currentGrant?.organization;
-  if (!org?.id) throw new Error('Could not get org from currentGrant. Check grant key.');
+  if (!org?.id) throw new Error('Could not get org from currentGrant.');
+  return org;
+}
 
-  const orgData = await pave(grantKey, {
-    organization: {
-      $: { id: org.id },
+// ─── Get customer account's own custom fields (correct IDs for this entity) ──
+
+async function getAccountFields(grantKey, accountId) {
+  const data = await pave(grantKey, {
+    account: {
+      $: { id: accountId },
       id: {},
       name: {},
-      customFields: {
+      customFieldValues: {
         $: { size: 100 },
-        nodes: { id: {}, name: {} },
+        nodes: {
+          id: {},
+          value: {},
+          customField: { id: {}, name: {} },
+        },
       },
     },
   });
-
-  const full = orgData?.query?.organization ?? orgData?.organization ?? {};
-  return { ...org, ...full };
+  return data?.query?.account ?? data?.account ?? {};
 }
 
 // ─── Create customer ──────────────────────────────────────────────────────────
@@ -98,12 +104,12 @@ async function getOrgInfo(grantKey) {
 async function createCustomer(grantKey, params) {
   const results = { steps: {} };
 
-  // Step 1: org ID + field defs
+  // Step 1: get org ID
   const org = await getOrgInfo(grantKey);
   const orgId = org?.id;
-  if (!orgId) throw new Error('Could not retrieve org ID. Verify grant key.');
+  if (!orgId) throw new Error('Could not retrieve org ID.');
 
-  // Step 2: create account (name only — no extra fields at creation)
+  // Step 2: create account (name only)
   const createData = await pave(grantKey, {
     createAccount: {
       $: {
@@ -126,9 +132,22 @@ async function createCustomer(grantKey, params) {
   results.url         = `https://app.jobtread.com/accounts/${accountId}`;
   results.steps.accountCreated = true;
 
-  // Step 3: set custom fields
-  // Exact picklist values from JT Settings → Custom Fields → CUSTOMER ACCOUNTS
-  const fieldDefs = org?.customFields?.nodes ?? [];
+  // Step 3: fetch the account's OWN custom field definitions
+  // This gives us only customer-entity field IDs — avoids mixing in job/vendor fields
+  const accountData = await getAccountFields(grantKey, accountId);
+  const fieldNodes = accountData?.customFieldValues?.nodes ?? [];
+  results.steps.customerFieldsFound = fieldNodes.length;
+
+  // Build a name→id map from the account's actual fields
+  const fieldIdByName = {};
+  for (const node of fieldNodes) {
+    if (node?.customField?.name && node?.customField?.id) {
+      fieldIdByName[node.customField.name] = node.customField.id;
+    }
+  }
+  results.steps.fieldNames = Object.keys(fieldIdByName);
+
+  // Map our call values to exact JT picklist values
   const FIELD_MAP = {
     'Status':                   '1. New Lead',
     'Customer Type':            params.customerType || 'Homeowner - Primary Residence',
@@ -148,34 +167,31 @@ async function createCustomer(grantKey, params) {
     'Appointment Date & Time':  params.apptDate || undefined,
   };
 
+  // Build customFieldValues using only field IDs that exist on this account
   const customFieldValues = {};
-  for (const def of fieldDefs) {
-    const val = FIELD_MAP[def.name];
-    if (val) customFieldValues[def.id] = val;
+  for (const [name, val] of Object.entries(FIELD_MAP)) {
+    const id = fieldIdByName[name];
+    if (id && val) customFieldValues[id] = val;
   }
+  results.steps.fieldsToSet = Object.keys(customFieldValues).length;
 
   if (Object.keys(customFieldValues).length > 0) {
     await pave(grantKey, {
       updateAccount: {
         $: { id: accountId, customFieldValues },
-        // No return fields requested — avoids the non-null error on account.$
       },
     }).then(() => {
-      results.steps.customFieldsSet = Object.keys(customFieldValues).length;
+      results.steps.customFieldsSet = true;
     }).catch(err => {
       console.warn('[jobtread proxy] Custom fields:', err.message);
       results.steps.customFieldsError = err.message;
     });
   }
 
-  // Step 4: create contact (name + email only — phone goes separately)
+  // Step 4: create contact (name only — JT doesn't accept email/phone on createContact)
   await pave(grantKey, {
     createContact: {
-      $: {
-        accountId,
-        name: params.name,
-        ...(params.email && { email: params.email }),
-      },
+      $: { accountId, name: params.name },
       createdContact: { id: {}, name: {} },
     },
   }).then(d => {
@@ -183,17 +199,12 @@ async function createCustomer(grantKey, params) {
       d?.query?.createContact?.createdContact?.id ??
       d?.createContact?.createdContact?.id;
     results.steps.contactCreated = true;
-    results.steps.contactId = contactId;
 
-    // Step 4b: add phone to the contact if we have one and got an ID back
+    // Step 4b: add phone number to contact
     if (contactId && params.phone) {
       pave(grantKey, {
         createPhoneNumber: {
-          $: {
-            contactId,
-            number: params.phone,
-            type: 'mobile',
-          },
+          $: { contactId, number: params.phone, type: 'mobile' },
           createdPhoneNumber: { id: {} },
         },
       }).then(() => {
@@ -212,7 +223,6 @@ async function createCustomer(grantKey, params) {
     const parts = params.address.split(',').map(s => s.trim());
     const street = parts[0] || params.address;
     const city   = parts[1] || '';
-    const state  = 'UT';
 
     await pave(grantKey, {
       createLocation: {
@@ -221,7 +231,7 @@ async function createCustomer(grantKey, params) {
           name: params.address,
           address1: street,
           ...(city && { city }),
-          state,
+          state: 'UT',
         },
         createdLocation: { id: {}, name: {} },
       },
