@@ -413,10 +413,10 @@
       { label: 'Budget $200K+',      pts: 3, check: f => ['$200K–$400K','$400K–$600K','$600K–$800K','$800K–$1M','$1M+'].includes(f.budget) },
       { label: 'Budget $100K–$200K', pts: 2, check: f => f.budget === '$100K–$200K', hideIf: f => ['$200K–$400K','$400K–$600K','$600K–$800K','$800K–$1M','$1M+'].includes(f.budget) },
       { label: 'In Service Area',    pts: 2, check: f => f.county === 'Weber' || f.county === 'Morgan' },
-      { label: 'Active Timeline',    pts: 2, check: f => f.timeline === 'ASAP' || f.timeline === '1–3 Months' },
+      { label: 'Active Timeline',    pts: 2, check: f => f.timeline === 'ASAP' || f.timeline === '1-3 Months' },
       { label: 'No Competing Bids',  pts: 2, check: f => f.bids === 'No' },
-      { label: 'Single DM',          pts: 1, check: f => f.dm === 'Single DM' },
-      { label: 'Financing Ready',    pts: 1, check: f => f.financing === 'Cash' || f.financing === 'Financing Ready' },
+      { label: 'Single DM',          pts: 1, check: f => f.dm === 'Solo' },
+      { label: 'Financing Ready',    pts: 1, check: f => f.financing === 'Cash' },
     ];
 
     // ─── Scoring ─────────────────────────────────────────────────────────────
@@ -582,7 +582,7 @@
                 timeline:          f.timeline,
                 county:            f.county,
                 qualificationScore:`${lbl.text}${pts > 0 ? ` (${pts} pts)` : ''}`,
-                dqFlag:            lbl.text === 'DQ' ? 'Yes' : 'No',
+                dqFlag:            f.budget === 'Under $50K' ? 'Budget' : f.county === 'Outside Area' ? 'Location' : 'None',
                 notes:             summary,
               },
             }),
@@ -691,14 +691,14 @@
                 </F>
                 <F label="Financing">
                   <PillGroup
-                    options={['Cash','Financing Ready','Exploring Options','Not Sure']}
+                    options={['Cash','HELOC','Construction Loan','Unknown']}
                     value={f.financing}
                     onChange={tog('financing')}
                   />
                 </F>
                 <div className="frow">
                   <F label="Decision Makers">
-                    <PillGroup options={['Single DM','Multiple DMs','Unknown']} value={f.dm} onChange={tog('dm')} />
+                    <PillGroup options={['Solo','Spouse Involved','Multiple Stakeholders','Unknown']} value={f.dm} onChange={tog('dm')} />
                   </F>
                   <F label="Competing Bids">
                     <PillGroup options={['No','Yes','Unknown']} value={f.bids} onChange={tog('bids')} />
@@ -706,7 +706,7 @@
                 </div>
                 <F label="Timeline">
                   <PillGroup
-                    options={['ASAP','1–3 Months','3–6 Months','6–12 Months','Just Planning']}
+                    options={['ASAP','1-3 Months','3-6 Months','6-12 Months','Planning Phase']}
                     value={f.timeline}
                     onChange={tog('timeline')}
                   />
