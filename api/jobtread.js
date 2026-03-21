@@ -54,11 +54,11 @@ async function pave(grantKey, queryObj) {
 const BUDGET_MAP = {
   'Under $50K':   'Under $100K',   // DQ but still needs a valid JT value
   'Under $100K':  'Under $100K',
-  '$100K–$200K':  '$100K - $200K',
-  '$200K–$400K':  '$200K - $400K',
-  '$400K–$600K':  '$400K - $600K',
-  '$600K–$800K':  '$600K - $800K',
-  '$800K–$1M':    '$800k - $1M',
+  '$100K–$200K':  '$100K-$200K',
+  '$200K–$400K':  '$200K-$400K',
+  '$400K–$600K':  '$400K-$600K',
+  '$600K–$800K':  '$600K-$800K',
+  '$800K–$1M':    '$800K-$1M',
   '$1M+':         '$1M+',
   'Not Sure':     'Not Sure',
 };
