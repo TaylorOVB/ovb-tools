@@ -1,366 +1,762 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>OVB Tools</title>
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="OVB Tools" />
-<meta name="theme-color" content="#1A1F2E" />
-<link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { min-height: 100vh; font-family: 'DM Sans', sans-serif; overflow-x: hidden; background: #1A1F2E; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
+  <meta name="theme-color" content="#141210" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <title>OVB Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.wallpaper {
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(ellipse at 20% 20%, rgba(199,170,139,0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(56,89,138,0.2) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(26,31,46,1) 0%, #111520 100%);
-  z-index: 0;
-}
-.wallpaper::after {
-  content: '';
-  position: absolute; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity: 0.4; pointer-events: none;
-}
+    :root {
+      --bg:      #141210;
+      --surface: #1A1816;
+      --card:    #222020;
+      --card2:   #282624;
+      --tan:     #C7AA8B;
+      --tan-d:   rgba(199,170,139,0.09);
+      --tan-m:   rgba(199,170,139,0.18);
+      --border:  rgba(199,170,139,0.09);
+      --border2: rgba(199,170,139,0.18);
+      --smoke:   #F2EFE8;
+      --muted:   rgba(242,239,232,0.38);
+      --green:   #4CAF84;
+      --red:     #D4714A;
+      --mono:    'DM Mono', monospace;
+      --sans:    'DM Sans', sans-serif;
+      --r:       4px;
+      --nav:     58px;
+    }
 
-.screen {
-  position: relative; z-index: 1; min-height: 100vh;
-  display: flex; flex-direction: column;
-  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0);
-}
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--smoke);
+      -webkit-font-smoothing: antialiased;
+    }
 
-.status-bar {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 14px 24px 0;
-  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); letter-spacing: 0.02em;
-}
-.status-left { display: flex; flex-direction: column; }
-.status-time { font-size: 16px; font-weight: 700; display: block; }
-.status-date { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.08em; font-family: 'DM Mono', monospace; display: block; margin-top: 2px; }
-.status-icons { display: flex; gap: 6px; align-items: center; font-size: 11px; }
+    /* ── Shell ── */
+    .shell { display: flex; height: 100vh; height: 100dvh; }
 
-.home-header {
-  padding: 24px 20px 20px;
-  display: flex; align-items: center; gap: 18px;
-  border-bottom: 1px solid rgba(199,170,139,0.12);
-  margin-bottom: 4px;
-}
-.bear-wrap { display: block; flex-shrink: 0; filter: drop-shadow(0 4px 14px rgba(199,170,139,0.25)); }
-.bear-img { width: 60px; height: 60px; object-fit: contain; display: block; mix-blend-mode: screen; }
-.header-info { flex: 1; }
-.home-title { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.95); letter-spacing: -0.01em; line-height: 1.2; }
-.home-sub { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(199,170,139,0.7); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 3px; }
-.quick-details { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
-.qd-row { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em; }
-.qd-icon { font-size: 10px; flex-shrink: 0; }
-.qd-val { color: rgba(255,255,255,0.7); }
-.qd-row a { color: rgba(199,170,139,0.8); text-decoration: none; }
-.qd-row a:hover { color: #C7AA8B; }
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--nav);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 0 12px;
+      flex-shrink: 0;
+      z-index: 20;
+    }
 
-.grid-section { padding: 0 20px; margin-bottom: 24px; }
-.grid-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 12px; padding-left: 4px; }
-.app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 12px; }
+    .bear-wrap {
+      width: 30px;
+      height: 30px;
+      margin-bottom: 18px;
+      flex-shrink: 0;
+      filter: brightness(1.05);
+    }
+    .bear-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      mix-blend-mode: screen;
+    }
 
-.app-item { display: flex; flex-direction: column; align-items: center; gap: 7px; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.app-item:active .app-icon { transform: scale(0.92); opacity: 0.85; }
-.app-icon {
-  width: 64px; height: 64px; border-radius: 15px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px; transition: transform 0.12s, opacity 0.12s;
-  position: relative; overflow: hidden; flex-shrink: 0;
-}
-.app-icon::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
-  border-radius: 15px 15px 0 0; pointer-events: none; z-index: 2;
-}
-.app-icon img { width: 38px; height: 38px; object-fit: contain; border-radius: 4px; position: relative; z-index: 1; }
-.app-label { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.85); text-align: center; line-height: 1.2; max-width: 64px; word-break: break-word; }
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      padding: 0 8px;
+    }
+    .nav-group + .nav-group {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
 
+    .nav-section-label {
+      font-family: var(--mono);
+      font-size: 6px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(199,170,139,0.3);
+      margin-bottom: 4px;
+      text-align: center;
+    }
 
-.ic-blue   { background: linear-gradient(145deg, #2979FF, #1A56DB); box-shadow: 0 4px 14px rgba(41,121,255,0.35); }
-.ic-orange { background: linear-gradient(145deg, #FF6B35, #E84E0F); box-shadow: 0 4px 14px rgba(255,107,53,0.35); }
-.ic-tan    { background: linear-gradient(145deg, #C7AA8B, #A08060); box-shadow: 0 4px 14px rgba(199,170,139,0.35); }
-.ic-green  { background: linear-gradient(145deg, #27AE60, #1E8449); box-shadow: 0 4px 14px rgba(39,174,96,0.35); }
-.ic-teal   { background: linear-gradient(145deg, #00BCD4, #0097A7); box-shadow: 0 4px 14px rgba(0,188,212,0.35); }
-.ic-gold   { background: linear-gradient(145deg, #F2C94C, #E0A800); box-shadow: 0 4px 14px rgba(242,201,76,0.35); }
-.ic-navy   { background: linear-gradient(145deg, #1E3A5F, #0F1E35); box-shadow: 0 4px 14px rgba(30,58,95,0.4); border: 1px solid rgba(255,255,255,0.08); }
-.ic-white  { background: linear-gradient(145deg, #F7F7F7, #E0DDD9); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
-.ic-dark   { background: linear-gradient(145deg, #2A2826, #1A1816); box-shadow: 0 4px 14px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); }
+    .nav-btn {
+      width: 100%;
+      height: 38px;
+      border-radius: var(--r);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      position: relative;
+      transition: background 0.12s;
+      -webkit-tap-highlight-color: transparent;
+      padding: 0;
+    }
+    .nav-btn:hover { background: var(--tan-d); }
+    .nav-btn.active {
+      background: var(--tan-d);
+      border: 1px solid var(--border2);
+    }
+    .nav-btn svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      stroke: rgba(242,239,232,0.3);
+      transition: stroke 0.12s;
+    }
+    .nav-btn:hover svg,
+    .nav-btn.active svg { stroke: var(--tan); }
 
-.dock-wrap { margin-top: auto; padding: 16px 20px 28px; }
-.dock {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 28px; padding: 14px 20px;
-  display: flex; justify-content: space-around; align-items: center;
-}
+    .nav-tip {
+      position: absolute;
+      left: calc(var(--nav) - 4px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--card2);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      padding: 5px 10px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      color: var(--smoke);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s;
+      z-index: 100;
+    }
+    .nav-btn:hover .nav-tip { opacity: 1; }
 
-.footer { text-align: center; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: #444; line-height: 1.8; border-top: 1px solid rgba(199,170,139,0.08); padding: 16px 20px 24px; }
+    .nav-spacer { flex: 1; }
 
-@media (min-width: 500px) { .app-grid { grid-template-columns: repeat(5, 1fr); } .app-icon { width: 68px; height: 68px; } }
-@media (min-width: 768px) { .app-grid { grid-template-columns: repeat(6, 1fr); } }
-</style>
+    .sidebar-clock {
+      font-family: var(--mono);
+      font-size: 7px;
+      color: rgba(242,239,232,0.18);
+      letter-spacing: 0.04em;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px 11px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .topbar-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--tan);
+    }
+    .topbar-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--border2);
+    }
+    .topbar-sub {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .topbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .topbar-phone {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--tan);
+      text-decoration: none;
+      opacity: 0.7;
+    }
+    .topbar-phone:hover { opacity: 1; }
+    .topbar-lic {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: rgba(242,239,232,0.2);
+      letter-spacing: 0.04em;
+    }
+    @media (max-width: 520px) {
+      .topbar-sub, .topbar-lic, .topbar-sep { display: none; }
+    }
+
+    /* ── Panels ── */
+    .panels { flex: 1; overflow: hidden; position: relative; }
+    .panel {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 18px 18px 32px;
+      display: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .panel.active { display: block; }
+    .panel::-webkit-scrollbar { width: 2px; }
+    .panel::-webkit-scrollbar-thumb { background: rgba(199,170,139,0.15); }
+
+    /* ── Section headers ── */
+    .sec {
+      margin-bottom: 18px;
+    }
+    .sec-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+    }
+    .sec-lbl {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(199,170,139,0.45);
+      white-space: nowrap;
+    }
+    .sec-rule { flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Tool rows ── */
+    .tool-list { display: flex; flex-direction: column; gap: 3px; }
+
+    .tool-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 13px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.12s, background 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tool-row:hover { border-color: var(--tan-m); background: var(--card2); }
+
+    .tool-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-live { background: var(--green); box-shadow: 0 0 5px rgba(76,175,132,0.35); }
+    .dot-ext  { background: rgba(242,239,232,0.14); }
+
+    .tool-info { flex: 1; min-width: 0; }
+    .tool-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--smoke);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tool-desc {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      display: block;
+      margin-top: 1px;
+    }
+
+    .tool-badge {
+      font-family: var(--mono);
+      font-size: 7px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: var(--r);
+      flex-shrink: 0;
+    }
+    .badge-live { background: rgba(76,175,132,0.1); color: var(--green); border: 1px solid rgba(76,175,132,0.2); }
+    .badge-ext  { background: rgba(242,239,232,0.04); color: var(--muted); border: 1px solid rgba(242,239,232,0.08); }
+
+    /* ── App grid ── */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+      gap: 4px;
+    }
+    .app-tile {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 11px 6px 9px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .app-tile:hover { border-color: var(--tan-m); }
+    .app-tile-icon { font-size: 20px; line-height: 1; }
+    .app-tile-name {
+      font-family: var(--mono);
+      font-size: 7.5px;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* ── Link list ── */
+    .link-list { display: flex; flex-direction: column; gap: 3px; }
+    .link-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 13px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .link-row:hover { border-color: var(--tan-m); }
+    .link-icon { font-size: 13px; width: 18px; text-align: center; flex-shrink: 0; }
+    .link-name { font-size: 12px; font-weight: 500; color: var(--smoke); flex: 1; }
+    .link-domain { font-family: var(--mono); font-size: 7.5px; color: rgba(242,239,232,0.18); }
+
+    /* ── Info cards ── */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 11px 13px;
+    }
+    .info-lbl {
+      font-family: var(--mono);
+      font-size: 7.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(199,170,139,0.4);
+      margin-bottom: 3px;
+    }
+    .info-val { font-size: 12px; font-weight: 600; color: var(--smoke); }
+    .info-val a { color: var(--tan); text-decoration: none; }
+    .info-val a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-<div class="wallpaper"></div>
-<div class="screen">
+<div class="shell">
 
-  <!-- STATUS BAR -->
-  <div class="status-bar">
-    <div class="status-left">
-      <span class="status-time" id="clock">--:--</span>
-      <span class="status-date" id="dateline"></span>
-    </div>
-    <div class="status-icons"><span>●●●●</span><span>WiFi</span><span>🔋</span></div>
-  </div>
-
-  <!-- HEADER -->
-  <div class="home-header">
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
     <div class="bear-wrap">
-      <img class="bear-img" src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="OVB" />
+      <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="" />
     </div>
-    <div class="header-info">
-      <div class="home-title">OVB Tools</div>
-      <div class="home-sub">Ogden Valley Builders</div>
-      <div class="quick-details">
-        <div class="qd-row"><span class="qd-icon">🪪</span> GC License <span class="qd-val">#14219939-5501</span></div>
-        <div class="qd-row"><span class="qd-icon">📞</span> <a href="tel:+13852887921">(385) 288-7921</a></div>
-        <div class="qd-row"><span class="qd-icon">✉️</span> <a href="mailto:info@ogdenvalleybuilders.com">info@ogdenvalleybuilders.com</a></div>
-        <div class="qd-row"><span class="qd-icon">📍</span> <span class="qd-val">Weber &amp; Morgan County, UT</span></div>
+
+    <!-- Sales tools -->
+    <div class="nav-group">
+      <div class="nav-section-label">Sales</div>
+      <button class="nav-btn active" onclick="switchPanel('sales', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <span class="nav-tip">Sales</span>
+      </button>
+    </div>
+
+    <!-- Ops tools -->
+    <div class="nav-group">
+      <div class="nav-section-label">Ops</div>
+      <button class="nav-btn" onclick="switchPanel('ops', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+        <span class="nav-tip">Ops</span>
+      </button>
+    </div>
+
+    <!-- Stack + Links -->
+    <div class="nav-group">
+      <div class="nav-section-label">Stack</div>
+      <button class="nav-btn" onclick="switchPanel('apps', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+        <span class="nav-tip">Tech Stack</span>
+      </button>
+      <button class="nav-btn" onclick="switchPanel('links', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        <span class="nav-tip">Permits & Refs</span>
+      </button>
+    </div>
+
+    <!-- Info -->
+    <div class="nav-group">
+      <div class="nav-section-label">OVB</div>
+      <button class="nav-btn" onclick="switchPanel('info', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/>
+        </svg>
+        <span class="nav-tip">OVB Info</span>
+      </button>
+    </div>
+
+    <div class="nav-spacer"></div>
+
+    <div class="sidebar-clock" id="sidebar-clock">--:--<br>---</div>
+  </div>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <div class="topbar">
+      <span class="topbar-title" id="panel-title">Sales</span>
+      <div class="topbar-sep"></div>
+      <span class="topbar-sub">Ogden Valley Builders</span>
+      <div class="topbar-right">
+        <a href="tel:3852887921" class="topbar-phone">(385) 288-7921</a>
+        <span class="topbar-lic">GC #14219939-5501</span>
       </div>
     </div>
-  </div>
 
-  <!-- SALES TOOLS -->
-  <div class="grid-section" style="padding-top:24px;">
-    <div class="grid-label">Sales Tools</div>
-    <div class="app-grid">
+    <div class="panels">
 
-      <a class="app-item" href="/OVB-Discovery-Call.html">
-        <div class="app-icon ic-tan">
-          <span>📞</span>
+      <!-- SALES -->
+      <div class="panel active" id="panel-sales">
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Lead Qualification</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="/OVB-Discovery-Call.html">
+              <div class="tool-dot dot-live"></div>
+              <div class="tool-info">
+                <span class="tool-name">Discovery Call</span>
+                <span class="tool-desc">Qualify leads + push to JobTread</span>
+              </div>
+              <span class="tool-badge badge-live">Live</span>
+            </a>
+          </div>
         </div>
-        <span class="app-label">Discovery Call</span>
-      </a>
 
-      <a class="app-item" href="/OVB-Rough-Budget-Calculator.html">
-        <div class="app-icon ic-green">
-          <span>🧮</span>
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Estimating</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="/OVB-Rough-Budget-Calculator.html">
+              <div class="tool-dot dot-live"></div>
+              <div class="tool-info">
+                <span class="tool-name">Rough Budget Calculator</span>
+                <span class="tool-desc">Early-stage cost ranges for clients</span>
+              </div>
+              <span class="tool-badge badge-live">Live</span>
+            </a>
+          </div>
         </div>
-        <span class="app-label">Rough Budget Calc</span>
-      </a>
 
-    </div>
-  </div>
+      </div>
 
-  <!-- ADMIN TOOLS -->
-  <div class="grid-section">
-    <div class="grid-label">Admin Tools</div>
-    <div class="app-grid">
+      <!-- OPS -->
+      <div class="panel" id="panel-ops">
 
-      <a class="app-item" href="/OVB-Builders-Risk-Worksheet.html">
-        <div class="app-icon ic-blue">
-          <span>🏗️</span>
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Insurance</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="/OVB-Builders-Risk-Worksheet.html">
+              <div class="tool-dot dot-live"></div>
+              <div class="tool-info">
+                <span class="tool-name">Builders Risk Worksheet</span>
+                <span class="tool-desc">Coverage calculator + broker summary</span>
+              </div>
+              <span class="tool-badge badge-live">Live</span>
+            </a>
+          </div>
         </div>
-        <span class="app-label">Builders Risk</span>
-      </a>
-      <a class="app-item" href="/OVB-Master-Sub-Agreement.html">
-        <div class="app-icon ic-pink">
-          <span>␚</span>
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Subcontractors</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="/OVB-Master-Sub-Agreement.html">
+              <div class="tool-dot dot-live"></div>
+              <div class="tool-info">
+                <span class="tool-name">Master Sub Agreement</span>
+                <span class="tool-desc">Subcontractor agreement generator</span>
+              </div>
+              <span class="tool-badge badge-live">Live</span>
+            </a>
+          </div>
         </div>
-        <span class="app-label">Sub Agreement</span>
-      </a>
 
-    </div>
-  </div>
+      </div>
 
-  <!-- PM / SUPER TOOLS -->
-  <div class="grid-section">
-    <div class="grid-label">PM / Super Tools</div>
-    <div class="app-grid">
+      <!-- TECH STACK -->
+      <div class="panel" id="panel-apps">
 
-      <div class="app-item" style="opacity:0.35;cursor:default;pointer-events:none;">
-        <div class="app-icon ic-dark">
-          <span>🔧</span>
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Project Management</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="javascript:void(0)" onclick="openApp('jobtread://', 'https://app.jobtread.com')">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">JobTread</span>
+                <span class="tool-desc">Jobs, estimates, financials, subs</span>
+              </div>
+              <span class="tool-badge badge-ext">App</span>
+            </a>
+            <a class="tool-row" href="javascript:void(0)" onclick="openApp('notion://', 'https://www.notion.so')">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Notion</span>
+                <span class="tool-desc">Docs, SOPs, internal knowledge base</span>
+              </div>
+              <span class="tool-badge badge-ext">App</span>
+            </a>
+          </div>
         </div>
-        <span class="app-label">Coming Soon</span>
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Communication</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="javascript:void(0)" onclick="openApp('googlegmail://', 'https://mail.google.com')">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Gmail</span>
+                <span class="tool-desc">info@ogdenvalleybuilders.com</span>
+              </div>
+              <span class="tool-badge badge-ext">App</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Finance</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="https://app.qbo.intuit.com" target="_blank">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">QuickBooks Online</span>
+                <span class="tool-desc">Accounting, invoicing, payroll</span>
+              </div>
+              <span class="tool-badge badge-ext">Web</span>
+            </a>
+            <a class="tool-row" href="https://www.bankofutah.com" target="_blank">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Bank of Utah</span>
+                <span class="tool-desc">Business banking</span>
+              </div>
+              <span class="tool-badge badge-ext">Web</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Files & Design</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="javascript:void(0)" onclick="openApp('googledrive://', 'https://drive.google.com')">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Google Drive</span>
+                <span class="tool-desc">Files and shared documents</span>
+              </div>
+              <span class="tool-badge badge-ext">App</span>
+            </a>
+            <a class="tool-row" href="https://docs.google.com/spreadsheets" target="_blank">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Google Sheets</span>
+                <span class="tool-desc">Spreadsheets and data tracking</span>
+              </div>
+              <span class="tool-badge badge-ext">Web</span>
+            </a>
+            <a class="tool-row" href="https://docs.google.com/document" target="_blank">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Google Docs</span>
+                <span class="tool-desc">Documents and writing</span>
+              </div>
+              <span class="tool-badge badge-ext">Web</span>
+            </a>
+            <a class="tool-row" href="https://www.canva.com" target="_blank">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Canva</span>
+                <span class="tool-desc">Graphics and marketing materials</span>
+              </div>
+              <span class="tool-badge badge-ext">Web</span>
+            </a>
+            <a class="tool-row" href="https://webflow.com" target="_blank">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Webflow</span>
+                <span class="tool-desc">OVB website</span>
+              </div>
+              <span class="tool-badge badge-ext">Web</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Navigation & AI</span><div class="sec-rule"></div></div>
+          <div class="tool-list">
+            <a class="tool-row" href="javascript:void(0)" onclick="openApp('comgooglemaps://', 'https://maps.google.com')">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Google Maps</span>
+                <span class="tool-desc">Job sites and directions</span>
+              </div>
+              <span class="tool-badge badge-ext">App</span>
+            </a>
+            <a class="tool-row" href="https://claude.ai" target="_blank">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">Claude</span>
+                <span class="tool-desc">AI assistant</span>
+              </div>
+              <span class="tool-badge badge-ext">Web</span>
+            </a>
+            <a class="tool-row" href="https://chat.openai.com" target="_blank">
+              <div class="tool-dot dot-ext"></div>
+              <div class="tool-info">
+                <span class="tool-name">ChatGPT</span>
+                <span class="tool-desc">AI assistant</span>
+              </div>
+              <span class="tool-badge badge-ext">Web</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PERMITS & REFS -->
+      <div class="panel" id="panel-links">
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Permit Portals</span><div class="sec-rule"></div></div>
+          <div class="link-list">
+            <a class="link-row" href="https://frontier.co.weber.ut.us/Home" target="_blank">
+              <span class="link-icon">📋</span>
+              <span class="link-name">Weber County Permits</span>
+              <span class="link-domain">frontier.co.weber.ut.us</span>
+            </a>
+            <a class="link-row" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank">
+              <span class="link-icon">📋</span>
+              <span class="link-name">Morgan County Permits</span>
+              <span class="link-domain">civicreview.com</span>
+            </a>
+            <a class="link-row" href="https://op.ogdencity.com" target="_blank">
+              <span class="link-icon">📋</span>
+              <span class="link-name">Ogden City Permits</span>
+              <span class="link-domain">op.ogdencity.com</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">License & Compliance</span><div class="sec-rule"></div></div>
+          <div class="link-list">
+            <a class="link-row" href="https://secure.utah.gov/llv/search/index.html" target="_blank">
+              <span class="link-icon">🪪</span>
+              <span class="link-name">DOPL License Lookup</span>
+              <span class="link-domain">secure.utah.gov</span>
+            </a>
+            <a class="link-row" href="https://secure.utah.gov/scr/" target="_blank">
+              <span class="link-icon">📝</span>
+              <span class="link-name">UT Sub Registry</span>
+              <span class="link-domain">secure.utah.gov/scr</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">OVB Online</span><div class="sec-rule"></div></div>
+          <div class="link-list">
+            <a class="link-row" href="https://www.ogdenvalleybuilders.com" target="_blank">
+              <span class="link-icon">🏠</span>
+              <span class="link-name">OVB Website</span>
+              <span class="link-domain">ogdenvalleybuilders.com</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- OVB INFO -->
+      <div class="panel" id="panel-info">
+        <div class="sec">
+          <div class="sec-hdr"><span class="sec-lbl">Company</span><div class="sec-rule"></div></div>
+          <div class="info-grid">
+            <div class="info-card"><div class="info-lbl">Company</div><div class="info-val">Ogden Valley Builders LLC</div></div>
+            <div class="info-card"><div class="info-lbl">GC License</div><div class="info-val">#14219939-5501</div></div>
+            <div class="info-card"><div class="info-lbl">Phone</div><div class="info-val"><a href="tel:3852887921">(385) 288-7921</a></div></div>
+            <div class="info-card"><div class="info-lbl">Email</div><div class="info-val"><a href="mailto:info@ogdenvalleybuilders.com">info@ogdenvalleybuilders.com</a></div></div>
+            <div class="info-card"><div class="info-lbl">Service Area</div><div class="info-val">Weber & Morgan County, UT</div></div>
+            <div class="info-card"><div class="info-lbl">Pricing Model</div><div class="info-val">Cost Plus (open-book)</div></div>
+            <div class="info-card"><div class="info-lbl">Warranty</div><div class="info-val">36-Month (3× UT standard)</div></div>
+            <div class="info-card"><div class="info-lbl">Stack</div><div class="info-val">JobTread + QBO + Notion</div></div>
+          </div>
+        </div>
       </div>
 
     </div>
   </div>
-
-  <!-- FIELD APPS -->
-  <div class="grid-section">
-    <div class="grid-label">Field Apps</div>
-    <div class="app-grid">
-      
-      <a class="app-item" href="#" onclick="openApp('jobtread://', 'https://app.jobtread.com'); return false;">
-        <div class="app-icon ic-orange">
-          <img src="https://img.logo.dev/jobtread.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="JobTread"
-            onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-size:26px;position:relative;z-index:1\'>🔧</span>')" />
-        </div>
-        <span class="app-label">JobTread</span>
-      </a>
-
-      <a class="app-item" href="#" onclick="openApp('gmail://', 'https://mail.google.com'); return false;">
-        <div class="app-icon ic-white">
-          <img src="https://img.logo.dev/gmail.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Gmail" />
-        </div>
-        <span class="app-label">Gmail</span>
-      </a>
-
-      <a class="app-item" href="#" onclick="openApp('notion://', 'https://www.notion.so'); return false;">
-        <div class="app-icon ic-white">
-          <img src="https://img.logo.dev/notion.so?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Notion" />
-        </div>
-        <span class="app-label">Notion</span>
-      </a>
-
-      <a class="app-item" href="#" onclick="openApp('googledrive://', 'https://drive.google.com'); return false;">
-        <div class="app-icon ic-white">
-          <img src="https://img.logo.dev/drive.google.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Google Drive" />
-        </div>
-        <span class="app-label">Google Drive</span>
-      </a>
-
-      <a class="app-item" href="https://app.qbo.intuit.com" target="_blank" rel="noopener">
-        <div class="app-icon ic-white">
-          <img src="https://img.logo.dev/quickbooks.intuit.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="QuickBooks" />
-        </div>
-        <span class="app-label">QuickBooks</span>
-      </a>
-
-      <a class="app-item" href="https://www.canva.com" target="_blank" rel="noopener">
-        <div class="app-icon ic-white">
-          <img src="https://img.logo.dev/canva.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Canva" />
-        </div>
-        <span class="app-label">Canva</span>
-      </a>
-
-      <a class="app-item" href="https://webflow.com" target="_blank" rel="noopener">
-        <div class="app-icon ic-blue">
-          <img src="https://img.logo.dev/webflow.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Webflow" />
-        </div>
-        <span class="app-label">Webflow</span>
-      </a>
-
-      <a class="app-item" href="https://www.ogdenvalleybuilders.com" target="_blank" rel="noopener">
-        <div class="app-icon ic-navy"><span>🏔️</span></div>
-        <span class="app-label">OVB Website</span>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- QUICK LINKS -->
-  <div class="grid-section">
-    <div class="grid-label">Quick Links</div>
-    <div class="app-grid">
-
-      <a class="app-item" href="https://secure.utah.gov/llv/search/index.html" target="_blank" rel="noopener">
-        <div class="app-icon" style="background:linear-gradient(145deg,#8B5E3C,#6B4423);box-shadow:0 4px 14px rgba(139,94,60,0.35);"><span>🏛️</span></div>
-        <span class="app-label">DOPL License</span>
-      </a>
-
-      <a class="app-item" href="https://secure.utah.gov/scr/" target="_blank" rel="noopener">
-        <div class="app-icon" style="background:linear-gradient(145deg,#5A3A8E,#3A1A6E);box-shadow:0 4px 14px rgba(90,58,142,0.35);"><span>📋</span></div>
-        <span class="app-label">UT Sub Registry</span>
-      </a>
-
-      <a class="app-item" href="https://op.ogdencity.com" target="_blank" rel="noopener">
-        <div class="app-icon" style="background:linear-gradient(145deg,#1A5276,#0E2F44);box-shadow:0 4px 14px rgba(26,82,118,0.35);"><span>🏙️</span></div>
-        <span class="app-label">Ogden City</span>
-      </a>
-
-      <a class="app-item" href="https://frontier.co.weber.ut.us/Home" target="_blank" rel="noopener">
-        <div class="app-icon" style="background:linear-gradient(145deg,#2D5A8E,#1A3A5C);box-shadow:0 4px 14px rgba(45,90,142,0.35);"><span>📐</span></div>
-        <span class="app-label">Weber Permits</span>
-      </a>
-
-      <a class="app-item" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank" rel="noopener">
-        <div class="app-icon" style="background:linear-gradient(145deg,#3A5E2D,#244018);box-shadow:0 4px 14px rgba(58,94,45,0.35);"><span>📐</span></div>
-        <span class="app-label">Morgan Permits</span>
-      </a>
-
-      <a class="app-item" href="#" onclick="openApp('comgooglemaps://', 'https://maps.google.com'); return false;">
-        <div class="app-icon ic-white">
-          <img src="https://img.logo.dev/maps.google.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Google Maps" />
-        </div>
-        <span class="app-label">Google Maps</span>
-      </a>
-
-      <a class="app-item" href="https://www.bankofutah.com" target="_blank" rel="noopener">
-        <div class="app-icon ic-white">
-          <img src="https://img.logo.dev/bankofutah.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Bank of Utah" />
-        </div>
-        <span class="app-label">Bank of Utah</span>
-      </a>
-
-      <a class="app-item" href="https://claude.ai" target="_blank" rel="noopener">
-        <div class="app-icon ic-dark">
-          <img src="https://img.logo.dev/anthropic.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Claude" />
-        </div>
-        <span class="app-label">Claude</span>
-      </a>
-
-      <a class="app-item" href="https://chat.openai.com" target="_blank" rel="noopener">
-        <div class="app-icon ic-dark">
-          <img src="https://img.logo.dev/openai.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="ChatGPT" />
-        </div>
-        <span class="app-label">ChatGPT</span>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- DOCK -->
-  <div class="dock-wrap">
-    <div class="dock">
-
-      <a class="app-item" href="#" onclick="openApp('jobtread://', 'https://app.jobtread.com'); return false;">
-        <div class="app-icon ic-orange" style="width:56px;height:56px;border-radius:13px;">
-          <img src="https://img.logo.dev/jobtread.com?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="JobTread" style="width:32px;height:32px;"
-            onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-size:22px;position:relative;z-index:1\'>🔧</span>')" />
-        </div>
-        <span class="app-label">JobTread</span>
-      </a>
-
-      <a class="app-item" href="/OVB-Discovery-Call.html">
-        <div class="app-icon ic-tan" style="width:56px;height:56px;border-radius:13px;"><span style="font-size:24px;">📞</span></div>
-        <span class="app-label">Discovery</span>
-      </a>
-
-      <a class="app-item" href="/OVB-Builders-Risk-Worksheet.html">
-        <div class="app-icon ic-blue" style="width:56px;height:56px;border-radius:13px;"><span style="font-size:24px;">🏗️</span></div>
-        <span class="app-label">Builders Risk</span>
-      </a>
-
-      <a class="app-item" href="#" onclick="openApp('notion://', 'https://www.notion.so'); return false;">
-        <div class="app-icon ic-white" style="width:56px;height:56px;border-radius:13px;">
-          <img src="https://img.logo.dev/notion.so?token=pk_TKVSscA_Se6Iwu8x1R8yRQ&size=80&retina=true" alt="Notion" style="width:32px;height:32px;" />
-        </div>
-        <span class="app-label">Notion</span>
-      </a>
-
-    </div>
-  </div>
-
-  <div class="footer">
-    Ogden Valley Builders · GC #14219939-5501<br>
-    tools.ogdenvalleybuilders.com
-  </div>
-
 </div>
 
 <script>
+  var TITLES = { sales: 'Sales', ops: 'Ops', apps: 'Tech Stack', links: 'Permits & Refs', info: 'OVB Info' };
+
+  function switchPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('panel-title').textContent = TITLES[id] || id;
+  }
+
   function openApp(appUrl, webUrl) {
     var start = Date.now();
     setTimeout(function() {
@@ -371,9 +767,12 @@ html, body { min-height: 100vh; font-family: 'DM Sans', sans-serif; overflow-x: 
 
   function updateClock() {
     var now = new Date();
-    var h = now.getHours(), m = now.getMinutes();
-    var ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    document.getElementById('clock').textContent = h + ':' + String(m).padStart(2,'0') + ' ' + ampm;
-    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    var months = ['Jan','Feb','Mar','Apr'
+    var t = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    var d = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+    document.getElementById('sidebar-clock').innerHTML = t + '<br>' + d;
+  }
+  updateClock();
+  setInterval(updateClock, 15000);
+</script>
+</body>
+</html>
