@@ -630,7 +630,7 @@
                   <input type="email" placeholder="email@example.com" value={f.email} onChange={setE('email')} />
                 </F>
                 <F label="Preferred Contact">
-                  <PillGroup options={['Call','Text','Email']} value={f.contact} onChange={tog('contact')} />
+                  <PillGroup options={['Call','Text','Email','All Options']} value={f.contact} onChange={tog('contact')} />
                 </F>
                 <F label="Customer Type">
                   <PillGroup
@@ -655,11 +655,7 @@
 
               {/* Section 2 */}
               <Sec num="02" title="The Project">
-                <F label="Project Type">
-                  <select value={f.projectType} onChange={setE('projectType')}>
-                    {PROJECT_TYPES.map(v => <option key={v} value={v}>{v || '— Select —'}</option>)}
-                  </select>
-                </F>
+
                 <F label="Address">
                   <input type="text" placeholder="123 Main St, Ogden" value={f.address} onChange={setE('address')} />
                 </F>
