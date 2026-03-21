@@ -70,7 +70,7 @@ async function getOrgInfo(grantKey) {
       id: {},
       name: {},
       customFields: {
-        $: { size: 50 },
+        $: { size: 100 },
         nodes: { id: {}, name: {} },
       },
     },
@@ -80,7 +80,7 @@ async function getOrgInfo(grantKey) {
   return { ...org, ...full };
 }
 
-// ─── Create customer (multi-step) ─────────────────────────────────────────────
+// ─── Create customer ──────────────────────────────────────────────────────────
 
 async function createCustomer(grantKey, params) {
   // 1. Get org ID + custom field definitions
@@ -109,9 +109,12 @@ async function createCustomer(grantKey, params) {
 
   const accountId = account.id;
 
-  // 3. Set custom fields matched by name to your JT field definitions
+  // 3. Set custom fields
+  // Field names match exactly what's in JT Settings → Custom Fields → CUSTOMER ACCOUNTS
   const fieldDefs = org?.customFields?.nodes ?? [];
   const FIELD_MAP = {
+    'Status':                   'Lead',
+    'Customer Type':            'Residential',
     'Budget Range':             params.budgetRange,
     'Needs':                    params.projectType,
     'Lead Source':              params.leadSource,
@@ -120,10 +123,12 @@ async function createCustomer(grantKey, params) {
     'Financing Type':           params.financing,
     'Decision Makers':          params.decisionMakers,
     'Competing Bids':           params.competingBids,
-    'Timeline/Urgency':         params.timeline,
+    'Timeline / Urgency':       params.timeline,       // exact name — spaces around slash
     'Project Location':         params.county ? `${params.county} County` : undefined,
-    'Qualification Score':      params.qualificationScore,
     'DQ Flag':                  params.dqFlag,
+    'Qualification Score':      params.qualificationScore,
+    'Notes':                    params.notes,
+    'Appointment Date & Time':  params.apptDate || undefined,
   };
 
   const customFieldValues = {};
@@ -139,16 +144,6 @@ async function createCustomer(grantKey, params) {
         account: { id: {}, name: {} },
       },
     }).catch(err => console.warn('[jobtread proxy] Custom fields non-fatal:', err.message));
-  }
-
-  // 4. Post full JT summary as a comment on the customer record
-  if (params.notes) {
-    await pave(grantKey, {
-      createComment: {
-        $: { entityId: accountId, entityType: 'Account', body: params.notes },
-        createdComment: { id: {} },
-      },
-    }).catch(err => console.warn('[jobtread proxy] Comment non-fatal:', err.message));
   }
 
   return {
