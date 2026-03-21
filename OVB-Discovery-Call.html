@@ -521,7 +521,7 @@
 
     function App() {
       const EMPTY = {
-        name:'', phone:'', email:'', contact:'', leadSource:'', referredBy:'',
+        name:'', phone:'', email:'', contact:'', customerType:'', leadSource:'', referredBy:'',
         projectType:'', address:'', county:'', scope:'', plans:'',
         budget:'', financing:'', dm:'', bids:'', timeline:'',
         notes:'', obj:'', next:'', apptDate:'',
@@ -575,6 +575,7 @@
                 leadSource:        f.leadSource,
                 referredBy:        f.referredBy,
                 contactMethod:     f.contact,
+                customerType:      f.customerType,
                 financing:         f.financing,
                 decisionMakers:    f.dm,
                 competingBids:     f.bids,
@@ -630,6 +631,13 @@
                 </F>
                 <F label="Preferred Contact">
                   <PillGroup options={['Call','Text','Email']} value={f.contact} onChange={tog('contact')} />
+                </F>
+                <F label="Customer Type">
+                  <PillGroup
+                    options={['Homeowner - Primary Residence','Homeowner - Investment Property','Realtor','Developer','Other']}
+                    value={f.customerType}
+                    onChange={tog('customerType')}
+                  />
                 </F>
                 <F label="Lead Source">
                   <PillGroup
