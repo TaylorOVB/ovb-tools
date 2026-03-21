@@ -53,17 +53,17 @@ var F = {
   qualificationScore: '22PTykURtF6Z',
 };
 
-var BUDGET_MAP = {
-  'Under $50K':   'Under $100K',
-  'Under $100K':  'Under $100K',
-  '$100K\u2013$200K':  '$100K - $200K',
-  '$200K\u2013$400K':  '$200K - $400K',
-  '$400K\u2013$600K':  '$400K - $600K',
-  '$600K\u2013$800K':  '$600K - $800K',
-  '$800K\u2013$1M':    '$800k - $1M',
-  '$1M+':         '$1M+',
-  'Not Sure':     'Not Sure',
-};
+function normalizeBudget(val) {
+  if (!val) return val;
+  if (val.indexOf('Under') !== -1) return 'Under $100K';
+  if (val === '$1M+') return '$1M+';
+  if (val === 'Not Sure') return 'Not Sure';
+  // Replace any dash variant with ' - '
+  var out = val.replace(/\s*[-–—]\s*/g, ' - ');
+  // JT uses lowercase k for $800k - $1M
+  out = out.replace('$800K - $1M', '$800k - $1M');
+  return out;
+}
 
 async function pave(grantKey, queryObj) {
   var res = await fetch('https://api.jobtread.com/pave', {
@@ -127,7 +127,7 @@ async function createCustomer(grantKey, params) {
 
   customFieldValues[F.status]             = '1. New Lead';
   if (params.customerType)   customFieldValues[F.customerType]    = params.customerType;
-  if (params.budgetRange)    customFieldValues[F.budgetRange]     = BUDGET_MAP[params.budgetRange] || params.budgetRange;
+  if (params.budgetRange)    customFieldValues[F.budgetRange]     = normalizeBudget(params.budgetRange);
   if (params.projectType)    customFieldValues[F.needs]           = params.projectType;
   if (params.leadSource)     customFieldValues[F.leadSource]      = params.leadSource;
   if (params.referredBy)     customFieldValues[F.referredBy]      = params.referredBy;
