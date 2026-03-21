@@ -428,7 +428,7 @@
     function calcLabel(f, pts) {
       if (f.budget === 'Under $50K') return { text: 'DQ', cls: 'dq' };
       if (f.county === 'Outside Area') return { text: 'Cold', cls: 'cold' };
-      if (f.budget === 'Under $100K' && f.leadSource === 'Referral') return { text: 'Filler', cls: 'filler' };
+      if (f.budget === 'Under $100K' && f.leadSource.includes('Referral')) return { text: 'Filler', cls: 'filler' };
       if (pts >= 9) return { text: 'Hot', cls: 'hot' };
       if (pts >= 6) return { text: 'Warm', cls: 'warm' };
       if (pts >= 1) return { text: 'Cold', cls: 'cold' };
@@ -641,12 +641,12 @@
                 </F>
                 <F label="Lead Source">
                   <PillGroup
-                    options={['Referral','Google','Facebook','Instagram','Drive-By','Other']}
+                    options={['Past Client Referral','Architect Referral','Realtor Referral','Sub / Vendor Referral','Google Search','Organic Social','Yard Sign / Job Site','Home Show / Event','Website','Other']}
                     value={f.leadSource}
                     onChange={tog('leadSource')}
                   />
                 </F>
-                {f.leadSource === 'Referral' && (
+                {f.leadSource.includes('Referral') && (
                   <F label="Referred By">
                     <input type="text" placeholder="Who referred them?" value={f.referredBy} onChange={setE('referredBy')} />
                   </F>
