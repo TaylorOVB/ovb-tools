@@ -55,14 +55,81 @@ var F = {
 
 function normalizeBudget(val) {
   if (!val) return val;
-  if (val.indexOf('Under') !== -1) return 'Under $100K';
-  if (val === '$1M+') return '$1M+';
-  if (val === 'Not Sure') return 'Not Sure';
-  // Replace any dash variant with ' - '
-  var out = val.replace(/\s*[-–—]\s*/g, ' - ');
-  // JT uses lowercase k for $800k - $1M
-  out = out.replace('$800K - $1M', '$800k - $1M');
-  return out;
+  // Strip spaces, normalize all dash variants, lowercase for comparison
+  var lookup = {
+    'under$50k':  'Under $100K',
+    'under$100k': 'Under $100K',
+    '$100k$200k': '$100K-$200K',
+    '$200k$400k': '$200K-$400K',
+    '$400k$600k': '$400K-$600K',
+    '$600k$800k': '$600K-$800K',
+    '$800k$1m':   '$800K-$1M',
+    '$1m+':       '$1M+',
+    'notsure':    'Not Sure',
+  };
+  // Remove all spaces, dashes, en-dashes, em-dashes then lowercase
+  var key = val.toLowerCase().replace(/[\s\-\u2013\u2014]/g, '');
+  return lookup[key] || val;
+}
+
+// Map financing form values to JT picklist
+function normalizeFinancing(val) {
+  var map = {
+    'cash':              'Cash',
+    'heloc':             'HELOC',
+    'constructionloan':  'Construction Loan',
+    'financingready':    'Construction Loan',  // closest match
+    'exploringoptions':  'Unknown - Needs Guidance',
+    'notsure':           'Unknown',
+    'unknown':           'Unknown',
+  };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\-]/g, '');
+  return map[key] || val;
+}
+
+// Map decision makers form values to JT picklist
+function normalizeDM(val) {
+  var map = {
+    'solo':                 'Solo',
+    'singledm':             'Solo',
+    'spouseinvolved':       'Spouse Involved',
+    'multipledms':          'Multiple Stakeholders',
+    'multiplestakeholders': 'Multiple Stakeholders',
+    'unknown':              'Unknown',
+  };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\-]/g, '');
+  return map[key] || val;
+}
+
+// Map timeline form values to JT picklist
+function normalizeTimeline(val) {
+  var map = {
+    'asap':          'ASAP',
+    '13months':      '1-3 Months',
+    '1-3months':     '1-3 Months',
+    '36months':      '3-6 Months',
+    '3-6months':     '3-6 Months',
+    '612months':     '6-12 Months',
+    '6-12months':    '6-12 Months',
+    'justplanning':  'Planning Phase',
+    'planningphase': 'Planning Phase',
+  };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\u2013\u2014]/g, '');
+  return map[key] || val;
+}
+
+// Strip pts from qualification score, map to JT options: Hot/Warm/Cold/DQ'd
+function normalizeQualScore(val) {
+  if (!val) return val;
+  var v = val.toLowerCase();
+  if (v.indexOf('hot') !== -1)  return 'Hot';
+  if (v.indexOf('warm') !== -1) return 'Warm';
+  if (v.indexOf('dq') !== -1)   return "DQ'd";
+  if (v.indexOf('cold') !== -1 || v.indexOf('filler') !== -1) return 'Cold';
+  return val;
 }
 
 async function pave(grantKey, queryObj) {
@@ -133,13 +200,18 @@ async function createCustomer(grantKey, params) {
   if (params.referredBy)     customFieldValues[F.referredBy]      = params.referredBy;
   if (params.contactMethod)  customFieldValues[F.preferredContact]= params.contactMethod;
   if (params.notes)          customFieldValues[F.notes]           = params.notes;
-  if (params.financing)      customFieldValues[F.financingType]   = params.financing;
-  if (params.decisionMakers) customFieldValues[F.decisionMakers]  = params.decisionMakers;
+  if (params.financing)      customFieldValues[F.financingType]   = normalizeFinancing(params.financing);
+  if (params.decisionMakers) customFieldValues[F.decisionMakers]  = normalizeDM(params.decisionMakers);
   if (params.competingBids)  customFieldValues[F.competingBids]   = params.competingBids;
-  if (params.timeline)       customFieldValues[F.timeline]        = params.timeline;
+  if (params.timeline)       customFieldValues[F.timeline]        = normalizeTimeline(params.timeline);
   if (params.county)         customFieldValues[F.projectLocation] = params.county + ' County';
-  if (params.dqFlag)         customFieldValues[F.dqFlag]          = params.dqFlag;
-  if (params.qualificationScore) customFieldValues[F.qualificationScore] = params.qualificationScore;
+  if (params.dqFlag) {
+    // JT DQ Flag options: Budget, Location, Scope, Timeline, None
+    var dqMap = {'yes':'Budget','no':'None','none':'None','budget':'Budget','location':'Location','scope':'Scope','timeline':'Timeline'};
+    var dqKey = params.dqFlag.toLowerCase();
+    customFieldValues[F.dqFlag] = dqMap[dqKey] || params.dqFlag;
+  }
+  if (params.qualificationScore) customFieldValues[F.qualificationScore] = normalizeQualScore(params.qualificationScore);
   if (params.apptDate)       customFieldValues[F.apptDateTime]    = params.apptDate;
 
   results.steps.fieldsToSet = Object.keys(customFieldValues).length;
