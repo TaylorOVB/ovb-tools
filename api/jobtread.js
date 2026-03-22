@@ -22,6 +22,7 @@ module.exports = async function handler(req, res) {
     switch (operation) {
       case 'createCustomer': result = await createCustomer(grantKey, params); break;
       case 'getOrgInfo':     result = await getOrgInfo(grantKey); break;
+      case 'getContact':     result = await getContact(grantKey, params); break;
       default: return res.status(400).json({ error: 'Unknown operation: ' + operation });
     }
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -284,4 +285,13 @@ async function createCustomer(grantKey, params) {
   }
 
   return results;
+}
+
+async function getContact(grantKey, params) {
+  return await pave(grantKey, {
+    account: {
+      $: { id: params.accountId },
+      contacts: { nodes: { id: {}, name: {}, phoneNumber: {}, emailAddress: {} } },
+    },
+  });
 }
