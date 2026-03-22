@@ -288,22 +288,23 @@ async function createCustomer(grantKey, params) {
 }
 
 async function getContact(grantKey, params) {
-  // If contactId passed, query contact directly to discover its fields
-  if (params.contactId) {
-    return await pave(grantKey, {
-      contact: {
-        $: { id: params.contactId },
-        id: {}, name: {}, phone: {}, email: {},
-        phoneNumbers: { nodes: { id: {}, number: {}, phoneNumber: {} } },
-        emailAddresses: { nodes: { id: {}, address: {}, emailAddress: {} } },
-      },
-    });
-  }
-  // Otherwise get contacts list for an account (id + name only — safe)
+  // Get contacts for account including their custom field values (phone/email are custom field types)
   return await pave(grantKey, {
     account: {
       $: { id: params.accountId },
-      contacts: { nodes: { id: {}, name: {} } },
+      contacts: {
+        nodes: {
+          id: {},
+          name: {},
+          customFieldValues: {
+            nodes: {
+              id: {},
+              value: {},
+              customField: { id: {}, name: {}, type: {} },
+            }
+          },
+        }
+      },
     },
   });
 }
