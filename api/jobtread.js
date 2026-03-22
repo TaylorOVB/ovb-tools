@@ -1,14 +1,44 @@
-// /api/jobtread.js — OVB Tools Vercel Serverless Proxy
-// Proxies all requests to JobTread Pave API.
-// Grant key stored in Vercel env var: JOBTREAD_GRANT_KEY
+// api/jobtread.js — OVB Tools · JobTread Proxy
+// Deploy at /api/jobtread.js in repo root.
+// Set JOBTREAD_GRANT_KEY in Vercel -> Settings -> Environment Variables.
 
-const PAVE_URL = 'https://api.jobtread.com/pave';
+module.exports = async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-// ─── Custom Field IDs (OVB account) ───────────────────────────────────────────
-const F = {
+  const grantKey = process.env.JOBTREAD_GRANT_KEY;
+  if (!grantKey) return res.status(500).json({ error: 'JOBTREAD_GRANT_KEY not set in Vercel env vars' });
+
+  const { operation, params = {} } = req.body || {};
+  if (!operation) return res.status(400).json({ error: 'Missing operation' });
+
+  try {
+    let result;
+    switch (operation) {
+      case 'createCustomer': result = await createCustomer(grantKey, params); break;
+      case 'getOrgInfo':     result = await getOrgInfo(grantKey); break;
+      default: return res.status(400).json({ error: 'Unknown operation: ' + operation });
+    }
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('[jobtread proxy] ' + operation + ' error:', err.message);
+    return res.status(500).json({ error: err.message || 'Unknown error' });
+  }
+};
+
+// Hardcoded customer field IDs from OVB JT account
+// Sourced from getAccountFields on a populated customer 2026-03-21
+var F = {
   status:             '22PC8F47A63H',
   customerType:       '22PC8EvauCvJ',
   budgetRange:        '22PTyjrdmBSZ',
+  needs:              '22PC8EwY5jUc',
   leadSource:         '22PC8ExjK8js',
   referredBy:         '22PC8F6kzjw6',
   apptDateTime:       '22PRzSrKdQ9x',
@@ -21,288 +51,245 @@ const F = {
   projectLocation:    '22PTykJYuX3a',
   dqFlag:             '22PTykQuWm3Q',
   qualificationScore: '22PTykURtF6Z',
-  plansStatus:        '22PTykNeedID', // ← PLACEHOLDER — run getFieldId to get real ID
 };
 
-// ─── Budget Range normalization ─────────────────────────────────────────────
-// Form uses en-dash (–). JT picklist uses hyphen (-). Map everything.
 function normalizeBudget(val) {
-  const map = {
-    'Under $50K':   'Under $100K',  // DQ but still create record
-    'Under $100K':  'Under $100K',
-    '$100K–$200K':  '$100K-$200K',
-    '$200K–$400K':  '$200K-$400K',
-    '$400K–$600K':  '$400K-$600K',
-    '$600K–$800K':  '$600K-$800K',
-    '$800K–$1M':    '$800K-$1M',
-    '$1M+':         '$1M+',
-    'Not Sure':     'Not Sure',
+  if (!val) return val;
+  // Strip spaces, normalize all dash variants, lowercase for comparison
+  var lookup = {
+    'under$50k':  'Under $100K',
+    'under$100k': 'Under $100K',
+    '$100k$200k': '$100K-$200K',
+    '$200k$400k': '$200K-$400K',
+    '$400k$600k': '$400K-$600K',
+    '$600k$800k': '$600K-$800K',
+    '$800k$1m':   '$800K-$1M',
+    '$1m+':       '$1M+',
+    'notsure':    'Not Sure',
   };
-  return map[val] || val;
+  // Remove all spaces, dashes, en-dashes, em-dashes then lowercase
+  var key = val.toLowerCase().replace(/[\s\-\u2013\u2014]/g, '');
+  return lookup[key] || val;
 }
 
-// ─── Qualification Score normalization ──────────────────────────────────────
-// Form sends "Hot (10 pts)" / "Warm (8 pts)" etc. JT wants "Hot" / "Warm" only.
-function normalizeScore(val) {
-  if (!val) return 'Cold';
-  const s = val.toString().trim();
-  if (s.startsWith('Hot'))  return 'Hot';
-  if (s.startsWith('Warm')) return 'Warm';
-  if (s.startsWith('Cold')) return 'Cold';
-  if (s.startsWith('DQ'))   return "DQ'd";
-  if (s === "DQ'd")         return "DQ'd";
-  return s; // pass through if already clean
+// Map financing form values to JT picklist
+function normalizeFinancing(val) {
+  var map = {
+    'cash':              'Cash',
+    'heloc':             'HELOC',
+    'constructionloan':  'Construction Loan',
+    'financingready':    'Construction Loan',  // closest match
+    'exploringoptions':  'Unknown - Needs Guidance',
+    'notsure':           'Unknown',
+    'unknown':           'Unknown',
+  };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\-]/g, '');
+  return map[key] || val;
 }
 
-// ─── Pave request helper ─────────────────────────────────────────────────────
-async function pave(grantKey, query) {
-  const body = JSON.stringify({
-    query: { $: { grantKey }, ...query }
-  });
-  const res = await fetch(PAVE_URL, {
+// Map decision makers form values to JT picklist
+function normalizeDM(val) {
+  var map = {
+    'solo':                 'Solo',
+    'singledm':             'Solo',
+    'spouseinvolved':       'Spouse Involved',
+    'multipledms':          'Multiple Stakeholders',
+    'multiplestakeholders': 'Multiple Stakeholders',
+    'unknown':              'Unknown',
+  };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\-]/g, '');
+  return map[key] || val;
+}
+
+// Map timeline form values to JT picklist
+function normalizeTimeline(val) {
+  var map = {
+    'asap':          'ASAP',
+    '13months':      '1-3 Months',
+    '1-3months':     '1-3 Months',
+    '36months':      '3-6 Months',
+    '3-6months':     '3-6 Months',
+    '612months':     '6-12 Months',
+    '6-12months':    '6-12 Months',
+    'justplanning':  'Planning Phase',
+    'planningphase': 'Planning Phase',
+  };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\u2013\u2014]/g, '');
+  return map[key] || val;
+}
+
+// Strip pts from qualification score, map to JT options: Hot/Warm/Cold/DQ'd
+function normalizeQualScore(val) {
+  if (!val) return val;
+  var v = val.toLowerCase();
+  if (v.indexOf('hot') !== -1)  return 'Hot';
+  if (v.indexOf('warm') !== -1) return 'Warm';
+  if (v.indexOf('dq') !== -1)   return "DQ'd";
+  if (v.indexOf('cold') !== -1 || v.indexOf('filler') !== -1) return 'Cold';
+  return val;
+}
+
+async function pave(grantKey, queryObj) {
+  var res = await fetch('https://api.jobtread.com/pave', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body,
+    body: JSON.stringify({ query: Object.assign({ $: { grantKey } }, queryObj) }),
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Pave HTTP ${res.status}: ${text}`);
-  }
-  return res.json();
+  var text = await res.text();
+  if (!res.ok) throw new Error('Pave ' + res.status + ': ' + text.slice(0, 300));
+  var data;
+  try { data = JSON.parse(text); } catch (e) { throw new Error('Pave non-JSON: ' + text.slice(0, 200)); }
+  if (data && data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+  return data;
 }
 
-// ─── Build custom field update array ────────────────────────────────────────
-function buildFieldUpdates(params) {
-  const updates = [];
-
-  const add = (fieldId, value) => {
-    if (value !== undefined && value !== null && value !== '') {
-      updates.push({ customFieldId: fieldId, value: String(value) });
-    }
-  };
-
-  add(F.status,             '1. New Lead');
-  add(F.customerType,       params.customerType);
-  add(F.budgetRange,        normalizeBudget(params.budgetRange));
-  add(F.leadSource,         params.leadSource);
-  add(F.referredBy,         params.referredBy);
-  add(F.apptDateTime,       params.apptDateTime);
-  add(F.preferredContact,   params.preferredContact);
-  add(F.notes,              params.notes);
-  add(F.financingType,      params.financing);
-  add(F.decisionMakers,     params.decisionMakers);
-  add(F.competingBids,      params.competingBids);
-  add(F.timeline,           params.timeline);
-  add(F.projectLocation,    params.county ? `${params.county} County` : params.address);
-  add(F.dqFlag,             params.dqFlag || 'None');
-  add(F.qualificationScore, normalizeScore(params.qualificationScore));
-  // plansStatus: only add if F.plansStatus has a real ID (not placeholder)
-  if (params.plansStatus && !F.plansStatus.includes('NeedID')) {
-    add(F.plansStatus, params.plansStatus);
-  }
-
-  return updates;
+async function getOrgInfo(grantKey) {
+  var grantData = await pave(grantKey, {
+    currentGrant: {
+      id: {},
+      organization: { id: {}, name: {} },
+    },
+  });
+  var org = (grantData && grantData.query && grantData.query.currentGrant && grantData.query.currentGrant.organization)
+         || (grantData && grantData.currentGrant && grantData.currentGrant.organization);
+  if (!org || !org.id) throw new Error('Could not get org from currentGrant.');
+  return org;
 }
 
-// ─── Main handler ────────────────────────────────────────────────────────────
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+async function createCustomer(grantKey, params) {
+  var results = { steps: {} };
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  // Step 1: get org ID
+  var org = await getOrgInfo(grantKey);
+  var orgId = org.id;
+  if (!orgId) throw new Error('Could not retrieve org ID.');
+
+  // Step 2: create account (name only)
+  var createData = await pave(grantKey, {
+    createAccount: {
+      $: {
+        name: params.name,
+        type: 'customer',
+        organizationId: orgId,
+      },
+      createdAccount: { id: {}, name: {} },
+    },
+  });
+
+  var account = (createData && createData.query && createData.query.createAccount && createData.query.createAccount.createdAccount)
+             || (createData && createData.createAccount && createData.createAccount.createdAccount);
+  if (!account || !account.id) throw new Error('Account created but no ID returned.');
+
+  var accountId = account.id;
+  results.accountId   = accountId;
+  results.accountName = account.name;
+  results.url         = 'https://app.jobtread.com/customers/' + accountId;
+  results.steps.accountCreated = true;
+
+  // Step 3: set custom fields using hardcoded IDs
+  var customFieldValues = {};
+
+  customFieldValues[F.status]             = '1. New Lead';
+  if (params.customerType)   customFieldValues[F.customerType]    = params.customerType;
+  if (params.budgetRange)    customFieldValues[F.budgetRange]     = normalizeBudget(params.budgetRange);
+  if (params.leadSource)     customFieldValues[F.leadSource]      = params.leadSource;
+  if (params.referredBy)     customFieldValues[F.referredBy]      = params.referredBy;
+  if (params.contactMethod)  customFieldValues[F.preferredContact]= params.contactMethod;
+  if (params.notes)          customFieldValues[F.notes]           = params.notes;
+  if (params.financing)      customFieldValues[F.financingType]   = normalizeFinancing(params.financing);
+  if (params.decisionMakers) customFieldValues[F.decisionMakers]  = normalizeDM(params.decisionMakers);
+  if (params.competingBids)  customFieldValues[F.competingBids]   = params.competingBids;
+  if (params.timeline)       customFieldValues[F.timeline]        = normalizeTimeline(params.timeline);
+  if (params.county)         customFieldValues[F.projectLocation] = params.county + ' County';
+  if (params.dqFlag) {
+    // JT DQ Flag options: Budget, Location, Scope, Timeline, None
+    var dqMap = {'yes':'Budget','no':'None','none':'None','budget':'Budget','location':'Location','scope':'Scope','timeline':'Timeline'};
+    var dqKey = params.dqFlag.toLowerCase();
+    customFieldValues[F.dqFlag] = dqMap[dqKey] || params.dqFlag;
+  }
+  if (params.qualificationScore) customFieldValues[F.qualificationScore] = normalizeQualScore(params.qualificationScore);
+  if (params.apptDate)       customFieldValues[F.apptDateTime]    = params.apptDate;
+
+  results.steps.fieldsToSet = Object.keys(customFieldValues).length;
+
+  await pave(grantKey, {
+    updateAccount: {
+      $: { id: accountId, customFieldValues: customFieldValues },
+    },
+  }).then(function() {
+    results.steps.customFieldsSet = true;
+  }).catch(function(err) {
+    console.warn('[jobtread proxy] Custom fields:', err.message);
+    results.steps.customFieldsError = err.message;
+  });
+
+  // Step 4: create contact (name only)
+  await pave(grantKey, {
+    createContact: {
+      $: { accountId: accountId, name: params.name },
+      createdContact: { id: {}, name: {} },
+    },
+  }).then(function(d) {
+    var contactId = (d && d.query && d.query.createContact && d.query.createContact.createdContact && d.query.createContact.createdContact.id)
+                 || (d && d.createContact && d.createContact.createdContact && d.createContact.createdContact.id);
+    results.steps.contactCreated = true;
+
+    // Step 4b: add phone
+    if (contactId && params.phone) {
+      pave(grantKey, {
+        createPhoneNumber: {
+          $: { contactId: contactId, number: params.phone, type: 'mobile' },
+          createdPhoneNumber: { id: {} },
+        },
+      }).then(function() {
+        results.steps.phoneCreated = true;
+      }).catch(function(err) {
+        results.steps.phoneError = err.message;
+      });
+    }
+
+    // Step 4c: add email
+    if (contactId && params.email) {
+      pave(grantKey, {
+        createEmailAddress: {
+          $: { contactId: contactId, address: params.email },
+          createdEmailAddress: { id: {} },
+        },
+      }).then(function() {
+        results.steps.emailCreated = true;
+      }).catch(function(err) {
+        results.steps.emailError = err.message;
+      });
+    }
+  }).catch(function(err) {
+    console.warn('[jobtread proxy] Contact:', err.message);
+    results.steps.contactError = err.message;
+  });
+
+  // Step 5: create location
+  if (params.address) {
+    var parts = params.address.split(',').map(function(s) { return s.trim(); });
+    var street = parts[0] || params.address;
+    var city   = parts[1] || '';
+
+    await pave(grantKey, {
+      createLocation: {
+        $: Object.assign(
+          { accountId: accountId, name: params.address, address1: street, state: 'UT' },
+          city ? { city: city } : {}
+        ),
+        createdLocation: { id: {}, name: {} },
+      },
+    }).then(function() {
+      results.steps.locationCreated = true;
+    }).catch(function(err) {
+      console.warn('[jobtread proxy] Location:', err.message);
+      results.steps.locationError = err.message;
+    });
   }
 
-  const grantKey = process.env.JOBTREAD_GRANT_KEY;
-  if (!grantKey) {
-    return res.status(500).json({ error: 'JOBTREAD_GRANT_KEY env var not set' });
-  }
-
-  const { operation, params = {} } = req.body || {};
-
-  try {
-
-    // ── createCustomer ──────────────────────────────────────────────────────
-    if (operation === 'createCustomer') {
-      const steps = {};
-
-      // Step 1: Get org ID
-      const orgData = await pave(grantKey, {
-        currentGrant: { id: {}, organization: { id: {} } }
-      });
-      const orgId = orgData?.currentGrant?.organization?.id;
-      if (!orgId) throw new Error('Could not get org ID from currentGrant');
-      steps.orgId = orgId;
-
-      // Step 2: Create account (name only — type must be exact string)
-      // Note: Pave does NOT accept field selectors on createAccount mutations.
-      // We request no return fields — JT returns the full account object by default.
-      const accountData = await pave(grantKey, {
-        createAccount: {
-          $: {
-            organizationId: orgId,
-            name: params.name,
-            type: 'customer',
-          }
-        }
-      });
-      steps.createAccountRaw = accountData;
-      // JT may return id at different paths — check all known patterns
-      const accountId =
-        accountData?.createAccount?.id ||
-        accountData?.createAccount?.account?.id ||
-        accountData?.account?.id ||
-        // Some Pave versions return a top-level id
-        (typeof accountData?.createAccount === 'string' ? accountData.createAccount : undefined);
-      if (!accountId) throw new Error('createAccount: could not find accountId in response: ' + JSON.stringify(accountData));
-      steps.accountId = accountId;
-
-      // Step 3: Set all custom fields via updateAccount
-      const fieldUpdates = buildFieldUpdates(params);
-      const updateData = await pave(grantKey, {
-        updateAccount: {
-          $: {
-            id: accountId,
-            customFieldValues: fieldUpdates,
-          }
-        }
-      });
-      steps.updateAccount = updateData;
-
-      // Step 4: Create contact record (name only — phone/email done separately)
-      const contactData = await pave(grantKey, {
-        createContact: {
-          $: {
-            accountId,
-            name: params.name,
-          }
-        }
-      });
-      steps.createContactRaw = contactData;
-      const contactId =
-        contactData?.createContact?.id ||
-        contactData?.createContact?.contact?.id ||
-        contactData?.contact?.id;
-      steps.contactId = contactId;
-
-      // Step 5: Create location record
-      if (params.address) {
-        const locationData = await pave(grantKey, {
-          createLocation: {
-            $: {
-              accountId,
-              name: params.address,
-              address: params.address,
-            }
-          }
-        });
-        steps.createLocation = locationData;
-      }
-
-      // Step 6: Set phone on contact
-      // JT uses createPhoneNumber with { contactId, number }
-      if (contactId && params.phone) {
-        try {
-          const phoneData = await pave(grantKey, {
-            createPhoneNumber: {
-              $: {
-                contactId,
-                number: params.phone,
-              }
-            }
-          });
-          steps.createPhoneNumber = phoneData;
-        } catch (e) {
-          // Non-fatal — log error but don't fail the whole flow
-          steps.createPhoneNumber = { error: e.message };
-        }
-      }
-
-      // Step 7: Set email on contact
-      // JT uses createEmailAddress with { contactId, address }
-      if (contactId && params.email) {
-        try {
-          const emailData = await pave(grantKey, {
-            createEmailAddress: {
-              $: {
-                contactId,
-                address: params.email,
-              }
-            }
-          });
-          steps.createEmailAddress = emailData;
-        } catch (e) {
-          // Non-fatal — log error but don't fail the whole flow
-          steps.createEmailAddress = { error: e.message };
-        }
-      }
-
-      return res.json({
-        success: true,
-        accountId,
-        contactId,
-        viewUrl: `https://app.jobtread.com/accounts/${accountId}`,
-        steps,
-      });
-    }
-
-    // ── getContact — inspect a contact's phone/email fields ─────────────────
-    // Use this to debug: does the contact have phoneNumbers and emailAddresses?
-    // Console test: fetch('/api/jobtread', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ operation:'getContact', params:{ contactId:'CONTACT_ID_HERE' }}) }).then(r=>r.json()).then(console.log)
-    if (operation === 'getContact') {
-      const data = await pave(grantKey, {
-        contact: {
-          $: { id: params.contactId },
-          id: {},
-          name: {},
-          phoneNumbers: { nodes: { id: {}, number: {} } },
-          emailAddresses: { nodes: { id: {}, address: {} } },
-        }
-      });
-      return res.json(data);
-    }
-
-    // ── getAccountFields — get custom field IDs from an existing account ─────
-    // Use to discover the Plans Status field ID
-    // Console test: fetch('/api/jobtread', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ operation:'getAccountFields', params:{ accountId:'ACCOUNT_ID_HERE' }}) }).then(r=>r.json()).then(d=>{ const f=d?.account?.customFieldValues?.nodes||[]; f.forEach(n=>console.log(n.customField.name,'→',n.customField.id)); })
-    if (operation === 'getAccountFields') {
-      const data = await pave(grantKey, {
-        account: {
-          $: { id: params.accountId },
-          id: {},
-          name: {},
-          customFieldValues: {
-            nodes: {
-              id: {},
-              value: {},
-              customField: { id: {}, name: {} },
-            }
-          }
-        }
-      });
-      return res.json(data);
-    }
-
-    // ── getOrgInfo — get org ID and available field definitions ─────────────
-    if (operation === 'getOrgInfo') {
-      const data = await pave(grantKey, {
-        currentGrant: {
-          id: {},
-          organization: {
-            id: {},
-            name: {},
-          }
-        }
-      });
-      return res.json(data);
-    }
-
-    // ── Unknown operation ────────────────────────────────────────────────────
-    return res.status(400).json({ error: `Unknown operation: ${operation}` });
-
-  } catch (err) {
-    console.error('[jobtread proxy error]', err);
-    return res.status(500).json({ error: err.message, stack: err.stack });
-  }
-};
+  return results;
+}
