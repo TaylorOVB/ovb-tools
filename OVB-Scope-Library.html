@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
+  <meta name="theme-color" content="#141210" />
+  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <title>Scope Library — OVB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #141210; --surface: #1A1816; --card: #222020; --card2: #2A2826;
+      --tan: #C7AA8B; --tan-d: rgba(199,170,139,0.08); --tan-m: rgba(199,170,139,0.20);
+      --border: rgba(199,170,139,0.09); --border2: rgba(199,170,139,0.22);
+      --smoke: #F2EFE8; --muted: rgba(242,239,232,0.38); --muted2: rgba(242,239,232,0.18);
+      --green: #4CAF84; --mono: 'DM Mono', monospace; --sans: 'DM Sans', sans-serif; --r: 4px;
+      --sidebar: 190px; --topbar: 44px; --filterbar: 46px;
+    }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: var(--sans); color: var(--smoke); -webkit-font-smoothing: antialiased; }
+    .shell { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+    .topbar { height: var(--topbar); min-height: var(--topbar); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 16px; flex-shrink: 0; }
+    .topbar-back { font-family: var(--mono); font-size: 9px; color: rgba(199,170,139,0.4); text-decoration: none; }
+    .topbar-back:hover { color: var(--tan); }
+    .topbar-sep { width: 1px; height: 12px; background: var(--border2); }
+    .topbar-title { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tan); }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .topbar-hint { font-family: var(--mono); font-size: 7.5px; color: var(--muted2); }
+    .md-badge { font-family: var(--mono); font-size: 7px; letter-spacing: 0.06em; padding: 3px 7px; border-radius: var(--r); background: rgba(199,170,139,0.08); border: 1px solid rgba(199,170,139,0.18); color: rgba(199,170,139,0.6); }
+    .body-row { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: var(--sidebar); flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    .sidebar-hdr { padding: 10px 12px 8px; font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(199,170,139,0.3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .trade-list { flex: 1; overflow-y: auto; padding: 4px; }
+    .trade-list::-webkit-scrollbar { width: 2px; }
+    .trade-list::-webkit-scrollbar-thumb { background: rgba(199,170,139,0.12); }
+    .trade-btn { width: 100%; text-align: left; padding: 7px 10px; border-radius: var(--r); background: transparent; border: 1px solid transparent; cursor: pointer; color: var(--muted); font-family: var(--sans); font-size: 12px; transition: background 0.1s, color 0.1s; display: flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
+    .trade-btn:hover { background: var(--tan-d); color: var(--smoke); }
+    .trade-btn.active { background: var(--tan-d); color: var(--smoke); font-weight: 600; border-color: var(--border2); }
+    .trade-btn.active::before { content: ''; display: block; width: 3px; height: 3px; border-radius: 50%; background: var(--tan); flex-shrink: 0; }
+    .trade-count { font-family: var(--mono); font-size: 7.5px; color: var(--muted2); margin-left: auto; }
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .filterbar { height: var(--filterbar); min-height: var(--filterbar); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 5px; padding: 0 14px; flex-shrink: 0; }
+    .filter-lbl { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(199,170,139,0.3); margin-right: 4px; white-space: nowrap; }
+    .fpill { padding: 4px 10px; border-radius: var(--r); border: 1px solid var(--border); background: transparent; font-family: var(--mono); font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted2); cursor: pointer; transition: all 0.1s; -webkit-tap-highlight-color: transparent; }
+    .fpill:hover { border-color: var(--tan-m); color: var(--tan); }
+    .fpill.active { background: var(--tan-d); border-color: var(--border2); color: var(--tan); }
+    .search-wrap { margin-left: auto; position: relative; }
+    .search-input { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); color: var(--smoke); font-family: var(--sans); font-size: 12px; padding: 5px 10px 5px 28px; outline: none; width: 180px; transition: border-color 0.12s; }
+    .search-input:focus { border-color: var(--border2); }
+    .search-input::placeholder { color: var(--muted2); }
+    .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); stroke: var(--muted2); pointer-events: none; }
+    .block-area { flex: 1; overflow-y: auto; padding: 12px 14px 80px; }
+    .block-area::-webkit-scrollbar { width: 2px; }
+    .block-area::-webkit-scrollbar-thumb { background: rgba(199,170,139,0.12); }
+    .block-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px; }
+    @media (max-width: 700px) { .block-grid { grid-template-columns: 1fr; } }
+    .empty { padding: 40px; text-align: center; font-family: var(--mono); font-size: 10px; color: var(--muted2); letter-spacing: 0.08em; }
+    .block-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); display: flex; flex-direction: column; overflow: hidden; transition: border-color 0.12s; }
+    .block-card:hover { border-color: var(--tan-m); }
+    .block-card.editing { border-color: var(--border2); }
+    .block-hdr { padding: 10px 12px 8px; }
+    .block-title { font-size: 13px; font-weight: 600; color: var(--smoke); line-height: 1.25; margin-bottom: 5px; }
+    .type-badges { display: flex; gap: 3px; flex-wrap: wrap; }
+    .tbadge { font-family: var(--mono); font-size: 6.5px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 5px; border-radius: var(--r); border: 1px solid var(--border); color: var(--muted2); }
+    .tbadge.nc  { color: rgba(76,175,132,0.7);  border-color: rgba(76,175,132,0.2); }
+    .tbadge.add { color: rgba(199,170,139,0.65); border-color: rgba(199,170,139,0.2); }
+    .tbadge.rem { color: rgba(150,160,200,0.65); border-color: rgba(150,160,200,0.2); }
+    .tbadge.adu { color: rgba(200,160,100,0.65); border-color: rgba(200,160,100,0.2); }
+    .block-preview { padding: 0 12px 4px; flex: 1; overflow: hidden; }
+    .md-preview { font-family: var(--mono); font-size: 10.5px; line-height: 1.7; color: rgba(199,170,139,0.45); display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; word-break: break-word; }
+    .md-preview.expanded { -webkit-line-clamp: unset; overflow: visible; }
+    .block-editor { margin: 0 12px 8px; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); color: var(--smoke); font-family: var(--mono); font-size: 11px; padding: 8px 10px; outline: none; width: calc(100% - 24px); resize: vertical; line-height: 1.65; min-height: 140px; }
+    .block-editor:focus { border-color: var(--tan); }
+    .block-actions { padding: 8px 12px 10px; display: flex; gap: 6px; align-items: center; border-top: 1px solid var(--border); }
+    .btn-copy { padding: 6px 12px; border-radius: var(--r); border: 1px solid var(--border2); background: transparent; font-family: var(--mono); font-size: 8px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: all 0.12s; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; gap: 5px; }
+    .btn-copy:hover { background: var(--tan-d); border-color: var(--tan); }
+    .btn-copy.copied { color: var(--green); border-color: rgba(76,175,132,0.3); background: rgba(76,175,132,0.06); }
+    .btn-edit { padding: 6px 10px; border-radius: var(--r); border: 1px solid var(--border); background: transparent; font-family: var(--mono); font-size: 8px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted2); cursor: pointer; transition: all 0.12s; -webkit-tap-highlight-color: transparent; }
+    .btn-edit:hover { border-color: var(--border2); color: var(--smoke); }
+    .btn-edit.active { color: var(--tan); border-color: var(--border2); background: var(--tan-d); }
+    .btn-expand { margin-left: auto; padding: 6px 8px; border-radius: var(--r); border: none; background: transparent; font-family: var(--mono); font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted2); cursor: pointer; transition: color 0.12s; -webkit-tap-highlight-color: transparent; }
+    .btn-expand:hover { color: var(--tan); }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useMemo, useCallback } = React;
+const NC='New Construction', ADD='Addition', REM='Remodel', ADU='ADU';
+const ALL=[NC,ADD,REM,ADU];
+
+const RAW_BLOCKS = [
+  { trade:'Site Protection', types:ALL, title:'Site Protection — Full Project', content:`## Site Protection — Full Project\n\n*Contractor to provide and maintain all required site protection for the duration of the project.*\n\n---\n\n- Orange construction fencing or equivalent perimeter protection around active work zones\n- Erosion and sediment control (silt fence, rock bags, or equivalent) per local AHJ and grading conditions\n- Tree and landscape protection barriers around all existing trees and plantings designated for preservation\n- Dust and debris containment — poly barriers, door seals, and/or floor protection as conditions require\n- Daily site cleanup and debris management; dumpster or haul-off maintained throughout project\n- Existing driveways, walks, and landscaping protected from construction traffic; *any damage repaired to original condition at no additional cost*\n- Site secured at end of each workday\n\n---\n\n[!color:orange]*All protection measures remain in place until scope is complete. Contractor responsible for any damage resulting from failure to maintain site protection.*` },
+
+  { trade:'Site Protection', types:[ADD,REM], title:'Interior Protection — Occupied Remodel', content:`## Interior Protection — Occupied Remodel\n\n*Contractor to provide full interior protection for all areas not under active construction.*\n\n---\n\n- Temporary dust walls (poly or hardboard) between construction zone and occupied living areas — sealed at floor, ceiling, and sides\n- Floor protection on all travel paths from entry to work zone — Ram Board or equivalent, taped and maintained daily\n- Furniture, cabinetry, and finishes in adjacent spaces protected prior to any demolition, cutting, or dusty work\n- HVAC returns in work zone sealed during demolition and drywall phases to prevent dust migration\n- Daily cleanup of all common travel paths; dust and debris contained to work zone\n- Contractor to notify owner *24 hours in advance* of any work likely to create excessive dust, noise, or odor\n\n---\n\n[!color:orange]*Any damage to existing finishes, flooring, or personal property resulting from failure to maintain interior protection to be repaired or replaced at Contractor's cost.*` },
+
+  { trade:'Demo & Selective Removal', types:[ADD,REM,ADU], title:'Selective Demolition', content:`## Selective Demolition\n\n*Contractor to perform selective demolition as indicated in plans and confirmed with owner prior to start.*\n\n---\n\n- Removal of interior walls, ceilings, and/or flooring as shown on drawings\n- Disconnection and capping of existing MEP lines in demo zone — *licensed trades to perform all utility work*\n- Careful removal and staging of items designated for salvage — owner to identify prior to demo start\n- All demolition debris removed from site within 5 business days\n- Existing structure, finishes, and systems outside designated demo scope to be protected and left undamaged\n\n---\n\n[!color:red]*Hazardous material testing (asbestos, lead) is owner's responsibility prior to demo. Contractor to halt work and notify owner immediately if suspected hazardous materials are encountered.*\n\n[!color:orange]*Scope of demo to be confirmed on-site with owner before any work begins.*` },
+
+  { trade:'Demo & Selective Removal', types:[ADD,REM], title:'Exterior Demo & Opening', content:`## Exterior Demo & Wall Opening\n\n*Contractor to perform exterior demolition and wall opening work required for addition connection or exterior modifications.*\n\n---\n\n- Removal of exterior siding, sheathing, and framing as required to connect addition or execute scope\n- *Temporary weatherproofing of all open wall and roof penetrations at end of each workday — no open structure to remain exposed overnight*\n- Removal of existing roofing, fascia, and trim as needed for roof tie-in; area tarped if not closed same day\n- Concrete or masonry cutting and removal if required for foundation work\n- All demolished materials hauled from site within 5 business days\n\n---\n\n[!color:red]*Contractor to coordinate with structural engineer and/or architect before opening any load-bearing wall or roof section.*` },
+
+  { trade:'Site & Excavation', types:ALL, title:'Site Preparation & Excavation', content:`## Site Preparation & Excavation\n\n*Contractor to perform all site preparation and excavation required for the project.*\n\n---\n\n- Verify property lines, setbacks, and building envelope prior to layout\n- *Blue Stakes utility locates required minimum 2 business days prior to any excavation — Contractor's responsibility*\n- Strip and stockpile topsoil from building footprint and disturbed areas for reuse in final grading\n- Excavate to required depths per structural drawings — over-excavation and re-compaction at Contractor's expense\n- Dispose of excess soils off-site; no stockpiling beyond project duration\n- Maintain stable, dry excavation; dewatering if groundwater encountered\n- Subgrade compaction to geotechnical or engineer specs prior to foundation work\n- Final rough grading to positive drainage away from structure — *minimum 5% slope for 10 feet per IRC*` },
+
+  { trade:'Site & Excavation', types:[ADD,ADU], title:'Limited Excavation — Addition/ADU', content:`## Limited Excavation — Addition/ADU\n\n*Contractor to perform limited excavation for new foundation or utility connections.*\n\n---\n\n- *Blue Stakes utility locates required minimum 2 business days prior to any excavation — Contractor's responsibility*\n- Careful hand-dig or vacuum excavation within 24 inches of known or suspected utilities\n- Excavate for new foundation/footings per structural drawings\n- Coordinate tie-in points with existing utility lines — expose carefully, verify depth and condition\n- Backfill and compact in lifts per engineer requirements; imported structural fill if required\n- Final grade to match or blend with existing; positive drainage away from both existing and new structure\n- Disturbed lawn and landscaping to be rough-graded and seeded or sodded to match existing at project completion` },
+
+  { trade:'Concrete & Foundation', types:[NC,ADU], title:'Full Foundation System', content:`## Full Foundation System\n\n*Contractor to provide all concrete and foundation work per structural drawings and engineer specifications.*\n\n---\n\n- Footing excavation, formwork, and placement — dimensions and reinforcing per structural drawings\n- All reinforcing steel per structural drawings; *engineer inspection of footings required prior to pour*\n- Foundation walls — formed, poured, stripped, and waterproofed per plans\n- Anchor bolts, hold-downs, and embedded hardware per structural and framing requirements\n- *Underslab plumbing rough-in coordination with plumbing contractor prior to slab pour*\n- Vapor barrier and sub-slab insulation per energy code and plans\n- Concrete slab on grade — reinforced, finished to within 1/4" in 10' tolerance, control joints per plan\n- Foundation drainage and perimeter drain to daylight or sump as required\n- Waterproofing or damp-proofing of below-grade walls per local code and engineer\n\n---\n\n[!color:orange]*All concrete to achieve minimum 3,000 PSI compressive strength unless otherwise specified.*` },
+
+  { trade:'Concrete & Foundation', types:[ADD,ADU], title:'Addition Foundation & Footings', content:`## Addition Foundation & Footings\n\n*Contractor to provide new foundation and footing work per structural drawings.*\n\n---\n\n- New footings and/or foundation per structural plans — reinforce and form to engineer specs\n- Tie-in to existing foundation as shown on drawings; epoxy-set rebar or mechanical connection per engineer detail\n- Anchor bolts and hold-downs per framing and structural requirements\n- Underslab plumbing coordination prior to pour\n- Concrete slab on grade if applicable — reinforced, control joints, finished to tolerance\n- Waterproofing or damp-proofing of any new below-grade work\n- *Backfill and compact after foundation is cured — minimum 7 days cure before backfill unless engineer approves otherwise*\n\n---\n\n[!color:red]*Engineer inspection of footings required prior to pour — Contractor to schedule and confirm before placing concrete.*` },
+
+  { trade:'Concrete & Foundation', types:[REM], title:'Concrete Flatwork & Misc.', content:`## Concrete Flatwork & Miscellaneous\n\n*Contractor to provide concrete work as required by remodel scope.*\n\n---\n\n- Removal and replacement of existing slab sections as needed to access underslab utilities\n- New concrete infill at modified or removed walls — tooled or saw-cut control joints to match existing pattern\n- Exterior flatwork (steps, stoops, aprons) as shown — broom finish, control joints, proper slope to drain\n- *All new concrete to achieve minimum 3,000 PSI; exterior flatwork to be air-entrained*\n- Saw-cut edges at all new-to-existing transitions — no cold joints without prior approval` },
+
+  { trade:'Framing', types:[NC,ADU], title:'Complete Structural Framing', content:`## Complete Structural Framing\n\n*Contractor to provide all rough framing per architectural and structural drawings.*\n\n---\n\n- Floor framing — joists, beams, LVL per structural; blocking; subfloor (*3/4" T&G AdvanTech or equal, glued and screwed*)\n- Exterior wall framing — stud size and spacing per plans; double top plate; treated bottom plate at slab/concrete contact\n- Interior wall framing — load-bearing and partition walls per plans; blocking for future hardware, grab bars, and cabinets\n- Headers per structural schedule; *engineered headers at all openings per plan*\n- Roof framing — rafters, ridge, valley, hip per plans; engineered trusses if specified\n- All hurricane ties, hangers, straps, and connectors per structural drawings and Simpson hardware schedule\n- Blocking at all shear wall locations, hold-downs, and anchor bolts per structural\n\n---\n\n[!color:orange]*Verify rough opening dimensions against window and door schedule before framing — no field changes without written approval.*` },
+
+  { trade:'Framing', types:[ADD], title:'Addition Framing & Tie-In', content:`## Addition Framing & Structural Tie-In\n\n*Contractor to provide all framing for new addition and structural tie-in to existing structure.*\n\n---\n\n- New floor framing, walls, and roof per structural drawings\n- Structural tie-in to existing framing — remove existing exterior sheathing and siding as required; connect per engineer detail\n- Roof tie-in — flash, frame, and tie new roof slope to existing; *no flat or reverse-slope valleys*\n- Remove and replace load-bearing elements per structural drawings — *shoring required before any bearing wall removal*\n- All connections, hangers, hold-downs, and straps per structural engineer\n- Rough openings to match window and door schedule exactly\n- Subfloor to be flush with existing finished floor elevation — *confirm prior to framing*\n\n---\n\n[!color:orange]*Verify all existing framing conditions at tie-in points before ordering materials. Unforeseen conditions to be documented and submitted as a potential change order before proceeding.*` },
+
+  { trade:'Framing', types:[REM], title:'Remodel Framing & Structural Modifications', content:`## Remodel Framing & Structural Modifications\n\n*Contractor to provide framing work as required by remodel scope.*\n\n---\n\n- Remove existing non-bearing partitions as shown on plan; patch ceiling and floor at removed walls\n- *Remove load-bearing walls only after temporary shoring is in place* — licensed engineer to approve shoring plan if not shown on drawings\n- Install new beams, posts, and connections per structural drawings at all load-bearing modifications\n- Frame new partitions, closets, and built-in locations per plan\n- Blocking at all future hardware, cabinet, and fixture locations\n- Rough openings for new or modified windows and doors per schedule\n- Patch and repair existing framing where damaged, deteriorated, or out of plumb/level\n\n---\n\n[!color:red]*All load-bearing modifications require engineer-stamped drawings before work begins.*` },
+
+  { trade:'Roofing', types:[NC,ADU], title:'Complete Roofing System', content:`## Complete Roofing System\n\n*Contractor to provide complete roofing system per plans and specifications.*\n\n---\n\n- Synthetic underlayment over entire roof deck\n- *Ice and water shield — minimum 24" up from eave, all valleys, all penetrations, and within 24" of all vertical walls per IRC*\n- Architectural asphalt shingles — 30-year minimum; color per owner selection\n- Pre-formed metal drip edge at eaves and rakes\n- Step, counter, and chimney flashing — all flashing sealed and integrated with underlayment\n- All pipe boots, vents, and penetration flashings compatible with roofing material\n- Ridge cap shingles to match field\n- Ventilation — ridge vent and soffit vents to achieve net free area per code\n- *Minimum 15-year labor warranty from roofing subcontractor*\n- Manufacturer warranty card completed and provided to owner at project closeout` },
+
+  { trade:'Roofing', types:[ADD], title:'Addition Roof & Tie-In', content:`## Addition Roof & Tie-In\n\n*Contractor to provide new roofing for addition and integrate with existing roof.*\n\n---\n\n- Tie new roof plane into existing — remove existing shingles and underlayment *minimum 18" beyond tie-in point* to allow proper flashing and re-integration\n- Ice and water shield at all valleys, tie-in points, and wall connections\n- Match existing shingle profile, color, and exposure as closely as possible — owner to review and approve if exact match unavailable\n- All new flashing at wall tie-ins, valleys, and penetrations — step flashing at all vertical wall connections\n- Replace any deteriorated existing decking, fascia, or trim within the tie-in zone\n- *Final roof to shed water cleanly with no reverse slopes, inadequate valleys, or standing water conditions*\n\n---\n\n[!color:orange]*Roof work to be weather-tight at end of each day — no open decking overnight or over weekend.*` },
+
+  { trade:'Roofing', types:[REM], title:'Re-Roof & Roof Repairs', content:`## Re-Roof & Roof Repairs\n\n*Contractor to perform roofing work as defined in scope.*\n\n---\n\n- Remove existing roofing to deck; *inspect and replace deteriorated, soft, or delaminated decking prior to re-roofing*\n- Inspect and replace deteriorated fascia, drip edge, and trim prior to roofing\n- Install synthetic underlayment and ice and water shield per IRC and local code\n- New architectural shingles per owner selection — install per manufacturer specs\n- All new flashings at valleys, penetrations, and wall connections\n\n---\n\n[!color:orange]*Report any deck, structural, or moisture damage discovered during tear-off before proceeding. Concealed damage may constitute a change order.*` },
+
+  { trade:'Windows & Exterior Doors', types:ALL, title:'Windows & Exterior Doors', content:`## Windows & Exterior Doors\n\n*Contractor to furnish and install all windows and exterior doors per schedule.*\n\n---\n\n- All units to meet or exceed energy code requirements for climate zone — U-factor and SHGC per plans\n- Rough openings to be sized, shimmed, plumb, and level per manufacturer installation instructions\n- *Flexible flashing tape at all sill, jamb, and head conditions — integrated with WRB per best practice*\n- Exterior trim, casing, and sill extensions per architectural drawings or owner selection\n- All units to operate smoothly, lock fully, and be weatherstripped at time of turnover\n- Screens installed on all operable windows\n- Manufacturer warranty cards completed and provided to owner at closeout\n\n---\n\n[!color:orange]*Owner to confirm window and door schedule before ordering. Changes after order placed are subject to restocking fees and schedule impact.*\n\n[!color:red]*Scratched glass or bent frames are not acceptable at final inspection.*` },
+
+  { trade:'Exterior Finishes', types:[NC,ADU], title:'Complete Exterior Finish Package', content:`## Complete Exterior Finish Package\n\n*Contractor to provide all exterior finish work per plans and owner selections.*\n\n---\n\n- Weather-resistive barrier (WRB) — housewrap or building paper installed per manufacturer specs; all laps, seams, and penetrations taped\n- Siding installation per manufacturer instructions — type, profile, and color per owner selection\n- Exterior trim, corner boards, window/door casing, frieze, and fascia — *primed all 4 sides before installation*; painted or stained per selection\n- Soffit — vented as required; material per owner selection\n- Exterior paint or stain — *2 coats minimum*; exterior-grade products only\n- Caulking at all penetrations, trim joints, and window/door perimeters — paintable polyurethane or equivalent\n- *All flashing integrated with WRB before siding installation*\n\n---\n\n[!color:orange]*Final exterior to be plumb, straight, and free of waves, gaps, or visible fasteners where prohibited by product specifications.*` },
+
+  { trade:'Exterior Finishes', types:[ADD,REM], title:'Exterior Finish — Match Existing', content:`## Exterior Finish — Match Existing\n\n*Contractor to provide exterior finish work on new areas and blend with existing.*\n\n---\n\n- WRB installation on all new wall areas prior to siding\n- Siding to match existing profile and exposure — *owner to confirm match before ordering*\n- Tie-in to existing siding — remove minimum one course beyond tie-in point to allow proper integration and flashing\n- Trim and casing to match existing profiles — mill or source to match if standard profiles unavailable\n- Paint or stain to match existing — *provide test area for owner approval before full application*\n- Caulk all transitions between new and existing — no visible gaps\n- Damaged or deteriorated existing siding or trim within tie-in zone to be replaced as part of scope` },
+
+  { trade:'Insulation & Air Sealing', types:[NC,ADU], title:'Full Insulation & Air Sealing', content:`## Full Insulation & Air Sealing\n\n*Contractor to provide complete insulation and air sealing per IECC energy code and plans.*\n\n---\n\n- Air sealing prior to insulation — all penetrations, top plates, bottom plates, electrical boxes, and band joists sealed with spray foam or caulk\n- Attic air sealing at all ceiling penetrations before insulation is blown; dam and seal at attic access\n- Batt insulation in walls — *R-value per energy code for climate zone*; fully friction-fit, no voids\n- Blown or batt insulation in attic — *minimum R-49* or per energy code; maintain 2" clear airway at eaves\n- Rim joist and band joist — spray foam or rigid + batt combination to code R-value\n- *All work to be inspected prior to drywall — Contractor to notify GC for inspection before covering*\n\n---\n\n[!color:orange]*Provide insulation certificate with R-values installed for permit closeout.*` },
+
+  { trade:'Insulation & Air Sealing', types:[ADD,REM], title:'Insulation — Addition/Remodel', content:`## Insulation — Addition/Remodel\n\n*Contractor to provide insulation and air sealing for new construction areas and any accessible existing areas in scope.*\n\n---\n\n- Air seal all top plates, bottom plates, penetrations, and electrical boxes prior to insulation\n- Exterior walls — *R-value per energy code*; batt insulation fully friction-fit with no voids or compressions\n- Ceiling/attic — *R-49 minimum* or per energy code; maintain eave ventilation clearance\n- Rim joist — spray foam or insulation board to meet energy code\n- Any existing insulation disturbed during construction to be replaced in kind or better\n- *All work to be inspected prior to drywall — Contractor to notify GC before covering*\n\n---\n\n[!color:orange]*Provide insulation certificate with R-values installed. Filed with permit closeout documents.*` },
+
+  { trade:'Drywall', types:ALL, title:'Drywall — Hang, Tape & Finish', content:`## Drywall — Hang, Tape & Finish\n\n*Contractor to provide complete drywall scope including hang, tape, and finish to Level 4.*\n\n---\n\n- 1/2" standard drywall on walls; *5/8" Type X at all fire-rated assemblies per code*\n- 5/8" sag-resistant drywall on all ceiling applications\n- Cement board (HardieBacker or equal) at all wet areas — showers, tub surrounds, and wet-listed floor areas\n- 5/8" Type X at all required fire separations (garage-to-living, unit separations)\n- All seams taped and finished to *Level 4* — smooth, paint-ready; no tool marks, ridges, or banding visible after paint\n- Corners — metal bead on all outside corners; vinyl or paper bead on arches and radius conditions\n- Texture, if specified — match approved sample; consistent application throughout\n- *All HVAC, electrical, and plumbing rough-ins to be complete and inspected before drywall begins*\n\n---\n\n[!color:red]*Contractor to notify GC when inspection-ready before covering any MEP rough-ins.*` },
+
+  { trade:'Interior Finishes & Trim', types:ALL, title:'Interior Trim & Millwork', content:`## Interior Trim & Millwork\n\n*Contractor to provide and install all interior trim and millwork per plans and owner selections.*\n\n---\n\n- Base molding — profile per selection; scribed to floor, coped at inside corners, mitered at outside corners\n- Door and window casing — profile per selection; tight miters, no gaps at wall or jamb\n- Window stools and aprons where applicable\n- Crown molding where shown on plans or selected by owner\n- Closet shelving and rods per plan — painted MDF or wire per owner selection\n- Attic access frame and cover — insulated, painted to match ceiling\n- Door hardware — pre-hung doors plumb and level; *hardware per owner selection, all operational at final*\n- All trim primed on back before installation; finish painted after install\n- Nail holes filled, caulk at all wall-to-trim transitions before final paint\n\n---\n\n[!color:orange]*Final trim to be free of gaps, open joints, visible fasteners, or finish defects at owner walkthrough.*` },
+
+  { trade:'Flooring', types:ALL, title:'Hardwood / Engineered Wood Flooring', content:`## Hardwood / Engineered Wood Flooring\n\n*Contractor to furnish and install hardwood or engineered wood flooring per owner selection.*\n\n---\n\n- Subfloor to be flat within *3/16" in 10'* — Contractor to flatten with floor leveler or sanding as required\n- Acclimate flooring per manufacturer recommendations — *minimum 48-72 hours on site* before installation\n- Install per manufacturer instructions — floating, glue, or nail-down per product and subfloor type\n- Stagger end joints minimum 6" from course to course; avoid H-patterns or short pieces at door openings\n- Transitions at all doorways, material changes, and thresholds per condition\n- Undercut all door jambs and casings for clean flooring termination\n\n---\n\n[!color:orange]*Owner to confirm final selection and quantity prior to order. Recommended overage: 10%.*\n\n[!color:orange]*Final floor to be clean, flat, and free of squeaks, hollow spots, or gaps at turnover.*` },
+
+  { trade:'Flooring', types:ALL, title:'LVP / Luxury Vinyl Plank', content:`## LVP / Luxury Vinyl Plank\n\n*Contractor to furnish and install LVP flooring per owner selection.*\n\n---\n\n- Subfloor to be flat within *3/16" in 10'*; fill low spots and sand high spots before installation\n- Remove existing flooring if required — prep subfloor, remove staples, adhesive, and fasteners\n- Install floating LVP per manufacturer instructions; *maintain expansion gaps at all walls and fixed objects*\n- Undercut door jambs and casings for clean installation\n- Transitions at all doorways and material changes — matching transition strips per condition\n- Baseboards and base shoe installed after flooring\n\n---\n\n[!color:orange]*Final floor to be clean, flat, and free of hollow spots, clicking, or peaking at joints.*` },
+
+  { trade:'Flooring', types:ALL, title:'Carpet', content:`## Carpet\n\n*Contractor to furnish and install carpet per owner selection.*\n\n---\n\n- Tack strips at all walls — set back 3/8" from wall; double tack strip at stair nosings\n- Pad — *6-lb rebond minimum* or per owner selection; full coverage, seams offset from carpet seams\n- Carpet to be stretched tight — no waves, ripples, or loose areas\n- Seams located in low-traffic or low-visibility areas; seam direction to run toward primary light source\n- Undercut door jambs and casings; transition strips at all hard flooring connections\n\n---\n\n[!color:orange]*Final carpet to be clean, vacuumed, and free of pulls, snags, or visible seams at arm's length.*` },
+
+  { trade:'Tile', types:ALL, title:'Tile — Shower & Wet Areas', content:`## Tile — Shower & Wet Areas\n\n*Contractor to furnish and install tile in shower and wet areas per owner selection and plans.*\n\n---\n\n- Substrate — cement board, RedGard, or Schluter Kerdi system per application; all seams, corners, and fasteners waterproofed before tile\n- *Shower pan — flood-test minimum 24 hours before proceeding*\n- Tile layout reviewed with owner prior to setting — confirm layout lines, pattern, and cut placement\n- Large-format tile (15"+ sides) back-buttered for *minimum 95% mortar coverage*\n- Grout joints consistent throughout; grout type and color per owner selection\n- *Caulk (not grout) at all plane changes* — floor-to-wall, wall corners, and penetrations\n- Niche, bench, and threshold setting as shown on plans\n\n---\n\n[!color:red]*All tile work complete and grout fully cured before shower is used.*` },
+
+  { trade:'Tile', types:ALL, title:'Tile — Floors', content:`## Tile — Floors\n\n*Contractor to furnish and install tile flooring per owner selection.*\n\n---\n\n- Subfloor to be flat within *1/8" in 10'* — flatten with floor leveler prior to tile\n- Uncoupling membrane (Ditra or equal) at all tile-over-wood subfloor applications\n- Tile layout reviewed with owner prior to setting — *no slivers at visible entries or doorways*\n- Large format tile back-buttered for minimum 95% mortar coverage\n- Consistent joint width throughout; grout color per owner selection\n- Caulk at all transitions to wall tile, tub, and fixed objects\n\n---\n\n[!color:orange]*Tile and grout sealed before first use if required by product specifications.*` },
+
+  { trade:'Cabinetry & Millwork', types:ALL, title:'Cabinet Installation', content:`## Cabinet Installation\n\n*Contractor to install cabinetry per plans and specifications.*\n\n---\n\n- Layout reviewed with owner before installation — confirm heights, filler placement, and appliance clearances\n- All cabinets installed *plumb, level, and square* — shimmed as required; no visible shims at exposed locations\n- Wall cabinets fastened to studs minimum 2 points per cabinet; base cabinets fastened to floor and studs\n- Cabinets joined with screws at face frame — no gaps between adjacent cabinets\n- Doors and drawers adjusted to operate smoothly and align consistently\n- Scribe fillers, crown molding, light rails, and toe kicks installed per plan\n- Hardware — pulls and knobs per owner selection; *consistent placement throughout*\n\n---\n\n[!color:red]*Countertop template to be taken after cabinet installation is complete, confirmed plumb and level. No template before cabinets are set.*` },
+
+  { trade:'Plumbing', types:[NC,ADU], title:'Complete Plumbing — Rough & Finish', content:`## Complete Plumbing — Rough & Finish\n\n*Licensed plumbing contractor to provide complete plumbing per plans and code.*\n\n---\n\n- Underslab plumbing — all waste, vent, and supply lines stubbed and capped prior to slab pour; *locations coordinated with GC and framing contractor*\n- Supply rough-in — water distribution to all fixtures; *minimum 1/2" to lavatories, 3/4" to water heater, hose bibs, and main runs*\n- Waste and vent rough-in — DWV to all fixtures; all vents to attic or through roof per code\n- Water heater per plan — energy code compliance (heat pump WH or tankless where required)\n- *All rough-in inspected and approved by AHJ before walls are closed*\n- Finish plumbing — set all fixtures, faucets, disposals, dishwasher, and ice maker connections per owner selections\n- Pressure test completed after rough-in; documentation provided to GC\n\n---\n\n[!color:orange]*Final plumbing fully operational, no active leaks, at time of turnover.*` },
+
+  { trade:'Plumbing', types:[ADD,REM], title:'Plumbing — Addition/Remodel', content:`## Plumbing — Addition/Remodel\n\n*Licensed plumbing contractor to provide all plumbing work for addition or remodel scope.*\n\n---\n\n- Tie into existing supply and waste lines — *verify capacity and condition of existing lines before connecting*\n- New supply, waste, and vent rough-in to all added or relocated fixtures per plan\n- *All rough-in to be inspected prior to wall close — Contractor to notify GC when inspection-ready*\n- Existing lines to be patched, capped, or abandoned per code at all removed fixture locations\n- Water heater replacement or relocation if included in scope\n- Finish plumbing — set all fixtures per owner selections\n- Final test and inspection; no active leaks at turnover\n\n---\n\n[!color:orange]*Report any deficiencies in existing plumbing discovered during work before proceeding. Conditions may constitute a change order.*` },
+
+  { trade:'Electrical', types:[NC,ADU], title:'Complete Electrical — Rough & Finish', content:`## Complete Electrical — Rough & Finish\n\n*Licensed electrical contractor to provide complete electrical per plans and NEC/local code.*\n\n---\n\n- Service entrance and panel — size per plans; *labeled circuit directory at completion*\n- All branch circuit rough-in per electrical plan; home run to panel labeled before inspection\n- *AFCI protection* on all bedroom, living area, and required circuits per NEC\n- *GFCI protection* at all required locations — kitchens, bathrooms, garage, exterior, and unfinished spaces\n- Low voltage rough-in — CAT6, coax, speaker, and doorbell per owner direction\n- *All rough-in to pass inspection before walls are closed — Contractor to schedule and notify GC*\n- Finish — devices, fixtures, panel trim, and cover plates per owner selections\n- Smoke detectors — interconnected, combination CO/smoke where required by code\n- Panel schedule completed, laminated, and installed in panel\n\n---\n\n[!color:orange]*Final electrical fully operational. All circuits labeled, all fixtures working at turnover.*` },
+
+  { trade:'Electrical', types:[ADD,REM], title:'Electrical — Addition/Remodel', content:`## Electrical — Addition/Remodel\n\n*Licensed electrical contractor to provide all electrical work for addition or remodel scope.*\n\n---\n\n- Tie into existing panel — *confirm available capacity before beginning; panel upgrade if required is a separate line item*\n- New circuit rough-in to all added or modified locations per plan\n- AFCI/GFCI protection at all code-required locations per NEC\n- *All rough-in to pass inspection before walls are closed*\n- Finish — devices, fixtures, and cover plates per owner selections\n- Smoke and CO detectors per code in all affected areas\n- Panel directory updated to reflect any new circuits\n\n---\n\n[!color:orange]*Existing wiring deficiencies discovered in work area (aluminum wiring, ungrounded circuits, open splices) to be documented and submitted as a change order before proceeding.*` },
+
+  { trade:'HVAC & Mechanical', types:[NC,ADU], title:'Complete HVAC System', content:`## Complete HVAC System\n\n*Licensed mechanical contractor to design and install complete HVAC system per plans and energy code.*\n\n---\n\n- Equipment sizing per *Manual J load calculation* — documentation available on request\n- Ductwork — supply and return distribution to all rooms; balanced for comfort and energy efficiency\n- All ductwork within conditioned space or *insulated to R-8 minimum* where in unconditioned space\n- Duct sealing — all joints mastic-sealed or foil-taped; *no cloth duct tape*\n- Exhaust fans per code in all bathrooms; kitchen range hood exhausted to exterior\n- Ventilation — fresh air introduction per ASHRAE 62.2; HRV or ERV if required\n- *Equipment startup and commissioning* — thermostat programmed, all zones tested and balanced, filter location labeled\n\n---\n\n[!color:orange]*Provide filter size, equipment model numbers, and maintenance schedule to owner at closeout.*` },
+
+  { trade:'HVAC & Mechanical', types:[ADD,REM], title:'HVAC — Extension or Modification', content:`## HVAC — Extension or Modification\n\n*Licensed mechanical contractor to extend or modify existing HVAC system for addition or remodel scope.*\n\n---\n\n- *Assess existing system capacity before extending* — if existing equipment cannot handle added load, document and submit as change order before proceeding\n- New supply and return duct extensions to all added or relocated spaces — sized to maintain system balance\n- Seal and insulate all new ductwork; re-seal any disturbed existing ductwork\n- Exhaust fans in all new or remodeled bathrooms — *ducted to exterior, not to attic*\n- Kitchen range hood ducted to exterior per code if in scope\n- *Balance system after all duct work is complete* — document supply air readings at all registers\n- Startup and commissioning of any new equipment; provide filter location label and maintenance info` },
+
+  { trade:'Painting', types:ALL, title:'Interior Paint — Full Package', content:`## Interior Paint — Full Package\n\n*Contractor to provide complete interior painting per owner color selections.*\n\n---\n\n- All surfaces clean, dry, and free of dust before painting\n- *Primer coat on all new drywall surfaces and bare wood trim* before finish coats\n- Walls and ceilings — *two finish coats minimum*; eggshell sheen on walls, flat on ceilings unless otherwise selected\n- Doors — two finish coats; semi-gloss; both sides and edges painted\n- Trim and millwork — two finish coats; semi-gloss; nail holes filled and sanded before final coat\n- Owner selections confirmed and samples approved before full application\n- Protection of all floors, fixtures, hardware, and adjacent surfaces\n- *Touch-up coat at final walkthrough after all trades complete — prior to turnover*\n\n---\n\n[!color:orange]*Paint brand minimum: Sherwin-Williams or Benjamin Moore. No builder-grade products.*` },
+
+  { trade:'Painting', types:[NC,ADD,ADU], title:'Exterior Paint', content:`## Exterior Paint\n\n*Contractor to provide exterior painting per owner color selections.*\n\n---\n\n- All surfaces clean, dry, and free of contaminants before painting\n- Primer on all bare wood, repaired areas, and new trim — full coverage, no fisheyes or runs\n- *Two finish coats* on all painted exterior surfaces — 100% acrylic exterior paint; Sherwin-Williams or Benjamin Moore minimum\n- Caulk all trim joints, window/door perimeters, and penetrations before final coat\n- Owner to approve color samples prior to full application\n\n---\n\n[!color:orange]*Final coat to be free of runs, sags, lap marks, or brush marks at normal viewing distance.*\n\n[!color:red]*No painting in temperatures below 50°F or when rain is forecast within 24 hours.*` },
+
+  { trade:'Cleanup & Final', types:ALL, title:'Final Cleanup & Site Restoration', content:`## Final Cleanup & Site Restoration\n\n*Contractor to perform complete final cleanup and site restoration prior to owner walkthrough.*\n\n---\n\n- Remove all construction debris, tools, materials, and equipment from site and interior\n- Vacuum and broom-sweep all interior spaces — including inside cabinets, closets, and mechanical rooms\n- Clean all windows — remove stickers, tape, and smears; interior and exterior\n- Clean all fixtures, sinks, tubs, and showers — remove grout haze, caulk smears, and stickers\n- Wipe down all cabinet interiors and exteriors; remove sawdust and construction film\n- Clean all appliances — interior and exterior; remove packing materials and protective films\n- Touch up paint at all nail pops, dings, and scuffs resulting from construction traffic\n- Remove all temporary protection, signage, and barriers\n- Final exterior — remove all debris, staging, equipment, and materials; rake disturbed areas; restore damaged landscaping\n- Dumpster removed within *3 business days* of project completion\n\n---\n\n[!color:red]*Site to be in move-in-ready condition for owner walkthrough. No completion payment released until cleanup is verified by GC.*` },
+];
+
+const TRADE_ORDER=['Site Protection','Demo & Selective Removal','Site & Excavation','Concrete & Foundation','Framing','Roofing','Windows & Exterior Doors','Exterior Finishes','Insulation & Air Sealing','Drywall','Interior Finishes & Trim','Flooring','Tile','Cabinetry & Millwork','Plumbing','Electrical','HVAC & Mechanical','Painting','Cleanup & Final'];
+const TYPE_ABBR={'New Construction':'NC','Addition':'ADD','Remodel':'REM','ADU':'ADU'};
+const TYPE_CLASS={'New Construction':'nc','Addition':'add','Remodel':'rem','ADU':'adu'};
+const FILTER_OPTIONS=['All',NC,ADD,REM,ADU];
+
+function BlockCard({block}){
+  const [editing,setEditing]=useState(false);
+  const [text,setText]=useState(block.content);
+  const [copied,setCopied]=useState(false);
+  const [expanded,setExpanded]=useState(false);
+  const copy=useCallback((t)=>{navigator.clipboard.writeText(t).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});},[]);
+  return(
+    <div className={`block-card${editing?' editing':''}`}>
+      <div className="block-hdr">
+        <div className="block-title">{block.title}</div>
+        <div className="type-badges">{block.types.map(t=><span key={t} className={`tbadge ${TYPE_CLASS[t]}`}>{TYPE_ABBR[t]}</span>)}</div>
+      </div>
+      {editing
+        ?<textarea className="block-editor" value={text} onChange={e=>setText(e.target.value)} rows={14}/>
+        :<div className="block-preview"><div className={`md-preview${expanded?' expanded':''}`}>{text}</div></div>
+      }
+      <div className="block-actions">
+        <button className={`btn-copy${copied?' copied':''}`} onClick={()=>copy(text)}>
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {copied?<polyline points="20 6 9 17 4 12"/>:<><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>}
+          </svg>
+          {copied?'Copied!':'Copy'}
+        </button>
+        <button className={`btn-edit${editing?' active':''}`} onClick={()=>setEditing(e=>!e)}>{editing?'Done':'Edit'}</button>
+        {!editing&&<button className="btn-expand" onClick={()=>setExpanded(e=>!e)}>{expanded?'Less \u2191':'More \u2193'}</button>}
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [activeTrade,setActiveTrade]=useState(TRADE_ORDER[0]);
+  const [activeFilter,setActiveFilter]=useState('All');
+  const [search,setSearch]=useState('');
+  const tradeCounts=useMemo(()=>{const c={};TRADE_ORDER.forEach(t=>{c[t]=RAW_BLOCKS.filter(b=>b.trade===t&&(activeFilter==='All'||b.types.includes(activeFilter))).length;});return c;},[activeFilter]);
+  const visibleBlocks=useMemo(()=>RAW_BLOCKS.filter(b=>{if(b.trade!==activeTrade)return false;if(activeFilter!=='All'&&!b.types.includes(activeFilter))return false;if(search.trim()){const q=search.toLowerCase();return b.title.toLowerCase().includes(q)||b.content.toLowerCase().includes(q);}return true;}),[activeTrade,activeFilter,search]);
+  return(
+    <div className="shell">
+      <div className="topbar">
+        <a href="/" className="topbar-back">\u2190 OVB Tools</a>
+        <div className="topbar-sep"/>
+        <span className="topbar-title">Scope Library</span>
+        <div className="topbar-right">
+          <span className="topbar-hint">JT Markdown formatted \u2014 copy and paste directly into JobTread</span>
+          <span className="md-badge">## \u00b7 - \u00b7 *bold* \u00b7 ---</span>
+        </div>
+      </div>
+      <div className="body-row">
+        <div className="sidebar">
+          <div className="sidebar-hdr">Trades</div>
+          <div className="trade-list">
+            {TRADE_ORDER.map(t=>(
+              <button key={t} className={`trade-btn${activeTrade===t?' active':''}`} onClick={()=>setActiveTrade(t)}>
+                <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t}</span>
+                {tradeCounts[t]>0&&<span className="trade-count">{tradeCounts[t]}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="main">
+          <div className="filterbar">
+            <span className="filter-lbl">Type</span>
+            {FILTER_OPTIONS.map(f=><button key={f} className={`fpill${activeFilter===f?' active':''}`} onClick={()=>setActiveFilter(f)}>{f==='New Construction'?'New Const.':f}</button>)}
+            <div className="search-wrap">
+              <svg className="search-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input className="search-input" placeholder="Search blocks..." value={search} onChange={e=>setSearch(e.target.value)}/>
+            </div>
+          </div>
+          <div className="block-area">
+            {visibleBlocks.length===0
+              ?<div className="empty">No blocks match this filter</div>
+              :<div className="block-grid">{visibleBlocks.map((b,i)=><BlockCard key={b.trade+b.title+i} block={b}/>)}</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
