@@ -226,48 +226,40 @@ async function createCustomer(grantKey, params) {
     results.steps.customFieldsError = err.message;
   });
 
-  // Step 4: create contact (name only)
-  await pave(grantKey, {
-    createContact: {
-      $: { accountId: accountId, name: params.name },
-      createdContact: { id: {}, name: {} },
-    },
-  }).then(function(d) {
-    var contactId = (d && d.query && d.query.createContact && d.query.createContact.createdContact && d.query.createContact.createdContact.id)
-                 || (d && d.createContact && d.createContact.createdContact && d.createContact.createdContact.id);
+  // Step 4: create contact, then update with phone + email
+  try {
+    var contactData = await pave(grantKey, {
+      createContact: {
+        $: { accountId: accountId, name: params.name },
+        createdContact: { id: {}, name: {} },
+      },
+    });
+    var contactId = (contactData && contactData.query && contactData.query.createContact && contactData.query.createContact.createdContact && contactData.query.createContact.createdContact.id)
+                 || (contactData && contactData.createContact && contactData.createContact.createdContact && contactData.createContact.createdContact.id);
     results.steps.contactCreated = true;
 
-    // Step 4b: add phone
-    if (contactId && params.phone) {
-      pave(grantKey, {
-        createPhoneNumber: {
-          $: { contactId: contactId, number: params.phone, type: 'mobile' },
-          createdPhoneNumber: { id: {} },
+    // Step 4b: update contact with phone (E.164) and email
+    if (contactId && (params.phone || params.email)) {
+      var contactUpdate = { id: contactId };
+      if (params.phone) {
+        var digits = params.phone.replace(/[^0-9]/g, '');
+        contactUpdate.phoneNumber = (digits.length === 10 ? '+1' : '+') + digits;
+      }
+      if (params.email) {
+        contactUpdate.emailAddress = params.email;
+      }
+      await pave(grantKey, {
+        updateContact: {
+          $: contactUpdate,
+          updatedContact: { id: {} },
         },
-      }).then(function() {
-        results.steps.phoneCreated = true;
-      }).catch(function(err) {
-        results.steps.phoneError = err.message;
       });
+      results.steps.contactUpdated = true;
     }
-
-    // Step 4c: add email
-    if (contactId && params.email) {
-      pave(grantKey, {
-        createEmailAddress: {
-          $: { contactId: contactId, address: params.email },
-          createdEmailAddress: { id: {} },
-        },
-      }).then(function() {
-        results.steps.emailCreated = true;
-      }).catch(function(err) {
-        results.steps.emailError = err.message;
-      });
-    }
-  }).catch(function(err) {
+  } catch(err) {
     console.warn('[jobtread proxy] Contact:', err.message);
     results.steps.contactError = err.message;
-  });
+  }
 
   // Step 5: create location
   if (params.address) {
