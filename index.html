@@ -48,7 +48,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 14px 0 12px;
+      padding: max(14px, env(safe-area-inset-top)) 0 12px;
       flex-shrink: 0;
     }
     .bear-wrap { width: 30px; height: 30px; margin-bottom: 20px; filter: brightness(1.05); }
@@ -96,7 +96,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 11px 18px 10px;
+      padding: max(11px, env(safe-area-inset-top)) 18px 10px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
       flex-shrink: 0;
@@ -112,7 +112,7 @@
 
     /* ── Panels ── */
     .panels { flex: 1; overflow: hidden; position: relative; }
-    .panel { position: absolute; inset: 0; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; }
+    .panel { position: absolute; inset: 0; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; padding-bottom: env(safe-area-inset-bottom); }
     .panel.active { display: block; }
     .panel::-webkit-scrollbar { width: 2px; }
     .panel::-webkit-scrollbar-thumb { background: rgba(199,170,139,0.15); }
