@@ -35,6 +35,11 @@ module.exports = async function handler(req, res) {
 
 // Hardcoded customer field IDs from OVB JT account
 // Sourced from getAccountFields on a populated customer 2026-03-21
+var CF = {
+  phone: '22P93aBeTXDg',
+  email: '22P93aBU4cbB',
+};
+
 var F = {
   status:             '22PC8F47A63H',
   customerType:       '22PC8EvauCvJ',
@@ -239,20 +244,19 @@ async function createCustomer(grantKey, params) {
                  || (contactData && contactData.createContact && contactData.createContact.createdContact && contactData.createContact.createdContact.id);
     results.steps.contactCreated = true;
 
-    // Step 4b: update contact with phone (E.164) and email
+    // Step 4b: update contact with phone + email via customFieldValues
     if (contactId && (params.phone || params.email)) {
-      var contactUpdate = { id: contactId };
+      var contactFieldValues = {};
       if (params.phone) {
         var digits = params.phone.replace(/[^0-9]/g, '');
-        contactUpdate.phoneNumber = (digits.length === 10 ? '+1' : '+') + digits;
+        contactFieldValues[CF.phone] = (digits.length === 10 ? '+1' : '+') + digits;
       }
       if (params.email) {
-        contactUpdate.emailAddress = params.email;
+        contactFieldValues[CF.email] = params.email;
       }
       await pave(grantKey, {
         updateContact: {
-          $: contactUpdate,
-          updatedContact: { id: {} },
+          $: { id: contactId, customFieldValues: contactFieldValues },
         },
       });
       results.steps.contactUpdated = true;
