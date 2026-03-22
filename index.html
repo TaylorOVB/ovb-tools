@@ -33,7 +33,6 @@
       --mono:    'DM Mono', monospace;
       --sans:    'DM Sans', sans-serif;
       --r:       4px;
-      --nav:     58px;
     }
 
     html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: var(--sans); color: var(--smoke); -webkit-font-smoothing: antialiased; }
@@ -42,7 +41,7 @@
 
     /* ── Sidebar ── */
     .sidebar {
-      width: var(--nav);
+      width: 52px;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
@@ -51,140 +50,159 @@
       padding: max(14px, env(safe-area-inset-top)) 0 12px;
       flex-shrink: 0;
     }
-    .bear-wrap { width: 30px; height: 30px; margin-bottom: 20px; filter: brightness(1.05); }
+    .bear-wrap { width: 28px; height: 28px; filter: brightness(1.05); }
     .bear-wrap img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
-
-    .nav-items { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding: 0 8px; }
-
-    .nav-btn {
-      width: 100%;
-      height: 40px;
-      border-radius: var(--r);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      position: relative;
-      transition: background 0.12s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .nav-btn:hover { background: var(--tan-d); }
-    .nav-btn.active { background: var(--tan-d); border: 1px solid var(--border2); }
-    .nav-btn svg { width: 15px; height: 15px; stroke: rgba(242,239,232,0.28); transition: stroke 0.12s; flex-shrink: 0; }
-    .nav-btn:hover svg, .nav-btn.active svg { stroke: var(--tan); }
-    .nav-lbl {
-      font-family: var(--mono);
-      font-size: 6px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(242,239,232,0.25);
-      transition: color 0.12s;
-    }
-    .nav-btn:hover .nav-lbl, .nav-btn.active .nav-lbl { color: var(--tan); }
-
-    .nav-spacer { flex: 1; }
-    .sidebar-clock { font-family: var(--mono); font-size: 7px; color: rgba(242,239,232,0.15); letter-spacing: 0.04em; text-align: center; line-height: 1.6; }
+    .sidebar-divider { width: 24px; height: 1px; background: var(--border); margin: 12px 0; }
+    .sidebar-clock { font-family: var(--mono); font-size: 6.5px; color: rgba(242,239,232,0.15); letter-spacing: 0.04em; text-align: center; line-height: 1.7; margin-top: auto; }
 
     /* ── Main ── */
     .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
+    /* ── Topbar ── */
     .topbar {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: max(11px, env(safe-area-inset-top)) 18px 10px;
+      padding: max(10px, env(safe-area-inset-top)) 16px 10px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
       flex-shrink: 0;
     }
-    .topbar-title { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); }
-    .topbar-sep { width: 1px; height: 13px; background: var(--border2); }
-    .topbar-sub { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 0.04em; }
-    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
-    .topbar-phone { font-family: var(--mono); font-size: 9px; color: var(--tan); text-decoration: none; opacity: 0.65; }
+    .topbar-brand { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); white-space: nowrap; }
+    .topbar-sep { width: 1px; height: 12px; background: var(--border2); flex-shrink: 0; }
+    .topbar-sub { font-family: var(--mono); font-size: 8.5px; color: var(--muted); letter-spacing: 0.03em; white-space: nowrap; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .topbar-phone { font-family: var(--mono); font-size: 8.5px; color: var(--tan); text-decoration: none; opacity: 0.6; white-space: nowrap; }
     .topbar-phone:hover { opacity: 1; }
-    .topbar-lic { font-family: var(--mono); font-size: 8px; color: rgba(242,239,232,0.18); }
-    @media (max-width: 520px) { .topbar-sub, .topbar-sep, .topbar-lic { display: none; } }
+    .topbar-lic { font-family: var(--mono); font-size: 7.5px; color: rgba(242,239,232,0.15); white-space: nowrap; }
+    @media (max-width: 540px) { .topbar-sub, .topbar-sep, .topbar-lic { display: none; } }
+
+    /* ── Role strip ── */
+    .role-strip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .role-strip::-webkit-scrollbar { display: none; }
+    .role-strip-label { font-family: var(--mono); font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(199,170,139,0.28); margin-right: 4px; white-space: nowrap; flex-shrink: 0; }
+
+    .role-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: var(--r);
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: var(--mono);
+      font-size: 8.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.12s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .role-btn:hover { background: var(--tan-d); color: var(--smoke); }
+    .role-btn.active { background: var(--tan-d); border-color: var(--border2); color: var(--tan); }
+    .role-btn svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
     /* ── Panels ── */
     .panels { flex: 1; overflow: hidden; position: relative; }
-    .panel { position: absolute; inset: 0; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; padding-bottom: env(safe-area-inset-bottom); }
+    .panel { position: absolute; inset: 0; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
     .panel.active { display: block; }
     .panel::-webkit-scrollbar { width: 2px; }
-    .panel::-webkit-scrollbar-thumb { background: rgba(199,170,139,0.15); }
+    .panel::-webkit-scrollbar-thumb { background: rgba(199,170,139,0.12); }
 
-    /* ── Two-col panel layout ── */
-    .panel-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--border);
-      min-height: 100%;
-    }
-    @media (max-width: 600px) { .panel-grid { grid-template-columns: 1fr; } }
-
-    .panel-col { background: var(--bg); padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 16px; }
-
-    /* ── Single col for stack ── */
-    .panel-single { padding: 16px 16px 24px; }
+    /* ── Panel grid ── */
+    .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); min-height: 100%; }
+    @media (max-width: 580px) { .panel-grid { grid-template-columns: 1fr; } }
+    .panel-col { background: var(--bg); padding: 14px 14px 20px; display: flex; flex-direction: column; gap: 14px; }
 
     /* ── Section ── */
-    .sec { display: flex; flex-direction: column; gap: 6px; }
+    .sec { display: flex; flex-direction: column; gap: 5px; }
     .sec-hdr { display: flex; align-items: center; gap: 8px; }
-    .sec-lbl { font-family: var(--mono); font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(199,170,139,0.4); white-space: nowrap; }
+    .sec-lbl { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(199,170,139,0.35); white-space: nowrap; }
     .sec-rule { flex: 1; height: 1px; background: var(--border); }
 
     /* ── Tool rows ── */
     .tool-list { display: flex; flex-direction: column; gap: 3px; }
     .tool-row {
-      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
-      text-decoration: none; cursor: pointer; transition: border-color 0.12s, background 0.12s;
+      display: grid;
+      grid-template-columns: 8px 1fr auto;
+      align-items: start;
+      gap: 10px;
+      padding: 9px 11px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.12s, background 0.12s;
       -webkit-tap-highlight-color: transparent;
     }
     .tool-row:hover { border-color: var(--tan-m); background: var(--card2); }
-    .tool-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .dot-live { background: var(--green); box-shadow: 0 0 5px rgba(76,175,132,0.35); }
-    .dot-ext  { background: rgba(242,239,232,0.12); }
-    .tool-info { flex: 1; min-width: 0; }
-    .tool-name { font-size: 13px; font-weight: 600; color: var(--smoke); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tool-desc { font-family: var(--mono); font-size: 8.5px; color: var(--muted); letter-spacing: 0.03em; display: block; margin-top: 1px; }
-    .tool-badge { font-family: var(--mono); font-size: 7px; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--r); flex-shrink: 0; }
-    .badge-live { background: rgba(76,175,132,0.1); color: var(--green); border: 1px solid rgba(76,175,132,0.2); }
+    .tool-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .dot-live { background: var(--green); box-shadow: 0 0 4px rgba(76,175,132,0.4); }
+    .dot-ext  { background: rgba(242,239,232,0.1); }
+    .tool-body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .tool-name { font-size: 12.5px; font-weight: 600; color: var(--smoke); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+    .tool-trigger { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.45); letter-spacing: 0.02em; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tool-badge { font-family: var(--mono); font-size: 7px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--r); flex-shrink: 0; margin-top: 2px; }
+    .badge-live { background: rgba(76,175,132,0.1); color: var(--green); border: 1px solid rgba(76,175,132,0.18); }
     .badge-ext  { background: rgba(242,239,232,0.04); color: var(--muted); border: 1px solid rgba(242,239,232,0.07); }
+    .badge-app  { background: rgba(199,170,139,0.06); color: rgba(199,170,139,0.55); border: 1px solid rgba(199,170,139,0.12); }
 
     /* ── Link rows ── */
     .link-list { display: flex; flex-direction: column; gap: 3px; }
     .link-row {
-      display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+      display: flex; align-items: center; gap: 9px; padding: 8px 11px;
       background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
       text-decoration: none; cursor: pointer; transition: border-color 0.12s;
       -webkit-tap-highlight-color: transparent;
     }
     .link-row:hover { border-color: var(--tan-m); }
-    .link-icon { font-size: 12px; width: 16px; text-align: center; flex-shrink: 0; }
-    .link-name { font-size: 12px; font-weight: 500; color: var(--smoke); flex: 1; }
-    .link-domain { font-family: var(--mono); font-size: 7.5px; color: rgba(242,239,232,0.18); }
+    .link-icon { font-size: 11px; width: 15px; text-align: center; flex-shrink: 0; }
+    .link-body { flex: 1; min-width: 0; }
+    .link-name { font-size: 12px; font-weight: 500; color: var(--smoke); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .link-trigger { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.4); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .link-domain { font-family: var(--mono); font-size: 7px; color: rgba(242,239,232,0.15); flex-shrink: 0; }
 
-    /* ── App grid ── */
-    .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 4px; }
-    .app-tile {
+    /* ── Contact cards ── */
+    .contact-list { display: flex; flex-direction: column; gap: 3px; }
+    .contact-card {
       background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
-      padding: 12px 6px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px;
-      text-decoration: none; cursor: pointer; transition: border-color 0.12s;
-      -webkit-tap-highlight-color: transparent;
+      padding: 9px 11px; display: flex; flex-direction: column; gap: 1px;
+      transition: border-color 0.12s;
     }
-    .app-tile:hover { border-color: var(--tan-m); }
-    .app-tile-icon { font-size: 22px; line-height: 1; }
-    .app-tile-name { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.04em; color: var(--muted); text-align: center; line-height: 1.3; }
+    .contact-card:hover { border-color: var(--tan-m); }
+    .contact-role-lbl { font-family: var(--mono); font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(199,170,139,0.35); margin-bottom: 1px; }
+    .contact-name { font-size: 12.5px; font-weight: 600; color: var(--smoke); line-height: 1.3; }
+    .contact-company { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+    .contact-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px;
+      border-radius: var(--r); border: 1px solid var(--border2); background: transparent;
+      font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.05em; color: var(--tan);
+      text-decoration: none; cursor: pointer; transition: background 0.12s, border-color 0.12s;
+      -webkit-tap-highlight-color: transparent; white-space: nowrap;
+    }
+    .contact-btn:hover { background: var(--tan-d); border-color: var(--tan); }
+    .contact-btn svg { width: 8px; height: 8px; stroke: var(--tan); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .contact-note { font-family: var(--mono); font-size: 7px; color: rgba(242,239,232,0.18); margin-top: 4px; line-height: 1.5; }
 
-    /* ── App grid section label ── */
-    .app-sec-lbl { font-family: var(--mono); font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(199,170,139,0.4); margin: 14px 0 6px; }
-    .app-sec-lbl:first-child { margin-top: 0; }
+    /* SVGs used inline in contact buttons */
+    .ico-phone { display:contents; }
+    .ico-mail  { display:contents; }
+    .ico-link  { display:contents; }
   </style>
 </head>
 <body>
@@ -195,38 +213,16 @@
     <div class="bear-wrap">
       <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="" />
     </div>
-
-    <div class="nav-items">
-      <button class="nav-btn active" onclick="switchPanel('sales', this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-        </svg>
-        <span class="nav-lbl">Sales</span>
-      </button>
-
-      <button class="nav-btn" onclick="switchPanel('ops', this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-        </svg>
-        <span class="nav-lbl">Ops</span>
-      </button>
-
-      <button class="nav-btn" onclick="switchPanel('stack', this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-        </svg>
-        <span class="nav-lbl">Stack</span>
-      </button>
-    </div>
-
-    <div class="nav-spacer"></div>
+    <div class="sidebar-divider"></div>
     <div class="sidebar-clock" id="sidebar-clock">--:--<br>---</div>
   </div>
 
   <!-- ── Main ── -->
   <div class="main">
+
+    <!-- Topbar -->
     <div class="topbar">
-      <span class="topbar-title" id="panel-title">Sales</span>
+      <span class="topbar-brand">OVB Tools</span>
       <div class="topbar-sep"></div>
       <span class="topbar-sub">Ogden Valley Builders</span>
       <div class="topbar-right">
@@ -235,239 +231,510 @@
       </div>
     </div>
 
+    <!-- Role strip -->
+    <div class="role-strip">
+      <span class="role-strip-label">View as</span>
+
+      <button class="role-btn active" onclick="switchRole('sales', this)">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Sales
+      </button>
+
+      <button class="role-btn" onclick="switchRole('pm', this)">
+        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        PM
+      </button>
+
+      <button class="role-btn" onclick="switchRole('admin', this)">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Admin
+      </button>
+    </div>
+
+    <!-- Panels -->
     <div class="panels">
 
-      <!-- SALES -->
+      <!-- ══ SALES ══ -->
       <div class="panel active" id="panel-sales">
         <div class="panel-grid">
           <div class="panel-col">
+
             <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Lead Qualification</span><div class="sec-rule"></div></div>
+              <div class="sec-hdr"><span class="sec-lbl">Lead Tools</span><div class="sec-rule"></div></div>
               <div class="tool-list">
                 <a class="tool-row" href="/OVB-Discovery-Call.html">
                   <div class="tool-dot dot-live"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">Discovery Call</span>
-                    <span class="tool-desc">Qualify leads + push to JobTread</span>
+                    <span class="tool-trigger">When: Incoming lead · first phone call</span>
                   </div>
                   <span class="tool-badge badge-live">Live</span>
                 </a>
-              </div>
-            </div>
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Estimating</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
                 <a class="tool-row" href="/OVB-Rough-Budget-Calculator.html">
                   <div class="tool-dot dot-live"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">Rough Budget Calculator</span>
-                    <span class="tool-desc">Early-stage cost ranges for clients</span>
+                    <span class="tool-trigger">When: Client asks ballpark before plans exist</span>
                   </div>
                   <span class="tool-badge badge-live">Live</span>
                 </a>
               </div>
             </div>
-          </div>
-          <div class="panel-col">
+
             <div class="sec">
               <div class="sec-hdr"><span class="sec-lbl">CRM</span><div class="sec-rule"></div></div>
               <div class="tool-list">
                 <a class="tool-row" href="javascript:void(0)" onclick="openApp('jobtread://', 'https://app.jobtread.com')">
                   <div class="tool-dot dot-ext"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">JobTread</span>
-                    <span class="tool-desc">Customers, leads, pipeline</span>
+                    <span class="tool-trigger">When: Log call · update lead · create customer</span>
                   </div>
-                  <span class="tool-badge badge-ext">App</span>
+                  <span class="tool-badge badge-app">App</span>
                 </a>
               </div>
             </div>
+
             <div class="sec">
               <div class="sec-hdr"><span class="sec-lbl">Marketing</span><div class="sec-rule"></div></div>
               <div class="tool-list">
                 <a class="tool-row" href="https://www.canva.com" target="_blank">
                   <div class="tool-dot dot-ext"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">Canva</span>
-                    <span class="tool-desc">Graphics and marketing materials</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="https://www.ogdenvalleybuilders.com" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-info">
-                    <span class="tool-name">OVB Website</span>
-                    <span class="tool-desc">ogdenvalleybuilders.com</span>
+                    <span class="tool-trigger">When: Creating graphics · proposals · marketing</span>
                   </div>
                   <span class="tool-badge badge-ext">Web</span>
                 </a>
                 <a class="tool-row" href="https://webflow.com" target="_blank">
                   <div class="tool-dot dot-ext"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">Webflow</span>
-                    <span class="tool-desc">Website editor</span>
+                    <span class="tool-trigger">When: Editing the OVB website</span>
+                  </div>
+                  <span class="tool-badge badge-ext">Web</span>
+                </a>
+                <a class="tool-row" href="https://www.ogdenvalleybuilders.com" target="_blank">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">OVB Website</span>
+                    <span class="tool-trigger">When: Reviewing live site</span>
                   </div>
                   <span class="tool-badge badge-ext">Web</span>
                 </a>
               </div>
             </div>
+
+            <div class="sec">
+              <div class="sec-hdr"><span class="sec-lbl">AI</span><div class="sec-rule"></div></div>
+              <div class="tool-list">
+                <a class="tool-row" href="https://claude.ai" target="_blank">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Claude</span>
+                    <span class="tool-trigger">When: Drafting proposals · client comms · research</span>
+                  </div>
+                  <span class="tool-badge badge-ext">Web</span>
+                </a>
+                <a class="tool-row" href="https://chat.openai.com" target="_blank">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">ChatGPT</span>
+                    <span class="tool-trigger">When: Quick lookups · image generation</span>
+                  </div>
+                  <span class="tool-badge badge-ext">Web</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+          <div class="panel-col">
+
+            <div class="sec">
+              <div class="sec-hdr"><span class="sec-lbl">Key Contacts — Sales</span><div class="sec-rule"></div></div>
+              <div class="contact-list">
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Insurance Agent — GL &amp; Builders Risk</span>
+                  <span class="contact-name">Agent Name</span>
+                  <span class="contact-company">Agency Name</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:0000000000">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (000) 000-0000
+                    </a>
+                    <a class="contact-btn" href="mailto:agent@agency.com">
+                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Email
+                    </a>
+                  </div>
+                  <span class="contact-note">COI requests · GL questions · Builders Risk quotes</span>
+                </div>
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Construction Lender</span>
+                  <span class="contact-name">Banker Name</span>
+                  <span class="contact-company">Bank Name</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:0000000000">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (000) 000-0000
+                    </a>
+                    <a class="contact-btn" href="mailto:banker@bank.com">
+                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Email
+                    </a>
+                  </div>
+                  <span class="contact-note">Construction-to-perm · draw schedules · client referrals</span>
+                </div>
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Architect / Designer</span>
+                  <span class="contact-name">Designer Name</span>
+                  <span class="contact-company">Firm Name</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:0000000000">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (000) 000-0000
+                    </a>
+                    <a class="contact-btn" href="mailto:designer@firm.com">
+                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Email
+                    </a>
+                  </div>
+                  <span class="contact-note">Plans · client design referrals · feasibility</span>
+                </div>
+
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- OPS -->
-      <div class="panel" id="panel-ops">
+      <!-- ══ PM ══ -->
+      <div class="panel" id="panel-pm">
         <div class="panel-grid">
           <div class="panel-col">
+
             <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Insurance</span><div class="sec-rule"></div></div>
+              <div class="sec-hdr"><span class="sec-lbl">Pre-Construction Tools</span><div class="sec-rule"></div></div>
               <div class="tool-list">
                 <a class="tool-row" href="/OVB-Builders-Risk-Worksheet.html">
                   <div class="tool-dot dot-live"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">Builders Risk Worksheet</span>
-                    <span class="tool-desc">Coverage calculator + broker summary</span>
+                    <span class="tool-trigger">When: Contract signed · before work starts</span>
                   </div>
                   <span class="tool-badge badge-live">Live</span>
                 </a>
-              </div>
-            </div>
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Subcontractors</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
                 <a class="tool-row" href="/OVB-Master-Sub-Agreement.html">
                   <div class="tool-dot dot-live"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">Master Sub Agreement</span>
-                    <span class="tool-desc">Subcontractor agreement generator</span>
+                    <span class="tool-trigger">When: Onboarding any new subcontractor</span>
                   </div>
                   <span class="tool-badge badge-live">Live</span>
                 </a>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sec-hdr"><span class="sec-lbl">Compliance</span><div class="sec-rule"></div></div>
+              <div class="tool-list">
                 <a class="tool-row" href="https://secure.utah.gov/scr/" target="_blank">
                   <div class="tool-dot dot-ext"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">UT Sub Registry</span>
-                    <span class="tool-desc">Verify subcontractor registrations</span>
+                    <span class="tool-trigger">When: Verify sub registration before first PO</span>
                   </div>
                   <span class="tool-badge badge-ext">Web</span>
                 </a>
-              </div>
-            </div>
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">License</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
                 <a class="tool-row" href="https://secure.utah.gov/llv/search/index.html" target="_blank">
                   <div class="tool-dot dot-ext"></div>
-                  <div class="tool-info">
+                  <div class="tool-body">
                     <span class="tool-name">DOPL License Lookup</span>
-                    <span class="tool-desc">Verify contractor licenses</span>
+                    <span class="tool-trigger">When: Verify contractor license is active</span>
+                  </div>
+                  <span class="tool-badge badge-ext">Web</span>
+                </a>
+                <a class="tool-row" href="https://bluestakes.org" target="_blank">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Blue Stakes 811</span>
+                    <span class="tool-trigger">When: Any excavation · request 2 days before dig</span>
                   </div>
                   <span class="tool-badge badge-ext">Web</span>
                 </a>
               </div>
             </div>
-          </div>
-          <div class="panel-col">
+
             <div class="sec">
               <div class="sec-hdr"><span class="sec-lbl">Permit Portals</span><div class="sec-rule"></div></div>
               <div class="link-list">
                 <a class="link-row" href="https://frontier.co.weber.ut.us/Home" target="_blank">
                   <span class="link-icon">📋</span>
-                  <span class="link-name">Weber County</span>
+                  <div class="link-body">
+                    <span class="link-name">Weber County</span>
+                    <span class="link-trigger">Permits · inspections · plan check status</span>
+                  </div>
                   <span class="link-domain">frontier.co.weber.ut.us</span>
                 </a>
                 <a class="link-row" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank">
                   <span class="link-icon">📋</span>
-                  <span class="link-name">Morgan County</span>
+                  <div class="link-body">
+                    <span class="link-name">Morgan County</span>
+                    <span class="link-trigger">Permits · inspections · plan check status</span>
+                  </div>
                   <span class="link-domain">civicreview.com</span>
                 </a>
                 <a class="link-row" href="https://op.ogdencity.com" target="_blank">
                   <span class="link-icon">📋</span>
-                  <span class="link-name">Ogden City</span>
+                  <div class="link-body">
+                    <span class="link-name">Ogden City</span>
+                    <span class="link-trigger">City permits · inspections</span>
+                  </div>
                   <span class="link-domain">op.ogdencity.com</span>
                 </a>
               </div>
             </div>
+
             <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Finance</span><div class="sec-rule"></div></div>
-              <div class="link-list">
-                <a class="link-row" href="https://app.qbo.intuit.com" target="_blank">
-                  <span class="link-icon">💰</span>
-                  <span class="link-name">QuickBooks Online</span>
-                  <span class="link-domain">app.qbo.intuit.com</span>
+              <div class="sec-hdr"><span class="sec-lbl">Project Management</span><div class="sec-rule"></div></div>
+              <div class="tool-list">
+                <a class="tool-row" href="javascript:void(0)" onclick="openApp('jobtread://', 'https://app.jobtread.com')">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">JobTread</span>
+                    <span class="tool-trigger">When: Schedule · budget · RFIs · daily notes</span>
+                  </div>
+                  <span class="tool-badge badge-app">App</span>
                 </a>
-                <a class="link-row" href="https://www.bankofutah.com" target="_blank">
-                  <span class="link-icon">🏦</span>
-                  <span class="link-name">Bank of Utah</span>
-                  <span class="link-domain">bankofutah.com</span>
+                <a class="tool-row" href="javascript:void(0)" onclick="openApp('comgooglemaps://', 'https://maps.google.com')">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Google Maps</span>
+                    <span class="tool-trigger">When: Navigating to job site</span>
+                  </div>
+                  <span class="tool-badge badge-app">App</span>
                 </a>
               </div>
             </div>
+
+          </div>
+          <div class="panel-col">
+
+            <div class="sec">
+              <div class="sec-hdr"><span class="sec-lbl">Key Contacts — PM</span><div class="sec-rule"></div></div>
+              <div class="contact-list">
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Inspector — Weber County</span>
+                  <span class="contact-name">Inspector Name</span>
+                  <span class="contact-company">Weber County Building Dept.</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:8016990760">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (801) 699-0760
+                    </a>
+                  </div>
+                  <span class="contact-note">Schedule inspections · code questions · failed inspection follow-up</span>
+                </div>
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Inspector — Morgan County</span>
+                  <span class="contact-name">Inspector Name</span>
+                  <span class="contact-company">Morgan County Building Dept.</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:8018452552">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (801) 845-2552
+                    </a>
+                  </div>
+                  <span class="contact-note">Schedule inspections · code questions · failed inspection follow-up</span>
+                </div>
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Structural Engineer</span>
+                  <span class="contact-name">Engineer Name</span>
+                  <span class="contact-company">Firm Name</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:0000000000">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (000) 000-0000
+                    </a>
+                    <a class="contact-btn" href="mailto:engineer@firm.com">
+                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Email
+                    </a>
+                  </div>
+                  <span class="contact-note">Structural calcs · beam sizing · special inspections</span>
+                </div>
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Utility Locates</span>
+                  <span class="contact-name">Blue Stakes of Utah</span>
+                  <span class="contact-company">811 — Call Before You Dig</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:811">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      Dial 811
+                    </a>
+                    <a class="contact-btn" href="https://bluestakes.org" target="_blank">
+                      <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                      bluestakes.org
+                    </a>
+                  </div>
+                  <span class="contact-note">Required 2+ business days before any excavation</span>
+                </div>
+
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- STACK -->
-      <div class="panel" id="panel-stack">
-        <div class="panel-single">
-          <div class="app-sec-lbl">Project Management</div>
-          <div class="app-grid">
-            <a class="app-tile" href="javascript:void(0)" onclick="openApp('jobtread://', 'https://app.jobtread.com')">
-              <span class="app-tile-icon">🔨</span><span class="app-tile-name">JobTread</span>
-            </a>
-            <a class="app-tile" href="javascript:void(0)" onclick="openApp('notion://', 'https://www.notion.so')">
-              <span class="app-tile-icon">📓</span><span class="app-tile-name">Notion</span>
-            </a>
-          </div>
+      <!-- ══ ADMIN ══ -->
+      <div class="panel" id="panel-admin">
+        <div class="panel-grid">
+          <div class="panel-col">
 
-          <div class="app-sec-lbl">Communication</div>
-          <div class="app-grid">
-            <a class="app-tile" href="javascript:void(0)" onclick="openApp('googlegmail://', 'https://mail.google.com')">
-              <span class="app-tile-icon">✉️</span><span class="app-tile-name">Gmail</span>
-            </a>
-          </div>
+            <div class="sec">
+              <div class="sec-hdr"><span class="sec-lbl">Finance</span><div class="sec-rule"></div></div>
+              <div class="tool-list">
+                <a class="tool-row" href="https://app.qbo.intuit.com" target="_blank">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">QuickBooks Online</span>
+                    <span class="tool-trigger">When: Invoicing · bills · reconciliation · payroll</span>
+                  </div>
+                  <span class="tool-badge badge-ext">Web</span>
+                </a>
+                <a class="tool-row" href="https://www.bankofutah.com" target="_blank">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Bank of Utah</span>
+                    <span class="tool-trigger">When: Transfers · draws · account management</span>
+                  </div>
+                  <span class="tool-badge badge-ext">Web</span>
+                </a>
+              </div>
+            </div>
 
-          <div class="app-sec-lbl">Files & Docs</div>
-          <div class="app-grid">
-            <a class="app-tile" href="javascript:void(0)" onclick="openApp('googledrive://', 'https://drive.google.com')">
-              <span class="app-tile-icon">📁</span><span class="app-tile-name">Drive</span>
-            </a>
-            <a class="app-tile" href="https://docs.google.com/spreadsheets" target="_blank">
-              <span class="app-tile-icon">📊</span><span class="app-tile-name">Sheets</span>
-            </a>
-            <a class="app-tile" href="https://docs.google.com/document" target="_blank">
-              <span class="app-tile-icon">📄</span><span class="app-tile-name">Docs</span>
-            </a>
-            <a class="app-tile" href="https://www.canva.com" target="_blank">
-              <span class="app-tile-icon">🎨</span><span class="app-tile-name">Canva</span>
-            </a>
-          </div>
+            <div class="sec">
+              <div class="sec-hdr"><span class="sec-lbl">Files &amp; Docs</span><div class="sec-rule"></div></div>
+              <div class="tool-list">
+                <a class="tool-row" href="javascript:void(0)" onclick="openApp('googledrive://', 'https://drive.google.com')">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Google Drive</span>
+                    <span class="tool-trigger">When: Project files · contracts · photos</span>
+                  </div>
+                  <span class="tool-badge badge-app">App</span>
+                </a>
+                <a class="tool-row" href="https://docs.google.com/spreadsheets" target="_blank">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Google Sheets</span>
+                    <span class="tool-trigger">When: Trackers · budgets · COI logs</span>
+                  </div>
+                  <span class="tool-badge badge-ext">Web</span>
+                </a>
+                <a class="tool-row" href="https://docs.google.com/document" target="_blank">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Google Docs</span>
+                    <span class="tool-trigger">When: Letters · SOWs · client correspondence</span>
+                  </div>
+                  <span class="tool-badge badge-ext">Web</span>
+                </a>
+                <a class="tool-row" href="javascript:void(0)" onclick="openApp('notion://', 'https://www.notion.so')">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Notion</span>
+                    <span class="tool-trigger">When: SOPs · internal docs · process tracking</span>
+                  </div>
+                  <span class="tool-badge badge-app">App</span>
+                </a>
+              </div>
+            </div>
 
-          <div class="app-sec-lbl">Finance</div>
-          <div class="app-grid">
-            <a class="app-tile" href="https://app.qbo.intuit.com" target="_blank">
-              <span class="app-tile-icon">💰</span><span class="app-tile-name">QuickBooks</span>
-            </a>
-            <a class="app-tile" href="https://www.bankofutah.com" target="_blank">
-              <span class="app-tile-icon">🏦</span><span class="app-tile-name">Bank of Utah</span>
-            </a>
-          </div>
+            <div class="sec">
+              <div class="sec-hdr"><span class="sec-lbl">Communication</span><div class="sec-rule"></div></div>
+              <div class="tool-list">
+                <a class="tool-row" href="javascript:void(0)" onclick="openApp('googlegmail://', 'https://mail.google.com')">
+                  <div class="tool-dot dot-ext"></div>
+                  <div class="tool-body">
+                    <span class="tool-name">Gmail</span>
+                    <span class="tool-trigger">When: Client emails · vendor correspondence</span>
+                  </div>
+                  <span class="tool-badge badge-app">App</span>
+                </a>
+              </div>
+            </div>
 
-          <div class="app-sec-lbl">Navigation</div>
-          <div class="app-grid">
-            <a class="app-tile" href="javascript:void(0)" onclick="openApp('comgooglemaps://', 'https://maps.google.com')">
-              <span class="app-tile-icon">📍</span><span class="app-tile-name">Maps</span>
-            </a>
           </div>
+          <div class="panel-col">
 
-          <div class="app-sec-lbl">AI</div>
-          <div class="app-grid">
-            <a class="app-tile" href="https://claude.ai" target="_blank">
-              <span class="app-tile-icon">🤖</span><span class="app-tile-name">Claude</span>
-            </a>
-            <a class="app-tile" href="https://chat.openai.com" target="_blank">
-              <span class="app-tile-icon">💬</span><span class="app-tile-name">ChatGPT</span>
-            </a>
+            <div class="sec">
+              <div class="sec-hdr"><span class="sec-lbl">Key Contacts — Admin</span><div class="sec-rule"></div></div>
+              <div class="contact-list">
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Accountant / CPA</span>
+                  <span class="contact-name">CPA Name</span>
+                  <span class="contact-company">Firm Name</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:0000000000">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (000) 000-0000
+                    </a>
+                    <a class="contact-btn" href="mailto:cpa@firm.com">
+                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Email
+                    </a>
+                  </div>
+                  <span class="contact-note">Tax · QBO questions · payroll · year-end</span>
+                </div>
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Attorney</span>
+                  <span class="contact-name">Attorney Name</span>
+                  <span class="contact-company">Firm Name</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:0000000000">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (000) 000-0000
+                    </a>
+                    <a class="contact-btn" href="mailto:attorney@firm.com">
+                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Email
+                    </a>
+                  </div>
+                  <span class="contact-note">Contracts · liens · disputes · business matters</span>
+                </div>
+
+                <div class="contact-card">
+                  <span class="contact-role-lbl">Bank — Relationship Manager</span>
+                  <span class="contact-name">Banker Name</span>
+                  <span class="contact-company">Bank of Utah</span>
+                  <div class="contact-actions">
+                    <a class="contact-btn" href="tel:0000000000">
+                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      (000) 000-0000
+                    </a>
+                    <a class="contact-btn" href="mailto:banker@bankofutah.com">
+                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Email
+                    </a>
+                  </div>
+                  <span class="contact-note">Lines of credit · wire transfers · account access</span>
+                </div>
+
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -477,14 +744,11 @@
 </div>
 
 <script>
-  var TITLES = { sales: 'Sales', ops: 'Ops', stack: 'Tech Stack' };
-
-  function switchPanel(id, btn) {
+  function switchRole(id, btn) {
     document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
-    document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.role-btn').forEach(function(b) { b.classList.remove('active'); });
     document.getElementById('panel-' + id).classList.add('active');
     btn.classList.add('active');
-    document.getElementById('panel-title').textContent = TITLES[id] || id;
   }
 
   function openApp(appUrl, webUrl) {
