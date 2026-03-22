@@ -136,21 +136,27 @@ module.exports = async (req, res) => {
       steps.orgId = orgId;
 
       // Step 2: Create account (name only — type must be exact string)
+      // Note: Pave does NOT accept field selectors on createAccount mutations.
+      // We request no return fields — JT returns the full account object by default.
       const accountData = await pave(grantKey, {
         createAccount: {
           $: {
             organizationId: orgId,
             name: params.name,
             type: 'customer',
-          },
-          id: {},
-          name: {},
+          }
         }
       });
-      const accountId = accountData?.createAccount?.id;
-      if (!accountId) throw new Error('createAccount failed: ' + JSON.stringify(accountData));
+      steps.createAccountRaw = accountData;
+      // JT may return id at different paths — check all known patterns
+      const accountId =
+        accountData?.createAccount?.id ||
+        accountData?.createAccount?.account?.id ||
+        accountData?.account?.id ||
+        // Some Pave versions return a top-level id
+        (typeof accountData?.createAccount === 'string' ? accountData.createAccount : undefined);
+      if (!accountId) throw new Error('createAccount: could not find accountId in response: ' + JSON.stringify(accountData));
       steps.accountId = accountId;
-      steps.createAccount = accountData;
 
       // Step 3: Set all custom fields via updateAccount
       const fieldUpdates = buildFieldUpdates(params);
@@ -159,8 +165,7 @@ module.exports = async (req, res) => {
           $: {
             id: accountId,
             customFieldValues: fieldUpdates,
-          },
-          id: {},
+          }
         }
       });
       steps.updateAccount = updateData;
@@ -171,14 +176,15 @@ module.exports = async (req, res) => {
           $: {
             accountId,
             name: params.name,
-          },
-          id: {},
-          name: {},
+          }
         }
       });
-      const contactId = contactData?.createContact?.id;
+      steps.createContactRaw = contactData;
+      const contactId =
+        contactData?.createContact?.id ||
+        contactData?.createContact?.contact?.id ||
+        contactData?.contact?.id;
       steps.contactId = contactId;
-      steps.createContact = contactData;
 
       // Step 5: Create location record
       if (params.address) {
@@ -188,8 +194,7 @@ module.exports = async (req, res) => {
               accountId,
               name: params.address,
               address: params.address,
-            },
-            id: {},
+            }
           }
         });
         steps.createLocation = locationData;
@@ -204,8 +209,7 @@ module.exports = async (req, res) => {
               $: {
                 contactId,
                 number: params.phone,
-              },
-              id: {},
+              }
             }
           });
           steps.createPhoneNumber = phoneData;
@@ -224,8 +228,7 @@ module.exports = async (req, res) => {
               $: {
                 contactId,
                 address: params.email,
-              },
-              id: {},
+              }
             }
           });
           steps.createEmailAddress = emailData;
