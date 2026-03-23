@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
+  <meta name="theme-color" content="#1A1F2E" />
+  <title>Schedule Builder — OVB Tools</title>
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #F7F7F7; color: #1E1C1A; font-size: 13px; min-height: 100vh; padding-bottom: 80px; }
+    input[type="text"], input[type="date"] {
+      font-family: 'DM Sans', sans-serif; font-size: 13px; color: #1E1C1A;
+      background: #fff; border: 1.5px solid #E4E0DB; border-radius: 4px;
+      padding: 7px 10px; outline: none; width: 100%; transition: border-color 0.12s;
+    }
+    input[type="text"]:focus, input[type="date"]:focus { border-color: #C7AA8B; }
+    input[type="number"] {
+      font-family: 'DM Mono', monospace; font-size: 12px; color: #1E1C1A;
+      background: #fff; border: 1.5px solid #E4E0DB; border-radius: 4px;
+      padding: 4px 0; text-align: center; width: 46px; outline: none;
+      transition: border-color 0.12s; -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input[type="number"]:focus { border-color: #C7AA8B; }
+    @media print {
+      .no-print { display: none !important; }
+      .print-show { display: block !important; }
+      body { background: white; padding-bottom: 0; }
+      .phase-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    .print-show { display: none; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+// Type shorthands
+const A  = ['new_build','addition','full_remodel','interior_remodel'];
+const NB = ['new_build','addition'];
+const RM = ['full_remodel','interior_remodel'];
+const NI = ['new_build','addition','full_remodel'];
+
+const TASK_DEFS = [
+  // PRECONSTRUCTION
+  { id:'contract_signed',      group:'Preconstruction', name:'Contract Signed',                        description:'',                                                                  dur:1,  deps:[],                                                  types:A  },
+  { id:'asbestos_testing',     group:'Preconstruction', name:'Asbestos & Lead Paint Testing',           description:'Test for hazardous materials before any demo begins.',              dur:3,  deps:['contract_signed'],                                 types:RM },
+  { id:'submit_permit',        group:'Preconstruction', name:'Submit Permit Application',               description:'Submit plans and permit application to jurisdiction.',               dur:1,  deps:['contract_signed'],                                 types:NI },
+  { id:'permit_approved',      group:'Preconstruction', name:'Permit Approved',                        description:'',                                                                  dur:14, deps:['submit_permit'],                                   types:NI, inspect:true },
+  { id:'sub_bids',             group:'Preconstruction', name:'Sub Bids Collected',                     description:'Collect and review bids from all required trades.',                 dur:5,  deps:['contract_signed'],                                 types:A  },
+  { id:'subs_contracted',      group:'Preconstruction', name:'Subcontractors Selected & Contracted',   description:'Execute all subcontractor agreements.',                              dur:3,  deps:['sub_bids'],                                        types:A  },
+  { id:'lumber_order',         group:'Preconstruction', name:'Materials Ordered - Lumber & Sheathing', description:'Order lumber and sheathing package from supplier.',                  dur:2,  deps:['subs_contracted'],                                 types:NB },
+  { id:'cabinet_order',        group:'Preconstruction', name:'Cabinets Ordered',                       description:'Place cabinet order. Confirm lead time with supplier.',              dur:1,  deps:['subs_contracted'],                                 types:A  },
+  { id:'preconstruction_mtg',  group:'Preconstruction', name:'Pre-Construction Meeting',               description:'Walk site with all major subs. Review sequence and access.',        dur:1,  deps:['permit_approved','subs_contracted'],                types:A  },
+
+  // SITEWORK & DEMO
+  { id:'site_protection',  group:'Sitework & Demo', name:'Site Protection & Dust Control Setup', description:'Install zip walls and floor protection at all interior work areas.', dur:1, deps:['preconstruction_mtg'], types:A  },
+  { id:'dumpster',         group:'Sitework & Demo', name:'Dumpster Delivery',                    description:'Coordinate roll-off delivery.',                                      dur:1, deps:['preconstruction_mtg'], types:A  },
+  { id:'porta_potty',      group:'Sitework & Demo', name:'Portable Toilet Delivery',             description:'Coordinate portable toilet placement.',                              dur:1, deps:['preconstruction_mtg'], types:NI },
+  { id:'hazmat_abatement', group:'Sitework & Demo', name:'Hazmat Abatement',                    description:'Licensed abatement if testing positive. Skip if results clean.',     dur:3, deps:['asbestos_testing','site_protection'],  types:RM },
+  { id:'interior_demo',    group:'Sitework & Demo', name:'Selective Interior Demo',              description:'Remove walls, ceilings, and finishes per plans.',                    dur:3, deps:['site_protection','dumpster'],           types:['addition','full_remodel','interior_remodel'] },
+  { id:'exterior_demo',    group:'Sitework & Demo', name:'Selective Exterior Demo',              description:'Remove siding and trim at tie-in points.',                           dur:2, deps:['site_protection'],                      types:['addition','full_remodel'] },
+
+  // FOUNDATION
+  { id:'excavation',         group:'Foundation', name:'Excavation & Dirtwork',           description:'Excavate for foundation. Install foundation drain. Haul-off.',  dur:3, deps:['permit_approved'],    types:NB },
+  { id:'footing_inspection', group:'Foundation', name:'Foundation Inspection - Footing', description:'',                                                              dur:1, deps:['excavation'],          types:NB, inspect:true },
+  { id:'foundation_pour',    group:'Foundation', name:'Stem Wall or Slab - Pour',        description:'Footings and stem wall or slab per plans.',                     dur:2, deps:['footing_inspection'],  types:NB },
+  { id:'foundation_cure',    group:'Foundation', name:'Foundation Cure Period',           description:'Allow full cure time before framing.',                          dur:7, deps:['foundation_pour'],     types:NB },
+  { id:'backfill',           group:'Foundation', name:'Backfill & Rough Grade',           description:'Backfill and rough grade site.',                                dur:2, deps:['foundation_cure'],     types:NB },
+
+  // FRAMING
+  { id:'lumber_delivered',   group:'Framing & Structure', name:'Lumber & Sheathing Delivered',    description:'',                                                    dur:1, deps:['backfill','lumber_order'], types:NB },
+  { id:'frame_floor',        group:'Framing & Structure', name:'Framing - Floor System',          description:'Frame floor system over stem wall or slab.',           dur:3, deps:['lumber_delivered'],       types:NB },
+  { id:'frame_walls',        group:'Framing & Structure', name:'Framing - Walls',                 description:'Frame all exterior and interior walls.',               dur:4, deps:['frame_floor'],            types:NB },
+  { id:'frame_roof',         group:'Framing & Structure', name:'Framing - Roof & Trusses',        description:'Set engineered trusses and complete roof framing.',    dur:3, deps:['frame_walls'],            types:NB },
+  { id:'framing_inspection', group:'Framing & Structure', name:'Framing Inspection',              description:'',                                                    dur:1, deps:['frame_roof'],             types:NB, inspect:true },
+
+  // EXTERIOR SHELL
+  { id:'sheathing_wrap', group:'Exterior Shell', name:'Sheathing & House Wrap',              description:'Install sheathing and WRB. Tape all seams.',                           dur:2, deps:['framing_inspection'],        types:NB },
+  { id:'roofing',        group:'Exterior Shell', name:'Roofing - Install',                   description:'Install all OVB-supplied roofing materials.',                          dur:3, deps:['sheathing_wrap'],            types:NB },
+  { id:'windows_doors',  group:'Exterior Shell', name:'Windows & Exterior Doors - Install',  description:'Install all OVB-supplied windows and exterior doors. Flash all openings.', dur:2, deps:['sheathing_wrap'],        types:NB },
+  { id:'siding',         group:'Exterior Shell', name:'Siding & Exterior Trim - Install',    description:'Install all OVB-supplied siding and trim.',                            dur:5, deps:['roofing','windows_doors'],   types:NB },
+  { id:'gutters',        group:'Exterior Shell', name:'Gutters & Downspouts',                description:'Install seamless gutters.',                                            dur:1, deps:['siding'],                    types:NB },
+
+  // MEP ROUGH-IN — HVAC → Plumbing → Electrical → LV
+  { id:'hvac_rough',       group:'MEP Rough-In', name:'HVAC Rough-In',           description:'Extend existing system or install new zone.',            dur:3, deps:['framing_inspection'], altDeps:['interior_demo'], types:A },
+  { id:'plumbing_rough',   group:'MEP Rough-In', name:'Plumbing Rough-In',       description:'All supply, drain, and vent rough-in per plans.',         dur:4, deps:['hvac_rough'],                                   types:A },
+  { id:'electrical_rough', group:'MEP Rough-In', name:'Electrical Rough-In',     description:'All circuits, boxes, and wire per NEC.',                  dur:4, deps:['plumbing_rough'],                               types:A },
+  { id:'lv_rough',         group:'MEP Rough-In', name:'Low Voltage Rough-In',    description:'Data, AV, security, and speaker rough-in.',               dur:2, deps:['electrical_rough'],                             types:A },
+  { id:'mep_inspection',   group:'MEP Rough-In', name:'MEP Rough-In Inspection', description:'',                                                        dur:1, deps:['lv_rough'],                                     types:A, inspect:true },
+
+  // INSULATION & DRYWALL
+  { id:'wall_insulation',       group:'Insulation & Drywall', name:'Wall Batt Insulation - Install', description:'Install all OVB-supplied batt insulation.',        dur:2, deps:['mep_inspection'],                        types:A  },
+  { id:'attic_insulation',      group:'Insulation & Drywall', name:'Attic Insulation - Blown',       description:'Blow R-49 insulation in attic.',                   dur:1, deps:['wall_insulation'],                       types:NB },
+  { id:'insulation_inspection', group:'Insulation & Drywall', name:'Insulation Inspection',          description:'',                                                 dur:1, deps:['attic_insulation'], altDeps:['wall_insulation'], types:A, inspect:true },
+  { id:'drywall_delivered',     group:'Insulation & Drywall', name:'Drywall Delivered',              description:'Confirm OVB-supplied drywall on site.',            dur:1, deps:['insulation_inspection'],                 types:A  },
+  { id:'drywall_hang',          group:'Insulation & Drywall', name:'Drywall - Hang',                 description:'Hang all drywall throughout the project.',         dur:4, deps:['drywall_delivered'],                     types:A  },
+  { id:'drywall_finish',        group:'Insulation & Drywall', name:'Drywall - Tape & Finish',        description:'Tape, mud, and texture to Level 4.',               dur:5, deps:['drywall_hang'],                          types:A  },
+
+  // INTERIOR FINISHES
+  // Shower tile track — starts independently from drywall finish
+  { id:'tile_shower',        group:'Interior Finishes', name:'Tile - Shower Waterproofing & Setting',  description:'Install Schluter system and set all OVB-supplied tile.',           dur:4,  deps:['drywall_finish'],       types:A },
+  { id:'shower_glass_order', group:'Interior Finishes', name:'Shower Glass - Order',                   description:'Template and order shower glass after tile is fully set.',         dur:1,  deps:['tile_shower'],          types:A, parallel:'Runs parallel with cabinet & countertop track' },
+  { id:'shower_glass_fab',   group:'Interior Finishes', name:'Shower Glass - Fabrication Lead Time',   description:'10-14 day fabrication lead time for custom tempered glass.',       dur:12, deps:['shower_glass_order'],   types:A, parallel:'Runs parallel with cabinet & countertop track' },
+
+  // Paint → cabinets → countertop track
+  { id:'interior_paint',      group:'Interior Finishes', name:'Interior Paint - Prime & Paint',         description:'Prime and two finish coats on all walls and ceilings.',           dur:5,  deps:['drywall_finish'],       types:A },
+  { id:'cabinet_delivery',    group:'Interior Finishes', name:'Cabinet Delivery',                       description:'Confirm delivery to site. Inspect for damage before accepting.', dur:1,  deps:['interior_paint'],       types:A },
+  { id:'cabinet_install',     group:'Interior Finishes', name:'Cabinet Install',                        description:'Install all OVB-supplied cabinets.',                             dur:3,  deps:['cabinet_delivery'],     types:A },
+  { id:'countertop_template', group:'Interior Finishes', name:'Countertop Template Day',                description:'Countertop fabricator templates all slabs.',                      dur:1,  deps:['cabinet_install'],      types:A },
+  { id:'countertop_fab',      group:'Interior Finishes', name:'Countertop Fabrication Lead Time',       description:'Fabrication lead time. Trim, doors and flooring run concurrently.', dur:14, deps:['countertop_template'], types:A, parallel:'Trim, doors and flooring run concurrently' },
+
+  // Parallel track — runs during countertop fab lead time
+  { id:'trim_baseboard',   group:'Interior Finishes', name:'Trim & Baseboard - Install', description:'Install all OVB-supplied trim and baseboard.',  dur:3, deps:['interior_paint'],  types:A, parallel:'Runs during countertop fab lead time' },
+  { id:'interior_doors',   group:'Interior Finishes', name:'Interior Doors - Install',   description:'Hang all OVB-supplied interior doors.',          dur:2, deps:['trim_baseboard'],  types:A, parallel:'Runs during countertop fab lead time' },
+  { id:'flooring_install', group:'Interior Finishes', name:'Flooring - Install',         description:'Install all OVB-supplied flooring.',             dur:3, deps:['interior_doors'],  types:A, parallel:'Runs during countertop fab lead time' },
+
+  // Countertop install waits for BOTH fab AND flooring (whichever is later)
+  { id:'countertop_install',   group:'Interior Finishes', name:'Countertop Install',     description:'Install all fabricated countertop slabs.',               dur:1, deps:['countertop_fab','flooring_install'],      types:A },
+  { id:'shower_glass_install', group:'Interior Finishes', name:'Shower Glass Install',   description:'Install tempered glass shower enclosure.',                dur:1, deps:['shower_glass_fab','countertop_install'], types:A },
+
+  // FINAL MEP & FIXTURES
+  { id:'plumbing_trim',     group:'Final MEP & Fixtures', name:'Plumbing Trim & Fixture Connect', description:'Connect and trim all plumbing fixtures.',              dur:2, deps:['countertop_install'],                              types:A },
+  { id:'electrical_trim',   group:'Final MEP & Fixtures', name:'Electrical Trim & Device Install',description:'Install all devices, cover plates, and fixtures.',     dur:2, deps:['flooring_install'],                                types:A },
+  { id:'hvac_trim',         group:'Final MEP & Fixtures', name:'HVAC Trim & Commissioning',       description:'Final connections and system commissioning.',           dur:1, deps:['flooring_install'],                                types:A },
+  { id:'appliance_delivery',group:'Final MEP & Fixtures', name:'Appliance Delivery',              description:'Schedule delivery. Inspect for damage on arrival.',    dur:1, deps:['countertop_install'],                              types:A },
+  { id:'appliance_install', group:'Final MEP & Fixtures', name:'Appliance Install & Connect',     description:'Install and connect all appliances.',                  dur:1, deps:['plumbing_trim','electrical_trim','appliance_delivery'], types:A },
+
+  // EXTERIOR COMPLETION
+  { id:'exterior_paint', group:'Exterior Completion', name:'Exterior Paint - Apply',   description:'Paint all new exterior surfaces.',               dur:3, deps:['siding'],        types:NB },
+  { id:'final_grading',  group:'Exterior Completion', name:'Final Grading & Drainage', description:'Regrade disturbed areas for positive drainage.',  dur:2, deps:['exterior_paint'], types:NB },
+
+  // CLOSEOUT & COMMISSIONING
+  { id:'final_cleaning',      group:'Closeout & Commissioning', name:'Final Cleaning',                 description:'Move-in ready clean.',                                              dur:1, deps:['appliance_install','shower_glass_install','final_grading'], altDeps:['appliance_install','shower_glass_install'], types:A },
+  { id:'final_inspection',    group:'Closeout & Commissioning', name:'Final Inspection & CO Walk',     description:'',                                                                  dur:1, deps:['final_cleaning'],       types:A,  inspect:true },
+  { id:'cert_occupancy',      group:'Closeout & Commissioning', name:'Certificate of Occupancy',       description:'',                                                                  dur:3, deps:['final_inspection'],     types:NI, inspect:true },
+  { id:'commissioning_walk',  group:'Closeout & Commissioning', name:'Commissioning Walk with Client', description:'Walk project with client. Document all outstanding items.',          dur:1, deps:['cert_occupancy'],        altDeps:['final_inspection'], types:A },
+  { id:'punch_complete',      group:'Closeout & Commissioning', name:'Punch List Items Complete',      description:'Complete all items from commissioning walk.',                        dur:5, deps:['commissioning_walk'],    types:A },
+  { id:'project_complete',    group:'Closeout & Commissioning', name:'Project Complete',               description:'',                                                                  dur:1, deps:['punch_complete'],        types:A, inspect:true },
+];
+
+const TASK_MAP = {};
+TASK_DEFS.forEach(t => { TASK_MAP[t.id] = t; });
+
+const PROJECT_TYPES = [
+  { id:'new_build',        label:'New Build'        },
+  { id:'addition',         label:'Addition'         },
+  { id:'full_remodel',     label:'Full Remodel'     },
+  { id:'interior_remodel', label:'Interior Remodel' },
+];
+
+// ─── Date helpers ──────────────────────────────────────────────────────────────
+function isWknd(d) { return d.getDay()===0 || d.getDay()===6; }
+function advWD(d, skip) { const r=new Date(d); if(skip) while(isWknd(r)) r.setDate(r.getDate()+1); return r; }
+function addWD(start, days, skip) {
+  if(days<=1) return new Date(start);
+  const d=new Date(start); let added=0;
+  while(added<days-1){ d.setDate(d.getDate()+1); if(!skip||!isWknd(d)) added++; }
+  return d;
+}
+function nextWD(end, skip) { const d=new Date(end); d.setDate(d.getDate()+1); return advWD(d,skip); }
+function fmtJT(d) { return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}/${d.getFullYear()}`; }
+function fmtShort(d) { return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function fmtFull(d)  { return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+
+// ─── Schedule computation ──────────────────────────────────────────────────────
+function computeSchedule(projType, startStr, skip, overrides) {
+  if (!startStr) return [];
+  const active   = TASK_DEFS.filter(t => t.types.includes(projType));
+  const activeSet = new Set(active.map(t => t.id));
+
+  function effDeps(task) {
+    const p = (task.deps||[]).filter(id => activeSet.has(id));
+    if (p.length > 0) return p;
+    return (task.altDeps||[]).filter(id => activeSet.has(id));
+  }
+
+  const endDates = {};
+  const projStart = advWD(new Date(startStr+'T00:00:00'), skip);
+  const result = [];
+
+  for (const task of active) {
+    const deps = effDeps(task);
+    let tStart;
+    if (deps.length === 0) {
+      tStart = new Date(projStart);
+    } else {
+      const maxEnd = deps.reduce((mx, id) => { const d=endDates[id]; return(!d||mx>d)?mx:d; }, new Date(0));
+      tStart = nextWD(maxEnd, skip);
+    }
+    const dur  = overrides[task.id] !== undefined ? overrides[task.id] : task.dur;
+    const tEnd = addWD(tStart, dur, skip);
+    endDates[task.id] = tEnd;
+    result.push({ ...task, start:tStart, end:tEnd, dur, effDeps:deps });
+  }
+  return result;
+}
+
+// ─── App ───────────────────────────────────────────────────────────────────────
+function App() {
+  const today = new Date().toISOString().split('T')[0];
+  const [projName,  setProjName]  = useState('');
+  const [projType,  setProjType]  = useState('addition');
+  const [startDate, setStartDate] = useState(today);
+  const [skipWknd,  setSkipWknd]  = useState(true);
+  const [targetId,  setTargetId]  = useState('22PSi3Y3dKCk');
+  const [durOvr,    setDurOvr]    = useState({});
+  const [expLabel,  setExpLabel]  = useState('Export CSV');
+
+  const schedule = useMemo(() => computeSchedule(projType, startDate, skipWknd, durOvr), [projType, startDate, skipWknd, durOvr]);
+
+  const grouped = useMemo(() => {
+    const map={}, order=[];
+    schedule.forEach(t => { if(!map[t.group]){map[t.group]=[];order.push(t.group);} map[t.group].push(t); });
+    return order.map(g => ({ group:g, tasks:map[g] }));
+  }, [schedule]);
+
+  const totalDays = schedule.reduce((s,t)=>s+t.dur,0);
+  const totalWks  = Math.round(totalDays/5*10)/10;
+  const projEnd   = schedule.length ? schedule[schedule.length-1].end : null;
+
+  function setDur(id, val) { setDurOvr(prev=>({...prev,[id]:Math.max(1,parseInt(val)||1)})); }
+
+  function downloadCSV() {
+    const hdr = 'Group,Name,Type,Target Type,Target ID,Description,Start Date,Start Time,End Date,End Time,Assignees,Depends On Tasks,Subtasks,Progress\n';
+    let rows='', lastGroup='';
+    schedule.forEach(t => {
+      if(t.group!==lastGroup){ rows+=`"${t.group}",,, taskTemplate,${targetId},,,,,,,,,\n`; lastGroup=t.group; }
+      const desc = (t.description||'').replace(/"/g,'""');
+      const deps = t.effDeps.map(id=>TASK_MAP[id]?.name||'').filter(Boolean).join('; ');
+      rows+=`"${t.group}","${t.name}",,taskTemplate,${targetId},"${desc}",${fmtJT(t.start)},,${fmtJT(t.end)},,,,"${deps}",,\n`;
+    });
+    const blob=new Blob([hdr+rows],{type:'text/csv'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`${(projName.trim().replace(/\s+/g,'-')||'OVB-Schedule')} - Schedule - ${new Date().getFullYear()}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    setExpLabel('Downloaded ✓'); setTimeout(()=>setExpLabel('Export CSV'),2500);
+  }
+
+  const C = {
+    bar:{ background:'#1E1C1A',padding:'12px 20px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50 },
+    card:{ background:'#fff',borderRadius:4,border:'1.5px solid #E4E0DB',padding:'16px 20px' },
+    lbl:{ fontFamily:'DM Mono',fontSize:9,fontWeight:500,letterSpacing:'0.12em',textTransform:'uppercase',color:'#888480',display:'block',marginBottom:5 },
+    pill:(on)=>({
+      display:'inline-block',padding:'5px 12px',borderRadius:4,cursor:'pointer',
+      border:`1.5px solid ${on?'#1E1C1A':'#E4E0DB'}`,background:on?'#1E1C1A':'#fff',
+      color:on?'#C7AA8B':'#888480',fontFamily:'DM Mono',fontSize:11,fontWeight:500,
+      transition:'all 0.1s',userSelect:'none',lineHeight:1
+    }),
+    phHdr:{ background:'#1E1C1A',padding:'7px 16px',display:'flex',alignItems:'center',justifyContent:'space-between' },
+    phLbl:{ fontFamily:'DM Mono',fontSize:10,fontWeight:500,letterSpacing:'0.1em',textTransform:'uppercase',color:'#C7AA8B' },
+    tblHdr:{ display:'grid',gridTemplateColumns:'26px 1fr 52px 70px 70px',gap:'0 10px',padding:'7px 16px',background:'#F7F5F2',borderBottom:'1.5px solid #E4E0DB' },
+    row:(i,ins)=>({ display:'grid',gridTemplateColumns:'26px 1fr 52px 70px 70px',gap:'0 10px',padding:'8px 16px',background:ins?'rgba(199,170,139,0.06)':(i%2===0?'#fff':'#FAFAF9'),borderBottom:'1px solid #F0EDE9',alignItems:'center' }),
+    mono:(sz,col)=>({ fontFamily:'DM Mono',fontSize:sz,color:col }),
+    bottom:{ position:'fixed',bottom:0,left:0,right:0,background:'#fff',borderTop:'1.5px solid #E4E0DB',padding:'10px 20px',display:'flex',alignItems:'center',justifyContent:'space-between',zIndex:50 },
+    btn:(v)=>({ padding:'8px 18px',borderRadius:4,border:`1.5px solid ${v==='p'?'#1E1C1A':'#C7AA8B'}`,background:v==='p'?'#1E1C1A':'transparent',color:v==='p'?'#F7F7F7':'#C7AA8B',fontFamily:'DM Sans',fontSize:13,fontWeight:500,cursor:'pointer',transition:'all 0.1s' }),
+  };
+
+  let ri = 0;
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={C.bar} className="no-print">
+        <div>
+          <div style={C.mono(13,'#C7AA8B')}>📅 Schedule Builder</div>
+          <div style={{ ...C.mono(10,'rgba(247,247,247,0.35)'), marginTop:2 }}>JT Task Template → Dated Schedule</div>
+        </div>
+        <a href="/" style={{ ...C.mono(10,'rgba(199,170,139,0.5)'), textDecoration:'none', letterSpacing:'0.08em' }}>← Tools</a>
+      </div>
+
+      {/* Print header */}
+      <div className="print-show" style={{ padding:'14px 20px 10px', borderBottom:'2px solid #1E1C1A', marginBottom:10 }}>
+        <div style={{ fontSize:16, fontWeight:600 }}>{projName || 'Project Schedule'}</div>
+        <div style={{ ...C.mono(11,'#888480'), marginTop:3 }}>
+          {PROJECT_TYPES.find(p=>p.id===projType)?.label} &middot; Start {startDate} &middot; {totalDays} days ({totalWks} wks){projEnd ? ` · Est. Completion: ${fmtFull(projEnd)}` : ''}
+        </div>
+      </div>
+
+      <div style={{ maxWidth:860, margin:'0 auto', padding:'16px 16px 0' }}>
+
+        {/* Config */}
+        <div style={{ ...C.card, marginBottom:14 }} className="no-print">
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))', gap:14, marginBottom:14 }}>
+            <div>
+              <span style={C.lbl}>Project Name</span>
+              <input type="text" placeholder="123 Main St Addition" value={projName} onChange={e=>setProjName(e.target.value)} />
+            </div>
+            <div>
+              <span style={C.lbl}>Start Date</span>
+              <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} />
+            </div>
+            <div>
+              <span style={C.lbl}>JT Target ID</span>
+              <input type="text" value={targetId} onChange={e=>setTargetId(e.target.value)} style={{ fontFamily:'DM Mono',fontSize:12 }} />
+            </div>
+            <div>
+              <span style={C.lbl}>Skip Weekends</span>
+              <div style={{ display:'flex',gap:6,marginTop:1 }}>
+                {['Yes','No'].map(v=><span key={v} style={C.pill((v==='Yes')===skipWknd)} onClick={()=>setSkipWknd(v==='Yes')}>{v}</span>)}
+              </div>
+            </div>
+          </div>
+          <div>
+            <span style={C.lbl}>Project Type</span>
+            <div style={{ display:'flex',gap:6,flexWrap:'wrap' }}>
+              {PROJECT_TYPES.map(p=><span key={p.id} style={C.pill(projType===p.id)} onClick={()=>{setProjType(p.id);setDurOvr({});}}>{p.label}</span>)}
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div style={{ display:'flex',gap:16,marginBottom:10,alignItems:'center' }} className="no-print">
+          <div style={{ display:'flex',alignItems:'center',gap:5 }}>
+            <div style={{ width:10,height:10,borderRadius:2,background:'rgba(199,170,139,0.15)',border:'1px solid rgba(199,170,139,0.4)' }} />
+            <span style={{ ...C.mono(9,'#888480'), letterSpacing:'0.08em', textTransform:'uppercase' }}>Inspection / Milestone</span>
+          </div>
+          <div style={{ display:'flex',alignItems:'center',gap:5 }}>
+            <div style={{ width:6,height:6,borderRadius:'50%',background:'#C7AA8B' }} />
+            <span style={{ ...C.mono(9,'#888480'), letterSpacing:'0.08em', textTransform:'uppercase' }}>Parallel Track</span>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div style={{ ...C.card, padding:0, overflow:'hidden', marginBottom:14 }}>
+          <div style={C.tblHdr} className="no-print">
+            {['#','Task','Days','Start','End'].map((h,i)=>(
+              <span key={h} style={{ ...C.lbl, margin:0, textAlign:i===2?'center':'left' }}>{h}</span>
+            ))}
+          </div>
+
+          {grouped.map(({ group, tasks })=>(
+            <div key={group}>
+              <div style={C.phHdr} className="phase-header">
+                <span style={C.phLbl}>{group}</span>
+                <span style={C.mono(9,'rgba(199,170,139,0.4)')}>{tasks.length} tasks</span>
+              </div>
+              {tasks.map((t, i)=>{
+                const idx = ri++;
+                return (
+                  <div key={t.id} style={C.row(i, t.inspect)}>
+                    <span style={C.mono(10,'#C7C0B8')} className="no-print" >{idx+1}</span>
+                    <div>
+                      <div style={{ display:'flex',alignItems:'flex-start',gap:5 }}>
+                        {t.parallel && <div style={{ width:5,height:5,borderRadius:'50%',background:'#C7AA8B',flexShrink:0,marginTop:5 }} />}
+                        <span style={{ fontSize:13, color:t.inspect?'#8A7560':'#1E1C1A', fontWeight:t.inspect?500:400 }}>{t.name}</span>
+                      </div>
+                      {t.parallel && <div style={{ ...C.mono(9,'#C7AA8B'), marginTop:2, marginLeft: t.parallel ? 10 : 0 }}>{t.parallel}</div>}
+                    </div>
+                    <div style={{ display:'flex',justifyContent:'center' }} className="no-print">
+                      <input type="number" min="1" value={durOvr[t.id]!==undefined?durOvr[t.id]:t.dur} onChange={e=>setDur(t.id,e.target.value)} />
+                    </div>
+                    <span style={{ ...C.mono(11,'#888480'), whiteSpace:'nowrap' }}>{fmtShort(t.start)}</span>
+                    <span style={{ ...C.mono(11,'#888480'), whiteSpace:'nowrap' }}>{fmtShort(t.end)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+
+          <div style={{ padding:'10px 16px', background:'#FAFAF9', borderTop:'1px solid #F0EDE9' }}>
+            <span style={C.mono(10,'#B0AAA4')}>
+              MEP sequence: HVAC → Plumbing → Electrical → Low Voltage &nbsp;·&nbsp; Countertop fab (14d) runs parallel with trim, doors & flooring &nbsp;·&nbsp; Edit any duration above — all downstream tasks cascade automatically
+            </span>
+          </div>
+        </div>
+
+        {Object.keys(durOvr).length > 0 && (
+          <div style={{ textAlign:'right', marginBottom:8 }} className="no-print">
+            <span style={{ ...C.mono(10,'#C7AA8B'), cursor:'pointer', textDecoration:'underline' }} onClick={()=>setDurOvr({})}>
+              Reset all durations to defaults
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom bar */}
+      <div style={C.bottom} className="no-print">
+        <div style={{ display:'flex',alignItems:'center',gap:24 }}>
+          <div>
+            <div style={{ ...C.mono(9,'#888480'), letterSpacing:'0.1em', textTransform:'uppercase' }}>Duration</div>
+            <div style={{ ...C.mono(14,'#1E1C1A'), fontWeight:500, marginTop:2 }}>
+              {totalDays} days <span style={{ color:'#C7AA8B', fontWeight:400 }}>≈ {totalWks} wks</span>
+            </div>
+          </div>
+          {projEnd && (
+            <div>
+              <div style={{ ...C.mono(9,'#888480'), letterSpacing:'0.1em', textTransform:'uppercase' }}>Est. Completion</div>
+              <div style={{ ...C.mono(14,'#1E1C1A'), fontWeight:500, marginTop:2 }}>{fmtFull(projEnd)}</div>
+            </div>
+          )}
+          <div>
+            <div style={{ ...C.mono(9,'#888480'), letterSpacing:'0.1em', textTransform:'uppercase' }}>Tasks</div>
+            <div style={{ ...C.mono(14,'#1E1C1A'), fontWeight:500, marginTop:2 }}>{schedule.length}</div>
+          </div>
+        </div>
+        <div style={{ display:'flex',gap:8 }}>
+          <button style={C.btn('s')} onClick={()=>window.print()}>Print / PDF</button>
+          <button style={C.btn('p')} onClick={downloadCSV}>{expLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
