@@ -354,10 +354,14 @@ function FlagRow({ icon, children }) {
 function App() {
   const [proj, setProj] = useState({
     client: "", address: "", city: "", type: "addition", startDate: "", endDate: "",
+    ownerNames: "", yearBuilt: "", sqftExisting: "", sqftAddition: "",
+    scopeDesc: "", constructionLevel: "", archPlans: "", engineerReviewed: "", engineerFirm: "",
+    solar: "",
   });
   const [hw, setHw] = useState({
     carrierName: "", policyNum: "", agentName: "", agentPhone: "",
     dwellingCoverage: "", underConstrClause: "", constructionNotified: "", notes: "",
+    mortgage: "", mortgageLender: "", mortgageLoanNum: "",
   });
   const [cv, setCv] = useState({
     existingReplCost: "", newWorkHardCost: "", softCosts: "", existingSourceNote: "",
@@ -379,11 +383,32 @@ function App() {
 
   // Build agent summary
   const agentLines = [];
-  if (proj.client)    agentLines.push(`Project:   ${proj.client}`);
-  if (proj.address)   agentLines.push(`Property:  ${proj.address}${proj.city ? ", " + proj.city : ""}`);
-  if (proj.type)      agentLines.push(`Type:      ${TYPE_LABELS[proj.type] || proj.type}`);
-  if (proj.startDate) agentLines.push(`Timeline:  ${proj.startDate}  →  ${proj.endDate || "TBD"}`);
+  if (proj.client)        agentLines.push(`Project:           ${proj.client}`);
+  if (proj.ownerNames)    agentLines.push(`Owner(s):          ${proj.ownerNames}`);
+  if (proj.address)       agentLines.push(`Property:          ${proj.address}${proj.city ? ", " + proj.city : ""}`);
+  if (proj.type)          agentLines.push(`Type:              ${TYPE_LABELS[proj.type] || proj.type}`);
+  if (proj.startDate)     agentLines.push(`Timeline:          ${proj.startDate}  →  ${proj.endDate || "TBD"}`);
   agentLines.push("");
+  if (proj.yearBuilt)     agentLines.push(`Year Built:        ${proj.yearBuilt}`);
+  if (proj.sqftExisting)  agentLines.push(`Existing Sq Ft:    ${proj.sqftExisting}`);
+  if (proj.sqftAddition)  agentLines.push(`Addition Sq Ft:    ${proj.sqftAddition}`);
+  if (proj.constructionLevel) agentLines.push(`Construction:      ${proj.constructionLevel === "vertical" ? "Going Vertical" : "Ground Level Only"}`);
+  if (proj.archPlans)     agentLines.push(`Arch Plans:        ${proj.archPlans === "yes" ? "Yes — Developed" : proj.archPlans === "in_progress" ? "In Progress" : "No"}`);
+  if (proj.engineerReviewed) agentLines.push(`Engineer Review:   ${proj.engineerReviewed === "yes" ? "Yes" : proj.engineerReviewed === "not_required" ? "Not Required" : "No"}`);
+  if (proj.engineerFirm)  agentLines.push(`Engineer / Firm:   ${proj.engineerFirm}`);
+  if (proj.solar)         agentLines.push(`Solar:             ${proj.solar === "yes" ? "Yes — project includes solar" : "No"}`);
+  if (proj.scopeDesc) {
+    agentLines.push("");
+    agentLines.push(`Scope of Work:`);
+    agentLines.push(proj.scopeDesc);
+  }
+  agentLines.push("");
+  if (hw.mortgage === "yes") {
+    agentLines.push(`Mortgage:          Yes`);
+    if (hw.mortgageLender) agentLines.push(`Lender:            ${hw.mortgageLender}`);
+    if (hw.mortgageLoanNum) agentLines.push(`Loan #:            ${hw.mortgageLoanNum}`);
+    agentLines.push("");
+  }
   if (existing) agentLines.push(`Existing Structure (replacement cost):  ${fmtMoney(cv.existingReplCost)}`);
   if (cv.existingSourceNote) agentLines.push(`  Source: ${cv.existingSourceNote}`);
   if (newWork)  agentLines.push(`New Work Hard Costs:                    ${fmtMoney(cv.newWorkHardCost)}`);
@@ -420,6 +445,7 @@ function App() {
     `  4. The "Dwelling Coverage" amount listed on the dec page`,
     `     (This is the insured replacement value — not your home's market or purchase price)`,
     `  5. Whether your policy has any "under construction" or "vacancy" clause`,
+    `  6. Whether your home has a current mortgage — and if so, the lender name and loan number`,
     ``,
     `Once I have those, I'll handle everything else with our insurance broker. This is a standard step on any addition or remodel — we just need to make sure your existing coverage stays intact while we're building.`,
     ``,
@@ -441,8 +467,8 @@ function App() {
 
   const handleReset = () => {
     if (window.confirm("Reset all fields? This cannot be undone.")) {
-      setProj({ client: "", address: "", city: "", type: "addition", startDate: "", endDate: "" });
-      setHw({ carrierName: "", policyNum: "", agentName: "", agentPhone: "", dwellingCoverage: "", underConstrClause: "", constructionNotified: "", notes: "" });
+      setProj({ client: "", address: "", city: "", type: "addition", startDate: "", endDate: "", ownerNames: "", yearBuilt: "", sqftExisting: "", sqftAddition: "", scopeDesc: "", constructionLevel: "", archPlans: "", engineerReviewed: "", engineerFirm: "", solar: "" });
+      setHw({ carrierName: "", policyNum: "", agentName: "", agentPhone: "", dwellingCoverage: "", underConstrClause: "", constructionNotified: "", notes: "", mortgage: "", mortgageLender: "", mortgageLoanNum: "" });
       setCv({ existingReplCost: "", newWorkHardCost: "", softCosts: "", existingSourceNote: "" });
       setPol({ carrier: "", policyNum: "", agentName: "", agentPhone: "", namedInsured: "", addlInsured: "", effectiveDate: "", expirationDate: "", existingStructureCovered: "", softCostRider: "", theftCovered: "", coinsurancePct: "", premiumAmt: "", notes: "" });
     }
@@ -451,6 +477,9 @@ function App() {
   const showHoFlag        = hw.underConstrClause === "yes" || hw.underConstrClause === "unknown";
   const showNotNotified   = hw.constructionNotified === "no";
   const showNoExisting    = pol.existingStructureCovered === "no";
+  const showVertical      = proj.constructionLevel === "vertical";
+  const showEngineerFirm  = proj.engineerReviewed === "yes";
+  const showMortgage      = hw.mortgage === "yes";
 
   return (
     <div className="sheet">
@@ -508,6 +537,76 @@ function App() {
                 </Field>
               </div>
             </div>
+            <Field label="Full Owner Name(s)" col2>
+              <input placeholder="Rachael Bush / John Bush" value={proj.ownerNames} onChange={e => setProj({...proj, ownerNames: e.target.value})} />
+            </Field>
+            <Field label="Year Built — Existing Structure">
+              <input placeholder="1987" value={proj.yearBuilt} onChange={e => setProj({...proj, yearBuilt: e.target.value})} />
+            </Field>
+            <div style={{gridColumn:"span 1"}} />
+            <Field label="Sq Ft — Existing Structure">
+              <input placeholder="2,400" value={proj.sqftExisting} onChange={e => setProj({...proj, sqftExisting: e.target.value})} />
+            </Field>
+            <Field label="Sq Ft — Addition / New Work">
+              <input placeholder="600" value={proj.sqftAddition} onChange={e => setProj({...proj, sqftAddition: e.target.value})} />
+            </Field>
+            <Field label="Full Scope of Work — Include Foundation Work &amp; Load-Bearing Walls" col2>
+              <textarea
+                placeholder="e.g. 600 sq ft main-floor addition — new foundation, framing, electrical, plumbing rough-in, HVAC extension. Removing one load-bearing wall, engineered header. Attaching to existing structure at east exterior wall."
+                value={proj.scopeDesc}
+                onChange={e => setProj({...proj, scopeDesc: e.target.value})}
+                style={{minHeight: "80px"}}
+              />
+            </Field>
+            <Field label="Construction Level" col2>
+              <PillGroup
+                value={proj.constructionLevel}
+                onChange={v => setProj({...proj, constructionLevel: v})}
+                options={[
+                  { val: "ground", label: "Ground Level Only" },
+                  { val: "vertical", label: "Going Vertical" },
+                ]}
+              />
+            </Field>
+            {showVertical && (
+              <Field label="Architectural Plans Developed?" col2>
+                <PillGroup
+                  value={proj.archPlans}
+                  onChange={v => setProj({...proj, archPlans: v})}
+                  options={[
+                    { val: "yes",         label: "Yes — Completed" },
+                    { val: "in_progress", label: "In Progress" },
+                    { val: "no",          label: "No" },
+                  ]}
+                />
+              </Field>
+            )}
+            <Field label="Licensed Engineer Reviewed &amp; Approved Plans?" col2>
+              <PillGroup
+                value={proj.engineerReviewed}
+                onChange={v => setProj({...proj, engineerReviewed: v})}
+                options={[
+                  { val: "yes",          label: "Yes" },
+                  { val: "no",           label: "No" },
+                  { val: "not_required", label: "Not Required" },
+                ]}
+              />
+            </Field>
+            {showEngineerFirm && (
+              <Field label="Engineer / Firm Name" col2>
+                <input placeholder="Name or firm that stamped the plans" value={proj.engineerFirm} onChange={e => setProj({...proj, engineerFirm: e.target.value})} />
+              </Field>
+            )}
+            <Field label="Will Project Involve Solar?" col2>
+              <PillGroup
+                value={proj.solar}
+                onChange={v => setProj({...proj, solar: v})}
+                options={[
+                  { val: "no",  label: "No" },
+                  { val: "yes", label: "Yes" },
+                ]}
+              />
+            </Field>
           </div>
         </div>
 
@@ -547,6 +646,26 @@ function App() {
             <Field label="HO Agent Phone">
               <input placeholder="—" value={hw.agentPhone} onChange={e => setHw({...hw, agentPhone: e.target.value})} />
             </Field>
+            <Field label="Current Mortgage on Property?" col2>
+              <PillGroup
+                value={hw.mortgage}
+                onChange={v => setHw({...hw, mortgage: v})}
+                options={[
+                  { val: "no",  label: "No — Free &amp; Clear" },
+                  { val: "yes", label: "Yes — Has Mortgage" },
+                ]}
+              />
+            </Field>
+            {showMortgage && (
+              <>
+                <Field label="Mortgage Lender">
+                  <input placeholder="Wells Fargo, Bank of Utah..." value={hw.mortgageLender} onChange={e => setHw({...hw, mortgageLender: e.target.value})} />
+                </Field>
+                <Field label="Loan / Account Number">
+                  <input placeholder="—" value={hw.mortgageLoanNum} onChange={e => setHw({...hw, mortgageLoanNum: e.target.value})} />
+                </Field>
+              </>
+            )}
             <Field label="Dwelling Coverage — from HO Dec Page" col2>
               <MoneyInput
                 placeholder="Use insured dwelling amount — not Zillow, not purchase price"
