@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OVB — LOC Manager</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
+  <meta name="theme-color" content="#1A1F2E" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #F7F7F7; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+
+    const RATE      = 0.07;
+    const LOC_LIMIT = 20000;
+    const URL_KEY   = 'ovb-loc-script-url';
+
+    function fmt$(n) {
+      return Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+    }
+    function fmtDate(d) {
+      if (!d) return '';
+      const [y, m, day] = String(d).slice(0, 10).split('-');
+      return `${m}/${day}/${y.slice(2)}`;
+    }
+    function todayStr() { return new Date().toISOString().slice(0, 10); }
+    function daysBetween(d1, d2) {
+      return Math.floor((new Date(d2) - new Date(d1)) / 86400000);
+    }
+
+    const S = {
+      label: { display: 'block', fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#8A8070', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 5 },
+      input: { width: '100%', border: '1px solid rgba(30,28,26,0.2)', borderRadius: 4, padding: '9px 10px', fontSize: 13, fontFamily: "'DM Sans', sans-serif", color: '#1E1C1A', background: 'white', marginBottom: 14, outline: 'none' },
+      btn:   { background: '#1E1C1A', color: '#F7F7F7', border: 'none', borderRadius: 4, padding: '11px 18px', fontSize: 13, fontFamily: "'DM Sans', sans-serif", fontWeight: 500, cursor: 'pointer' },
+      mono9: { fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' },
+    };
+
+    async function apiFetch(url) {
+      const res = await fetch(url, { redirect: 'follow' });
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      return json;
+    }
+
+    async function apiPost(url, payload) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow',
+      });
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      return json;
+    }
+
+    function SetupScreen({ onSave }) {
+      const [url, setUrl] = React.useState('');
+      const [err, setErr] = React.useState('');
+
+      function save() {
+        const trimmed = url.trim();
+        if (!trimmed.startsWith('https://script.google.com')) {
+          setErr('Paste the full Apps Script Web App URL — starts with https://script.google.com');
+          return;
+        }
+        onSave(trimmed);
+      }
+
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#1E1C1A' }}>
+          <div style={{ width: '100%', maxWidth: 420, background: '#2A2826', borderRadius: 4, padding: 28 }}>
+            <div style={{ ...S.mono9, color: '#C7AA8B', marginBottom: 6 }}>Ogden Valley Builders</div>
+            <div style={{ color: '#F7F7F7', fontSize: 20, fontWeight: 600, marginBottom: 4 }}>LOC Manager</div>
+            <div style={{ color: 'rgba(247,247,247,0.4)', fontSize: 12, marginBottom: 28 }}>Google Sheets Setup</div>
+
+            {[
+              ['1', 'Create a new Google Sheet', 'Go to sheets.new in your browser'],
+              ['2', 'Open Extensions → Apps Script', 'Delete any default code, paste the Apps Script file'],
+              ['3', 'Run seedInitialData once', 'Click Run → seedInitialData in the editor toolbar'],
+              ['4', 'Deploy as Web App', 'Deploy → New deployment → Web app → Execute as: Me → Who has access: Anyone → Deploy'],
+              ['5', 'Copy the Web App URL', 'Paste it below and tap Connect'],
+            ].map(([n, title, sub]) => (
+              <div key={n} style={{ display: 'flex', gap: 12, marginBottom: 14, alignItems: 'flex-start' }}>
+                <div style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: '#1E1C1A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#C7AA8B', marginTop: 1 }}>{n}</div>
+                <div>
+                  <div style={{ color: '#F7F7F7', fontSize: 13 }}>{title}</div>
+                  <div style={{ color: 'rgba(247,247,247,0.4)', fontSize: 11, marginTop: 2 }}>{sub}</div>
+                </div>
+              </div>
+            ))}
+
+            <div style={{ borderTop: '1px solid rgba(199,170,139,0.12)', marginTop: 20, paddingTop: 20 }}>
+              <label style={{ ...S.label, color: 'rgba(199,170,139,0.65)' }}>Apps Script Web App URL</label>
+              <input
+                type="url" value={url}
+                onChange={e => { setUrl(e.target.value); setErr(''); }}
+                placeholder="https://script.google.com/macros/s/..."
+                style={{ ...S.input, background: '#1E1C1A', color: '#F7F7F7', border: '1px solid rgba(199,170,139,0.2)' }}
+              />
+              {err && <div style={{ color: '#D4714A', fontSize: 11, marginTop: -10, marginBottom: 12 }}>{err}</div>}
+              <button onClick={save} style={{ ...S.btn, width: '100%', background: '#C7AA8B', color: '#1E1C1A' }}>Connect to Sheet</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Spinner({ small }) {
+      const size = small ? 16 : 28;
+      return <div style={{ display: 'inline-block', width: size, height: size, border: `${small ? 2 : 3}px solid rgba(199,170,139,0.2)`, borderTopColor: '#C7AA8B', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />;
+    }
+
+    function App() {
+      const [scriptUrl, setScriptUrl] = React.useState(() => localStorage.getItem(URL_KEY) || '');
+      const [transactions, setTx]     = React.useState([]);
+      const [projects, setProjects]   = React.useState([]);
+      const [loading, setLoading]     = React.useState(false);
+      const [saving, setSaving]       = React.useState(false);
+      const [error, setError]         = React.useState('');
+      const [tab, setTab]             = React.useState('ledger');
+      const [confirmReset, setConfirmReset] = React.useState(false);
+      const [drawForm, setDrawForm]   = React.useState({ date: todayStr(), amount: '', project: '', note: '' });
+      const [payForm, setPayForm]     = React.useState({ date: todayStr(), amount: '', type: 'interest', note: '' });
+      const [newProject, setNewProject] = React.useState('');
+
+      React.useEffect(() => { if (scriptUrl) loadData(); }, [scriptUrl]);
+      React.useEffect(() => {
+        if (projects.length && !drawForm.project) setDrawForm(p => ({ ...p, project: projects[0] }));
+      }, [projects]);
+
+      async function loadData() {
+        setLoading(true); setError('');
+        try {
+          const data = await apiFetch(scriptUrl);
+          setTx(data.transactions.map(t => ({ ...t, amount: Number(t.amount) })));
+          setProjects(data.projects || []);
+        } catch { setError('Could not reach Google Sheet. Check connection or URL.'); }
+        finally { setLoading(false); }
+      }
+
+      async function mutate(payload) {
+        setSaving(true); setError('');
+        try {
+          const data = await apiPost(scriptUrl, payload);
+          setTx(data.transactions.map(t => ({ ...t, amount: Number(t.amount) })));
+          setProjects(data.projects || []);
+          return true;
+        } catch { setError('Save failed. Check connection.'); return false; }
+        finally { setSaving(false); }
+      }
+
+      function saveUrl(url) { localStorage.setItem(URL_KEY, url); setScriptUrl(url); }
+
+      const sorted = React.useMemo(() =>
+        [...transactions].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : String(a.id).localeCompare(String(b.id))),
+        [transactions]);
+
+      const principalBalance = React.useMemo(() =>
+        sorted.reduce((s, t) => {
+          if (t.type === 'draw' || t.type === 'point') return s + t.amount;
+          if (t.type === 'principal_payment') return s - t.amount;
+          return s;
+        }, 0), [sorted]);
+
+      const accruedInterest = React.useMemo(() => {
+        const today = todayStr();
+        let balance = 0, lastDate = null, accrued = 0;
+        for (const t of sorted) {
+          if (lastDate && t.date > lastDate) accrued += balance * RATE * daysBetween(lastDate, t.date) / 365;
+          if (t.type === 'draw' || t.type === 'point') balance += t.amount;
+          else if (t.type === 'principal_payment') balance -= t.amount;
+          else if (t.type === 'interest_payment') accrued -= t.amount;
+          lastDate = t.date;
+        }
+        if (lastDate && today > lastDate) accrued += balance * RATE * daysBetween(lastDate, today) / 365;
+        return Math.max(0, accrued);
+      }, [sorted]);
+
+      const availableCredit = Math.max(0, LOC_LIMIT - principalBalance);
+      const monthlyInterest = principalBalance * RATE / 12;
+      const totalOwed       = principalBalance + accruedInterest;
+      const utilizationPct  = Math.min(100, Math.round((principalBalance / LOC_LIMIT) * 100));
+      const lastActivityDate = sorted.length ? sorted[sorted.length - 1].date : null;
+      const daysSinceLast    = lastActivityDate ? daysBetween(lastActivityDate, todayStr()) : 0;
+
+      const ledgerRows = React.useMemo(() => {
+        let bal = 0;
+        return sorted.map(t => {
+          if (t.type === 'draw' || t.type === 'point') bal += t.amount;
+          else if (t.type === 'principal_payment') bal -= t.amount;
+          return { ...t, runningBalance: bal };
+        });
+      }, [sorted]);
+
+      const projectTotals = React.useMemo(() => {
+        const map = {};
+        transactions.filter(t => t.type === 'draw').forEach(t => {
+          if (!map[t.project]) map[t.project] = { draws: 0, count: 0 };
+          map[t.project].draws += t.amount; map[t.project].count++;
+        });
+        return map;
+      }, [transactions]);
+
+      async function addDraw() {
+        const amount = parseFloat(drawForm.amount);
+        if (!amount || amount <= 0 || !drawForm.project) return;
+        const point = Math.round(amount * 0.01 * 100) / 100;
+        const id1 = Date.now();
+        const ok = await mutate({ action: 'addTransactions', rows: [
+          { id: id1,     date: drawForm.date, type: 'draw',  amount, project: drawForm.project, note: drawForm.note },
+          { id: id1 + 1, date: drawForm.date, type: 'point', amount: point, project: drawForm.project, note: `Origination point — 1% of ${fmt$(amount)}` },
+        ]});
+        if (ok) { setDrawForm(p => ({ ...p, amount: '', note: '' })); setTab('ledger'); }
+      }
+
+      async function addPayment() {
+        const amount = parseFloat(payForm.amount);
+        if (!amount || amount <= 0) return;
+        const type = payForm.type === 'interest' ? 'interest_payment' : 'principal_payment';
+        const ok = await mutate({ action: 'addTransactions', rows: [{ id: Date.now(), date: payForm.date, type, amount, project: '', note: payForm.note }]});
+        if (ok) { setPayForm(p => ({ ...p, amount: '', note: '' })); setTab('ledger'); }
+      }
+
+      async function addProject() {
+        const name = newProject.trim();
+        if (!name || projects.includes(name)) return;
+        const ok = await mutate({ action: 'addProject', name });
+        if (ok) setNewProject('');
+      }
+
+      async function removeTransaction(id) {
+        if (!window.confirm('Remove this transaction?')) return;
+        await mutate({ action: 'deleteTransaction', id });
+      }
+
+      async function hardReset() {
+        await mutate({ action: 'reset' });
+        setConfirmReset(false);
+      }
+
+      const typeLabel = t => ({ draw: 'Draw', point: 'Point (1%)', interest_payment: 'Interest Pmt', principal_payment: 'Principal Pmt' }[t] || t);
+      const isDebit   = t => t.type === 'draw' || t.type === 'point';
+      const typeColor = t => isDebit(t) ? '#D4714A' : '#4A8D6F';
+
+      if (!scriptUrl) return <SetupScreen onSave={saveUrl} />;
+
+      if (loading && transactions.length === 0) {
+        return (
+          <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1E1C1A', gap: 16 }}>
+            <Spinner />
+            <div style={{ ...S.mono9, color: 'rgba(199,170,139,0.5)' }}>Loading from Google Sheets…</div>
+          </div>
+        );
+      }
+
+      return (
+        <div style={{ fontFamily: "'DM Sans', sans-serif", background: '#F7F7F7', minHeight: '100vh', color: '#1E1C1A', paddingBottom: 70, animation: 'fadeIn 0.2s ease' }}>
+
+          <div className="no-print" style={{ background: '#1E1C1A', padding: '14px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ ...S.mono9, color: '#C7AA8B', marginBottom: 3 }}>Ogden Valley Builders</div>
+              <div style={{ color: '#F7F7F7', fontWeight: 600, fontSize: 18, display: 'flex', alignItems: 'center', gap: 10 }}>
+                LOC Manager {saving && <Spinner small />}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ ...S.mono9, color: 'rgba(199,170,139,0.5)', marginBottom: 2 }}>Credit Limit</div>
+              <div style={{ color: '#C7AA8B', fontWeight: 600, fontSize: 17, fontFamily: "'DM Mono', monospace" }}>{fmt$(LOC_LIMIT)}</div>
+              <div style={{ ...S.mono9, color: 'rgba(199,170,139,0.35)', marginTop: 2 }}>7% simple · 1pt/draw</div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="no-print" style={{ background: '#D4714A', padding: '8px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: 'white', fontSize: 12 }}>{error}</span>
+              <button onClick={loadData} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 3, color: 'white', fontSize: 11, padding: '3px 10px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Retry</button>
+            </div>
+          )}
+
+          <div style={{ padding: '14px 14px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {[
+              { label: 'Outstanding Balance', value: fmt$(principalBalance), sub: `${utilizationPct}% of ${fmt$(LOC_LIMIT)} used`, valColor: '#F7F7F7', bg: '#1E1C1A' },
+              { label: 'Available Credit',    value: fmt$(availableCredit), sub: 'remaining on line', valColor: '#C7AA8B', bg: '#1E1C1A' },
+              { label: 'Accrued Interest',    value: fmt$(accruedInterest), sub: `${daysSinceLast}d accrued · ${fmt$(monthlyInterest)}/mo`, valColor: '#D4714A', bg: '#2A2826' },
+              { label: 'Total Owed',          value: fmt$(totalOwed), sub: 'principal + accrued interest', valColor: '#F7F7F7', bg: '#2A2826' },
+            ].map(card => (
+              <div key={card.label} style={{ background: card.bg, borderRadius: 4, padding: '12px 14px' }}>
+                <div style={{ ...S.mono9, color: 'rgba(199,170,139,0.65)', marginBottom: 4 }}>{card.label}</div>
+                <div style={{ color: card.valColor, fontSize: 20, fontWeight: 600, fontFamily: "'DM Mono', monospace", lineHeight: 1.2 }}>{card.value}</div>
+                <div style={{ fontSize: 11, color: 'rgba(247,247,247,0.4)', marginTop: 3 }}>{card.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ padding: '10px 14px 0' }}>
+            <div style={{ background: '#DDDBD6', borderRadius: 4, height: 5, overflow: 'hidden' }}>
+              <div style={{ background: utilizationPct >= 90 ? '#D4714A' : utilizationPct >= 70 ? '#C7AA8B' : '#4A8D6F', width: `${utilizationPct}%`, height: '100%', borderRadius: 4, transition: 'width 0.5s ease' }} />
+            </div>
+          </div>
+
+          <div className="no-print" style={{ padding: '14px 14px 0', display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+            {[['ledger','Ledger'],['draw','+ Draw'],['payment','+ Payment'],['projects','Projects'],['settings','⚙']].map(([key, lbl]) => (
+              <button key={key} onClick={() => setTab(key)} style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fontWeight: 500, padding: '6px 12px', borderRadius: 4, cursor: 'pointer', border: tab === key ? 'none' : '1px solid rgba(30,28,26,0.2)', background: tab === key ? '#1E1C1A' : 'transparent', color: tab === key ? '#F7F7F7' : '#1E1C1A' }}>{lbl}</button>
+            ))}
+          </div>
+
+          <div style={{ padding: 14 }}>
+
+            {tab === 'ledger' && (
+              <div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 460 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid rgba(30,28,26,0.12)' }}>
+                        {['Date','Type','Project / Note','Amount','Balance',''].map(h => (
+                          <th key={h} style={{ ...S.mono9, color: '#8A8070', padding: '6px 8px', textAlign: 'left', fontWeight: 400, whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ledgerRows.map((t, i) => (
+                        <tr key={t.id} style={{ borderBottom: '1px solid rgba(30,28,26,0.07)', background: i % 2 === 0 ? 'white' : 'transparent' }}>
+                          <td style={{ padding: '8px', fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#777', whiteSpace: 'nowrap' }}>{fmtDate(t.date)}</td>
+                          <td style={{ padding: '8px', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, fontWeight: 500, color: typeColor(t), background: typeColor(t) + '18', padding: '2px 6px', borderRadius: 3 }}>{typeLabel(t.type)}</span>
+                          </td>
+                          <td style={{ padding: '8px', fontSize: 12, color: '#555', maxWidth: 160 }}>
+                            {t.project && <span>{t.project}</span>}
+                            {t.note && <span style={{ color: '#999', marginLeft: 6, fontSize: 11 }}>— {t.note}</span>}
+                          </td>
+                          <td style={{ padding: '8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: typeColor(t), fontWeight: 500, whiteSpace: 'nowrap' }}>
+                            {isDebit(t) ? '+' : '−'}{fmt$(t.amount)}
+                          </td>
+                          <td style={{ padding: '8px', fontFamily: "'DM Mono', monospace", fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{fmt$(t.runningBalance)}</td>
+                          <td style={{ padding: '8px' }} className="no-print">
+                            <button onClick={() => removeTransaction(t.id)} disabled={saving} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(30,28,26,0.25)', fontSize: 15, padding: '0 4px' }}>×</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {ledgerRows.length === 0 && !loading && (
+                  <div style={{ textAlign: 'center', padding: 40, color: '#999', fontSize: 13 }}>No transactions yet</div>
+                )}
+
+                {accruedInterest > 0 && (
+                  <div style={{ marginTop: 10, background: '#FFF5F1', border: '1.5px solid #D4714A', borderRadius: 4, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ ...S.mono9, color: '#D4714A', marginBottom: 2 }}>Interest Accrued (unpaid)</div>
+                      <div style={{ fontSize: 12, color: '#888' }}>{daysSinceLast} days @ 7% on {fmt$(principalBalance)}</div>
+                    </div>
+                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 15, fontWeight: 600, color: '#D4714A' }}>+{fmt$(accruedInterest)}</div>
+                  </div>
+                )}
+
+                <div className="no-print" style={{ marginTop: 14, display: 'flex', justifyContent: 'flex-end' }}>
+                  <button onClick={loadData} disabled={loading || saving} style={{ ...S.btn, background: 'transparent', color: '#888', border: '1px solid rgba(30,28,26,0.15)', fontSize: 11, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {loading ? <Spinner small /> : '↻'} Refresh
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {tab === 'draw' && (
+              <div style={{ maxWidth: 400 }}>
+                <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 16 }}>New Draw</div>
+                <label style={S.label}>Date</label>
+                <input type="date" value={drawForm.date} onChange={e => setDrawForm(p => ({ ...p, date: e.target.value }))} style={S.input} />
+                <label style={S.label}>Draw Amount</label>
+                <div style={{ position: 'relative', marginBottom: 14 }}>
+                  <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#888', fontSize: 13, pointerEvents: 'none' }}>$</span>
+                  <input type="number" value={drawForm.amount} onChange={e => setDrawForm(p => ({ ...p, amount: e.target.value }))} placeholder="0.00" style={{ ...S.input, paddingLeft: 22, marginBottom: 0 }} />
+                </div>
+                {drawForm.amount && parseFloat(drawForm.amount) > 0 && (
+                  <div style={{ background: '#FFF5F1', border: '1.5px solid #D4714A', borderRadius: 4, padding: '9px 12px', marginBottom: 14 }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#D4714A' }}>+{fmt$(parseFloat(drawForm.amount) * 0.01)} origination point added to balance</span>
+                  </div>
+                )}
+                {drawForm.amount && parseFloat(drawForm.amount) > availableCredit && (
+                  <div style={{ background: '#FFF5F1', border: '1.5px solid #D4714A', borderRadius: 4, padding: '9px 12px', marginBottom: 14 }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#D4714A' }}>⚠ Exceeds available credit ({fmt$(availableCredit)})</span>
+                  </div>
+                )}
+                <label style={S.label}>Project</label>
+                <select value={drawForm.project} onChange={e => setDrawForm(p => ({ ...p, project: e.target.value }))} style={{ ...S.input, appearance: 'none', WebkitAppearance: 'none' }}>
+                  {projects.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+                <label style={S.label}>Note (optional)</label>
+                <input type="text" value={drawForm.note} onChange={e => setDrawForm(p => ({ ...p, note: e.target.value }))} placeholder="e.g. foundation pour, framing deposit…" style={S.input} />
+                <button onClick={addDraw} disabled={!drawForm.amount || !drawForm.project || saving} style={{ ...S.btn, width: '100%', opacity: (!drawForm.amount || !drawForm.project || saving) ? 0.4 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  {saving && <Spinner small />} Record Draw
+                </button>
+              </div>
+            )}
+
+            {tab === 'payment' && (
+              <div style={{ maxWidth: 400 }}>
+                <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 16 }}>Record Payment</div>
+                <div style={{ background: '#1E1C1A', borderRadius: 4, padding: '12px 14px', marginBottom: 16 }}>
+                  <div style={{ ...S.mono9, color: 'rgba(199,170,139,0.65)', marginBottom: 4 }}>Interest Due Today</div>
+                  <div style={{ color: '#C7AA8B', fontSize: 20, fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>{fmt$(accruedInterest)}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(247,247,247,0.4)', marginTop: 3 }}>{daysSinceLast} days accrued on {fmt$(principalBalance)}</div>
+                </div>
+                <label style={S.label}>Payment Date</label>
+                <input type="date" value={payForm.date} onChange={e => setPayForm(p => ({ ...p, date: e.target.value }))} style={S.input} />
+                <label style={S.label}>Payment Type</label>
+                <select value={payForm.type} onChange={e => setPayForm(p => ({ ...p, type: e.target.value }))} style={{ ...S.input, appearance: 'none', WebkitAppearance: 'none' }}>
+                  <option value="interest">Interest Payment (balance unchanged)</option>
+                  <option value="principal">Principal Reduction</option>
+                </select>
+                <label style={S.label}>Amount</label>
+                <div style={{ position: 'relative', marginBottom: 14 }}>
+                  <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#888', fontSize: 13, pointerEvents: 'none' }}>$</span>
+                  <input type="number" value={payForm.amount} onChange={e => setPayForm(p => ({ ...p, amount: e.target.value }))} placeholder="0.00" style={{ ...S.input, paddingLeft: 22, marginBottom: 0 }} />
+                </div>
+                <label style={S.label}>Note (optional)</label>
+                <input type="text" value={payForm.note} onChange={e => setPayForm(p => ({ ...p, note: e.target.value }))} placeholder="e.g. March interest payment" style={S.input} />
+                <button onClick={addPayment} disabled={!payForm.amount || saving} style={{ ...S.btn, width: '100%', opacity: (!payForm.amount || saving) ? 0.4 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  {saving && <Spinner small />} Record Payment
+                </button>
+              </div>
+            )}
+
+            {tab === 'projects' && (
+              <div>
+                <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 14 }}>Project Summary</div>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 28 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid rgba(30,28,26,0.12)' }}>
+                      {['Project','Draws','Total Drawn','% of LOC'].map(h => (
+                        <th key={h} style={{ ...S.mono9, color: '#8A8070', padding: '6px 8px', textAlign: 'left', fontWeight: 400 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(projectTotals).map(([proj, data], i) => (
+                      <tr key={proj} style={{ borderBottom: '1px solid rgba(30,28,26,0.07)', background: i % 2 === 0 ? 'white' : 'transparent' }}>
+                        <td style={{ padding: '9px 8px', fontSize: 13, fontWeight: 500 }}>{proj}</td>
+                        <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#888' }}>{data.count}</td>
+                        <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 13, fontWeight: 600 }}>{fmt$(data.draws)}</td>
+                        <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#888' }}>{Math.round(data.draws / LOC_LIMIT * 100)}%</td>
+                      </tr>
+                    ))}
+                    {Object.keys(projectTotals).length === 0 && (
+                      <tr><td colSpan={4} style={{ padding: '20px 8px', color: '#999', fontSize: 12, textAlign: 'center' }}>No draws recorded yet</td></tr>
+                    )}
+                  </tbody>
+                </table>
+                <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 10 }}>Add Project</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="text" value={newProject} onChange={e => setNewProject(e.target.value)} onKeyDown={e => e.key === 'Enter' && addProject()} placeholder="Project name" style={{ ...S.input, marginBottom: 0, flex: 1 }} />
+                  <button onClick={addProject} disabled={!newProject.trim() || saving} style={{ ...S.btn, opacity: (!newProject.trim() || saving) ? 0.4 : 1 }}>Add</button>
+                </div>
+              </div>
+            )}
+
+            {tab === 'settings' && (
+              <div style={{ maxWidth: 420 }}>
+                <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 16 }}>Settings</div>
+                <div style={{ background: 'white', borderRadius: 4, padding: 14, marginBottom: 14, border: '1px solid rgba(30,28,26,0.1)' }}>
+                  <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 6 }}>Connected Sheet</div>
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#555', wordBreak: 'break-all', marginBottom: 10 }}>{scriptUrl}</div>
+                  <button onClick={() => { localStorage.removeItem(URL_KEY); setScriptUrl(''); }} style={{ ...S.btn, background: 'transparent', color: '#888', border: '1px solid rgba(30,28,26,0.2)', fontSize: 11, padding: '6px 14px' }}>
+                    Disconnect & Reconnect
+                  </button>
+                </div>
+                <div style={{ borderTop: '1px solid rgba(30,28,26,0.1)', paddingTop: 20, marginTop: 6 }}>
+                  <div style={{ ...S.mono9, color: '#D4714A', marginBottom: 10 }}>Danger Zone</div>
+                  {!confirmReset ? (
+                    <button onClick={() => setConfirmReset(true)} style={{ ...S.btn, background: 'transparent', color: '#D4714A', border: '1.5px solid #D4714A', width: '100%' }}>Reset All Data</button>
+                  ) : (
+                    <div>
+                      <div style={{ fontSize: 13, color: '#D4714A', marginBottom: 10 }}>This will wipe the Sheet and restore seed data. Cannot be undone.</div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={hardReset} disabled={saving} style={{ ...S.btn, background: '#D4714A', flex: 1 }}>Yes, Reset</button>
+                        <button onClick={() => setConfirmReset(false)} style={{ ...S.btn, background: 'transparent', color: '#1E1C1A', border: '1px solid rgba(30,28,26,0.2)', flex: 1 }}>Cancel</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="no-print" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid rgba(30,28,26,0.12)', padding: '10px 14px' }}>
+            <button onClick={() => window.print()} style={{ ...S.btn, width: '100%' }}>Print Statement</button>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
