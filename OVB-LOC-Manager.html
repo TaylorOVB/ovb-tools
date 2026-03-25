@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="OVB Tools" />
   <meta name="theme-color" content="#1A1F2E" />
-  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
   <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -94,7 +94,6 @@
             <div style={{ ...S.mono9, color: '#C7AA8B', marginBottom: 6 }}>Ogden Valley Builders</div>
             <div style={{ color: '#F7F7F7', fontSize: 20, fontWeight: 600, marginBottom: 4 }}>LOC Manager</div>
             <div style={{ color: 'rgba(247,247,247,0.4)', fontSize: 12, marginBottom: 28 }}>Google Sheets Setup</div>
-
             {[
               ['1', 'Create a new Google Sheet', 'Go to sheets.new in your browser'],
               ['2', 'Open Extensions → Apps Script', 'Delete any default code, paste the Apps Script file'],
@@ -110,15 +109,9 @@
                 </div>
               </div>
             ))}
-
             <div style={{ borderTop: '1px solid rgba(199,170,139,0.12)', marginTop: 20, paddingTop: 20 }}>
               <label style={{ ...S.label, color: 'rgba(199,170,139,0.65)' }}>Apps Script Web App URL</label>
-              <input
-                type="url" value={url}
-                onChange={e => { setUrl(e.target.value); setErr(''); }}
-                placeholder="https://script.google.com/macros/s/..."
-                style={{ ...S.input, background: '#1E1C1A', color: '#F7F7F7', border: '1px solid rgba(199,170,139,0.2)' }}
-              />
+              <input type="url" value={url} onChange={e => { setUrl(e.target.value); setErr(''); }} placeholder="https://script.google.com/macros/s/..." style={{ ...S.input, background: '#1E1C1A', color: '#F7F7F7', border: '1px solid rgba(199,170,139,0.2)' }} />
               {err && <div style={{ color: '#D4714A', fontSize: 11, marginTop: -10, marginBottom: 12 }}>{err}</div>}
               <button onClick={save} style={{ ...S.btn, width: '100%', background: '#C7AA8B', color: '#1E1C1A' }}>Connect to Sheet</button>
             </div>
@@ -135,19 +128,25 @@
     function App() {
       const [scriptUrl, setScriptUrl] = React.useState(() => localStorage.getItem(URL_KEY) || '');
       const [transactions, setTx]     = React.useState([]);
-      const [projects, setProjects]   = React.useState([]);
+      const [projects, setProjects]   = React.useState([]); // [{ name, status }]
       const [loading, setLoading]     = React.useState(false);
       const [saving, setSaving]       = React.useState(false);
       const [error, setError]         = React.useState('');
       const [tab, setTab]             = React.useState('ledger');
+      const [showArchived, setShowArchived] = React.useState(false);
       const [confirmReset, setConfirmReset] = React.useState(false);
       const [drawForm, setDrawForm]   = React.useState({ date: todayStr(), amount: '', project: '', note: '' });
       const [payForm, setPayForm]     = React.useState({ date: todayStr(), amount: '', type: 'interest', note: '' });
       const [newProject, setNewProject] = React.useState('');
 
+      const activeProjects   = projects.filter(p => p.status === 'active');
+      const archivedProjects = projects.filter(p => p.status === 'archived');
+
       React.useEffect(() => { if (scriptUrl) loadData(); }, [scriptUrl]);
       React.useEffect(() => {
-        if (projects.length && !drawForm.project) setDrawForm(p => ({ ...p, project: projects[0] }));
+        if (activeProjects.length && !drawForm.project) {
+          setDrawForm(p => ({ ...p, project: activeProjects[0].name }));
+        }
       }, [projects]);
 
       async function loadData() {
@@ -245,9 +244,14 @@
 
       async function addProject() {
         const name = newProject.trim();
-        if (!name || projects.includes(name)) return;
+        if (!name || projects.find(p => p.name === name)) return;
         const ok = await mutate({ action: 'addProject', name });
         if (ok) setNewProject('');
+      }
+
+      async function toggleProjectStatus(name, currentStatus) {
+        const newStatus = currentStatus === 'active' ? 'archived' : 'active';
+        await mutate({ action: 'updateProjectStatus', name, status: newStatus });
       }
 
       async function removeTransaction(id) {
@@ -278,6 +282,7 @@
       return (
         <div style={{ fontFamily: "'DM Sans', sans-serif", background: '#F7F7F7', minHeight: '100vh', color: '#1E1C1A', paddingBottom: 70, animation: 'fadeIn 0.2s ease' }}>
 
+          {/* Header */}
           <div className="no-print" style={{ background: '#1E1C1A', padding: '14px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ ...S.mono9, color: '#C7AA8B', marginBottom: 3 }}>Ogden Valley Builders</div>
@@ -292,6 +297,7 @@
             </div>
           </div>
 
+          {/* Error */}
           {error && (
             <div className="no-print" style={{ background: '#D4714A', padding: '8px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ color: 'white', fontSize: 12 }}>{error}</span>
@@ -299,6 +305,7 @@
             </div>
           )}
 
+          {/* Summary Cards */}
           <div style={{ padding: '14px 14px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {[
               { label: 'Outstanding Balance', value: fmt$(principalBalance), sub: `${utilizationPct}% of ${fmt$(LOC_LIMIT)} used`, valColor: '#F7F7F7', bg: '#1E1C1A' },
@@ -314,20 +321,24 @@
             ))}
           </div>
 
+          {/* Utilization Bar */}
           <div style={{ padding: '10px 14px 0' }}>
             <div style={{ background: '#DDDBD6', borderRadius: 4, height: 5, overflow: 'hidden' }}>
               <div style={{ background: utilizationPct >= 90 ? '#D4714A' : utilizationPct >= 70 ? '#C7AA8B' : '#4A8D6F', width: `${utilizationPct}%`, height: '100%', borderRadius: 4, transition: 'width 0.5s ease' }} />
             </div>
           </div>
 
+          {/* Tabs */}
           <div className="no-print" style={{ padding: '14px 14px 0', display: 'flex', gap: 7, flexWrap: 'wrap' }}>
             {[['ledger','Ledger'],['draw','+ Draw'],['payment','+ Payment'],['projects','Projects'],['settings','⚙']].map(([key, lbl]) => (
               <button key={key} onClick={() => setTab(key)} style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fontWeight: 500, padding: '6px 12px', borderRadius: 4, cursor: 'pointer', border: tab === key ? 'none' : '1px solid rgba(30,28,26,0.2)', background: tab === key ? '#1E1C1A' : 'transparent', color: tab === key ? '#F7F7F7' : '#1E1C1A' }}>{lbl}</button>
             ))}
           </div>
 
+          {/* Tab Content */}
           <div style={{ padding: 14 }}>
 
+            {/* LEDGER */}
             {tab === 'ledger' && (
               <div>
                 <div style={{ overflowX: 'auto' }}>
@@ -385,6 +396,7 @@
               </div>
             )}
 
+            {/* ADD DRAW */}
             {tab === 'draw' && (
               <div style={{ maxWidth: 400 }}>
                 <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 16 }}>New Draw</div>
@@ -407,16 +419,20 @@
                 )}
                 <label style={S.label}>Project</label>
                 <select value={drawForm.project} onChange={e => setDrawForm(p => ({ ...p, project: e.target.value }))} style={{ ...S.input, appearance: 'none', WebkitAppearance: 'none' }}>
-                  {projects.map(p => <option key={p} value={p}>{p}</option>)}
+                  {activeProjects.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
                 </select>
+                {activeProjects.length === 0 && (
+                  <div style={{ fontSize: 12, color: '#D4714A', marginTop: -10, marginBottom: 14 }}>No active projects — add one in the Projects tab first.</div>
+                )}
                 <label style={S.label}>Note (optional)</label>
                 <input type="text" value={drawForm.note} onChange={e => setDrawForm(p => ({ ...p, note: e.target.value }))} placeholder="e.g. foundation pour, framing deposit…" style={S.input} />
-                <button onClick={addDraw} disabled={!drawForm.amount || !drawForm.project || saving} style={{ ...S.btn, width: '100%', opacity: (!drawForm.amount || !drawForm.project || saving) ? 0.4 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <button onClick={addDraw} disabled={!drawForm.amount || !drawForm.project || saving || activeProjects.length === 0} style={{ ...S.btn, width: '100%', opacity: (!drawForm.amount || !drawForm.project || saving || activeProjects.length === 0) ? 0.4 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                   {saving && <Spinner small />} Record Draw
                 </button>
               </div>
             )}
 
+            {/* ADD PAYMENT */}
             {tab === 'payment' && (
               <div style={{ maxWidth: 400 }}>
                 <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 16 }}>Record Payment</div>
@@ -445,31 +461,82 @@
               </div>
             )}
 
+            {/* PROJECTS */}
             {tab === 'projects' && (
               <div>
-                <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 14 }}>Project Summary</div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 28 }}>
+                {/* Active Projects */}
+                <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 12 }}>Active Projects</div>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 24 }}>
                   <thead>
                     <tr style={{ borderBottom: '2px solid rgba(30,28,26,0.12)' }}>
-                      {['Project','Draws','Total Drawn','% of LOC'].map(h => (
+                      {['Project','Draws','Total Drawn','% of LOC',''].map(h => (
                         <th key={h} style={{ ...S.mono9, color: '#8A8070', padding: '6px 8px', textAlign: 'left', fontWeight: 400 }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(projectTotals).map(([proj, data], i) => (
-                      <tr key={proj} style={{ borderBottom: '1px solid rgba(30,28,26,0.07)', background: i % 2 === 0 ? 'white' : 'transparent' }}>
-                        <td style={{ padding: '9px 8px', fontSize: 13, fontWeight: 500 }}>{proj}</td>
-                        <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#888' }}>{data.count}</td>
-                        <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 13, fontWeight: 600 }}>{fmt$(data.draws)}</td>
-                        <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#888' }}>{Math.round(data.draws / LOC_LIMIT * 100)}%</td>
-                      </tr>
-                    ))}
-                    {Object.keys(projectTotals).length === 0 && (
-                      <tr><td colSpan={4} style={{ padding: '20px 8px', color: '#999', fontSize: 12, textAlign: 'center' }}>No draws recorded yet</td></tr>
+                    {activeProjects.map((proj, i) => {
+                      const data = projectTotals[proj.name] || { draws: 0, count: 0 };
+                      return (
+                        <tr key={proj.name} style={{ borderBottom: '1px solid rgba(30,28,26,0.07)', background: i % 2 === 0 ? 'white' : 'transparent' }}>
+                          <td style={{ padding: '9px 8px', fontSize: 13, fontWeight: 500 }}>{proj.name}</td>
+                          <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#888' }}>{data.count}</td>
+                          <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 13, fontWeight: 600 }}>{fmt$(data.draws)}</td>
+                          <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#888' }}>{Math.round(data.draws / LOC_LIMIT * 100)}%</td>
+                          <td style={{ padding: '9px 8px' }} className="no-print">
+                            <button onClick={() => toggleProjectStatus(proj.name, proj.status)} disabled={saving} style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, padding: '3px 8px', borderRadius: 3, border: '1px solid rgba(30,28,26,0.2)', background: 'transparent', color: '#888', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              Archive
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {activeProjects.length === 0 && (
+                      <tr><td colSpan={5} style={{ padding: '20px 8px', color: '#999', fontSize: 12, textAlign: 'center' }}>No active projects</td></tr>
                     )}
                   </tbody>
                 </table>
+
+                {/* Archived Projects */}
+                {archivedProjects.length > 0 && (
+                  <div style={{ marginBottom: 24 }}>
+                    <button onClick={() => setShowArchived(p => !p)} style={{ ...S.mono9, color: '#8A8070', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                      <span style={{ fontSize: 10 }}>{showArchived ? '▾' : '▸'}</span>
+                      Archived ({archivedProjects.length})
+                    </button>
+                    {showArchived && (
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                          <tr style={{ borderBottom: '2px solid rgba(30,28,26,0.08)' }}>
+                            {['Project','Draws','Total Drawn','% of LOC',''].map(h => (
+                              <th key={h} style={{ ...S.mono9, color: '#BBBAB6', padding: '6px 8px', textAlign: 'left', fontWeight: 400 }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {archivedProjects.map((proj, i) => {
+                            const data = projectTotals[proj.name] || { draws: 0, count: 0 };
+                            return (
+                              <tr key={proj.name} style={{ borderBottom: '1px solid rgba(30,28,26,0.05)', background: i % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'transparent', opacity: 0.6 }}>
+                                <td style={{ padding: '9px 8px', fontSize: 13, color: '#888' }}>{proj.name}</td>
+                                <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#AAA' }}>{data.count}</td>
+                                <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 13, color: '#888' }}>{fmt$(data.draws)}</td>
+                                <td style={{ padding: '9px 8px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#AAA' }}>{Math.round(data.draws / LOC_LIMIT * 100)}%</td>
+                                <td style={{ padding: '9px 8px' }} className="no-print">
+                                  <button onClick={() => toggleProjectStatus(proj.name, proj.status)} disabled={saving} style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, padding: '3px 8px', borderRadius: 3, border: '1px solid rgba(199,170,139,0.3)', background: 'transparent', color: '#C7AA8B', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                    Restore
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )}
+
+                {/* Add Project */}
                 <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 10 }}>Add Project</div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input type="text" value={newProject} onChange={e => setNewProject(e.target.value)} onKeyDown={e => e.key === 'Enter' && addProject()} placeholder="Project name" style={{ ...S.input, marginBottom: 0, flex: 1 }} />
@@ -478,6 +545,7 @@
               </div>
             )}
 
+            {/* SETTINGS */}
             {tab === 'settings' && (
               <div style={{ maxWidth: 420 }}>
                 <div style={{ ...S.mono9, color: '#8A8070', marginBottom: 16 }}>Settings</div>
@@ -506,6 +574,7 @@
             )}
           </div>
 
+          {/* Bottom Bar */}
           <div className="no-print" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid rgba(30,28,26,0.12)', padding: '10px 14px' }}>
             <button onClick={() => window.print()} style={{ ...S.btn, width: '100%' }}>Print Statement</button>
           </div>
