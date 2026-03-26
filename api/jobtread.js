@@ -1,4 +1,5 @@
 // api/jobtread.js — OVB Tools · JobTread Proxy
+// api/jobtread.js — OVB Tools · JobTread Proxy
 // Deploy at /api/jobtread.js in repo root.
 // Set JOBTREAD_GRANT_KEY in Vercel -> Settings -> Environment Variables.
 
@@ -195,26 +196,23 @@ async function getOrgInfo(grantKey) {
   return org;
 }
 
-// Returns { jobs: { "Field Name": "fieldId" }, locations: { "Field Name": "fieldId" } }
+// Returns flat map of { "Field Name": "fieldId" } for all org custom fields
 async function getOrgCustomFields(grantKey, orgId) {
   var data = await pave(grantKey, {
     organization: {
       $: { id: orgId },
       customFields: {
-        nodes: { id: {}, name: {}, resourceType: {} },
+        nodes: { id: {}, name: {} },
       },
     },
   });
   var nodes = (data && data.query && data.query.organization && data.query.organization.customFields && data.query.organization.customFields.nodes)
            || (data && data.organization && data.organization.customFields && data.organization.customFields.nodes)
            || [];
-  var jobs = {}, locations = {};
-  nodes.forEach(function(f) {
-    var rt = (f.resourceType || '').toLowerCase();
-    if (rt === 'job')      jobs[f.name]      = f.id;
-    if (rt === 'location') locations[f.name] = f.id;
-  });
-  return { jobs: jobs, locations: locations };
+  var all = {};
+  nodes.forEach(function(f) { all[f.name] = f.id; });
+  // Return same map for both jobs and locations — scoping is handled by updateJob / updateLocation calls
+  return { jobs: all, locations: all };
 }
 
 // Find a job by its display number (e.g. 747) — returns full job node or null
