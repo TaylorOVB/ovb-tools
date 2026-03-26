@@ -256,49 +256,23 @@ var LF = {
 
 // Find a job by its display number (e.g. 747) — returns full job node or null
 async function getJobByNumber(grantKey, orgId, jobNumber) {
-  var allJobs = [];
-  var after = null;
-  var hasMore = true;
-
-  // Page through all jobs using cursor pagination
-  while (hasMore) {
-    var jobsQuery = {
-      nodes: {
-        id: {},
-        number: {},
-        name: {},
-        location: { id: {}, name: {} },
+  var data = await pave(grantKey, {
+    organization: {
+      $: { id: orgId },
+      jobs: {
+        nodes: {
+          id: {},
+          number: {},
+          name: {},
+          location: { id: {}, name: {} },
+        },
       },
-      pageInfo: { hasNextPage: {}, endCursor: {} },
-    };
-    if (after) jobsQuery['$'] = { after: after };
-
-    var data = await pave(grantKey, {
-      organization: {
-        $: { id: orgId },
-        jobs: jobsQuery,
-      },
-    });
-
-    var jobsData = (data && data.query && data.query.organization && data.query.organization.jobs)
-                || (data && data.organization && data.organization.jobs)
-                || {};
-    var nodes = jobsData.nodes || [];
-    allJobs = allJobs.concat(nodes);
-
-    var pageInfo = jobsData.pageInfo || {};
-    if (pageInfo.hasNextPage && pageInfo.endCursor) {
-      after = pageInfo.endCursor;
-    } else {
-      hasMore = false;
-    }
-
-    // Found it — stop early
-    var found = nodes.find(function(j) { return String(j.number) === String(jobNumber); });
-    if (found) return found;
-  }
-
-  return allJobs.find(function(j) { return String(j.number) === String(jobNumber); }) || null;
+    },
+  });
+  var nodes = (data && data.query && data.query.organization && data.query.organization.jobs && data.query.organization.jobs.nodes)
+           || (data && data.organization && data.organization.jobs && data.organization.jobs.nodes)
+           || [];
+  return nodes.find(function(j) { return String(j.number) === String(jobNumber); }) || null;
 }
 
 // ─── Operations ───────────────────────────────────────────────────────────────
