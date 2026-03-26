@@ -17,378 +17,292 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --k:    #1E1C1A;
-      --tan:  #C7AA8B;
-      --smk:  #F7F7F7;
-      --w:    #fff;
-      --bdr:  #E5E2DF;
-      --mute: #999;
-      --warn: #D4714A;
-      --grn:  #3A8C5C;
-      --blu:  #2B6CB0;
-      --amb:  #92600A;
-      --exp:  #8B2A2A;
+      --k:#1E1C1A; --tan:#C7AA8B; --smk:#F7F7F7; --w:#fff;
+      --bdr:#E5E2DF; --mute:#999; --warn:#D4714A;
+      --grn:#3A8C5C; --blu:#2B6CB0; --amb:#92600A; --exp:#8B2A2A;
     }
+    body { font-family:'DM Sans',sans-serif; background:var(--smk); color:var(--k); min-height:100vh; padding-bottom:72px; -webkit-font-smoothing:antialiased; }
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--smk);
-      color: var(--k);
-      min-height: 100vh;
-      padding-bottom: 72px;
-      -webkit-font-smoothing: antialiased;
-    }
+    /* print base */
+    .print-only{display:none !important;} .print-chk{display:none;} .sph{display:none;} .print-tot{display:none;} .sig-block{display:none;}
 
-    /* ── PRINT BASE ── */
-    .print-only { display: none !important; }
-    .print-chk  { display: none; }
-    .sph        { display: none; }
-    .print-tot  { display: none; }
-    .sig-block  { display: none; }
+    /* overlay */
+    .ovl{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--smk);}
+    .ovl-box{background:var(--w);border:1px solid var(--bdr);border-radius:4px;padding:28px;max-width:520px;width:100%;}
+    .ovl-kicker{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--tan);margin-bottom:8px;}
+    .ovl-ttl{font-size:18px;font-weight:600;margin-bottom:6px;}
+    .ovl-sub{font-size:13px;color:var(--mute);margin-bottom:20px;line-height:1.55;}
+    .step{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--bdr);align-items:flex-start;}
+    .step:last-of-type{border-bottom:none;}
+    .step-n{font-family:'DM Mono',monospace;font-size:11px;background:var(--k);color:var(--tan);width:22px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+    .step-b{font-size:12.5px;line-height:1.55;color:#555;}
+    .step-b strong{color:var(--k);font-weight:600;}
+    .step-b code{font-family:'DM Mono',monospace;font-size:11px;background:#F0EDE8;padding:1px 5px;border-radius:3px;color:var(--k);}
 
-    /* ── OVERLAY / LOADING ── */
-    .ovl {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: var(--smk);
-    }
-    .ovl-box {
-      background: var(--w);
-      border: 1px solid var(--bdr);
-      border-radius: 4px;
-      padding: 28px;
-      max-width: 520px;
-      width: 100%;
-    }
-    .ovl-kicker {
-      font-family: 'DM Mono', monospace;
-      font-size: 8.5px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--tan);
-      margin-bottom: 8px;
-    }
-    .ovl-ttl { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
-    .ovl-sub { font-size: 13px; color: var(--mute); margin-bottom: 20px; line-height: 1.55; }
+    /* bear */
+    .bear-wrap{display:flex;justify-content:center;align-items:flex-end;height:96px;margin-bottom:10px;}
+    .bear-wrap img{width:68px;height:68px;object-fit:contain;animation:bear-bounce .6s cubic-bezier(.33,0,.66,1) infinite alternate;transform-origin:center bottom;}
+    @keyframes bear-bounce{0%{transform:translateY(0) scaleY(1) scaleX(1);}80%{transform:translateY(0) scaleY(1) scaleX(1);}90%{transform:translateY(0) scaleY(.80) scaleX(1.14);}100%{transform:translateY(-30px) scaleY(1.06) scaleX(.94);}}
+    .bear-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);text-align:center;}
 
-    .step { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--bdr); align-items: flex-start; }
-    .step:last-of-type { border-bottom: none; }
-    .step-n {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      background: var(--k);
-      color: var(--tan);
-      width: 22px; height: 22px;
-      border-radius: 3px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-top: 1px;
-    }
-    .step-b { font-size: 12.5px; line-height: 1.55; color: #555; }
-    .step-b strong { color: var(--k); font-weight: 600; }
-    .step-b code { font-family: 'DM Mono', monospace; font-size: 11px; background: #F0EDE8; padding: 1px 5px; border-radius: 3px; color: var(--k); }
+    /* header */
+    .hdr{background:var(--k);padding:14px 16px 13px;}
+    .hdr-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .wordmark{height:16px;opacity:.9;}
+    .hdr-pipe{border-left:1px solid rgba(255,255,255,.13);padding-left:10px;}
+    .hdr-ttl{font-size:13px;font-weight:600;color:#fff;line-height:1.2;}
+    .hdr-sub{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--tan);margin-top:2px;}
+    .sync-wrap{margin-left:auto;display:flex;align-items:center;gap:6px;}
+    .sync-dot{width:7px;height:7px;border-radius:50%;}
+    .sd-spin{background:var(--tan);animation:pulse 1s ease-in-out infinite;}
+    .sd-ok{background:var(--grn);}
+    .sd-err{background:var(--warn);}
+    @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+    .sync-lbl{font-family:'DM Mono',monospace;font-size:8.5px;color:rgba(255,255,255,.38);}
 
-    /* Bear bounce */
-    .bear-wrap { display: flex; justify-content: center; align-items: flex-end; height: 96px; margin-bottom: 10px; }
-    .bear-wrap img {
-      width: 68px; height: 68px; object-fit: contain;
-      animation: bear-bounce .6s cubic-bezier(.33,0,.66,1) infinite alternate;
-      transform-origin: center bottom;
-      filter: brightness(0) invert(0.15);
-    }
-    @keyframes bear-bounce {
-      0%   { transform: translateY(0)    scaleY(1)    scaleX(1); }
-      80%  { transform: translateY(0)    scaleY(1)    scaleX(1); }
-      90%  { transform: translateY(0)    scaleY(.80)  scaleX(1.14); }
-      100% { transform: translateY(-30px) scaleY(1.06) scaleX(.94); }
-    }
-    .bear-lbl {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--mute);
-      text-align: center;
-    }
+    /* project row */
+    .proj-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:11px;}
+    .proj-sel{flex:1;min-width:180px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:4px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;outline:none;cursor:pointer;}
+    .proj-sel:focus{border-color:var(--tan);}
+    .proj-sel option{background:#1E1C1A;color:#fff;}
+    .btn-np{background:none;border:1px solid rgba(199,170,139,.4);border-radius:4px;color:var(--tan);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:6px 12px;white-space:nowrap;transition:all .15s;}
+    .btn-np:hover{background:rgba(199,170,139,.08);border-color:var(--tan);}
 
-    /* ── HEADER ── */
-    .hdr { background: var(--k); padding: 14px 16px 13px; }
-    .hdr-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .wordmark { height: 16px; opacity: .9; }
-    .hdr-pipe { border-left: 1px solid rgba(255,255,255,.13); padding-left: 10px; }
-    .hdr-ttl { font-size: 13px; font-weight: 600; color: #fff; line-height: 1.2; }
-    .hdr-sub { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: .12em; text-transform: uppercase; color: var(--tan); margin-top: 2px; }
+    /* info grid */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+    @media(min-width:600px){.info-grid{grid-template-columns:2fr 2fr 1.2fr 1.2fr 1.2fr;}}
+    .ig{display:flex;flex-direction:column;gap:3px;}
+    .ig.wide{grid-column:1/-1;}
+    @media(min-width:600px){.ig.wide{grid-column:span 2;}}
+    .ig-l{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(199,170,139,.7);}
+    .ig-i{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#fff;font-family:'DM Sans',sans-serif;font-size:12.5px;padding:5px 8px;width:100%;outline:none;transition:border-color .15s;}
+    .ig-i:focus{border-color:var(--tan);background:rgba(255,255,255,.1);}
+    .ig-i::placeholder{color:rgba(255,255,255,.22);}
+    .ig-i option{background:#1E1C1A;color:#fff;}
 
-    .sync-wrap { margin-left: auto; display: flex; align-items: center; gap: 6px; }
-    .sync-dot  { width: 7px; height: 7px; border-radius: 50%; }
-    .sd-spin   { background: var(--tan); animation: pulse 1s ease-in-out infinite; }
-    .sd-ok     { background: var(--grn); }
-    .sd-err    { background: var(--warn); }
-    @keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
-    .sync-lbl  { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .05em; color: rgba(255,255,255,.38); }
+    /* warranty banner */
+    .wb{margin-top:10px;padding:7px 11px;border-radius:4px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .wb-on{background:rgba(58,140,92,.18);border:1px solid rgba(58,140,92,.35);color:#6FCF97;}
+    .wb-off{background:rgba(139,42,42,.20);border:1px solid rgba(139,42,42,.40);color:#F4A0A0;}
+    .wb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+    .wd-on{background:#3A8C5C;} .wd-off{background:#8B2A2A;}
 
-    .proj-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 11px; }
-    .proj-sel {
-      flex: 1; min-width: 180px;
-      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 4px;
-      color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px;
-      padding: 6px 10px; outline: none; cursor: pointer;
-    }
-    .proj-sel:focus { border-color: var(--tan); }
-    .proj-sel option { background: #1E1C1A; color: #fff; }
-    .btn-np {
-      background: none; border: 1px solid rgba(199,170,139,.4); border-radius: 4px;
-      color: var(--tan); cursor: pointer; font-family: 'DM Sans', sans-serif;
-      font-size: 12px; font-weight: 500; padding: 6px 12px; white-space: nowrap; transition: all .15s;
-    }
-    .btn-np:hover { background: rgba(199,170,139,.08); border-color: var(--tan); }
+    /* tabs */
+    .tab-bar{background:#17150F;border-bottom:1px solid rgba(255,255,255,.05);padding:0 14px;display:flex;overflow-x:auto;}
+    .tab-bar::-webkit-scrollbar{display:none;}
+    .t-btn{background:none;border:none;border-bottom:2px solid transparent;color:rgba(255,255,255,.35);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;padding:10px 13px 8px;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:color .15s;}
+    .t-btn:hover{color:rgba(255,255,255,.6);}
+    .t-btn.on{color:#fff;border-bottom-color:var(--tan);}
+    .t-pill{background:rgba(255,255,255,.08);border-radius:10px;font-family:'DM Mono',monospace;font-size:8.5px;padding:1px 5px;line-height:1.6;}
+    .t-btn.on .t-pill{background:var(--tan);color:var(--k);}
 
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-    @media(min-width:600px) { .info-grid { grid-template-columns: 2fr 2fr 1.2fr 1.2fr 1.2fr; } }
-    .ig { display: flex; flex-direction: column; gap: 3px; }
-    .ig.wide { grid-column: 1/-1; }
-    @media(min-width:600px) { .ig.wide { grid-column: span 2; } }
-    .ig-l { font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: .12em; text-transform: uppercase; color: rgba(199,170,139,.7); }
-    .ig-i {
-      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 4px;
-      color: #fff; font-family: 'DM Sans', sans-serif; font-size: 12.5px;
-      padding: 5px 8px; width: 100%; outline: none; transition: border-color .15s;
-    }
-    .ig-i:focus { border-color: var(--tan); background: rgba(255,255,255,.1); }
-    .ig-i::placeholder { color: rgba(255,255,255,.22); }
-    .ig-i option { background: #1E1C1A; color: #fff; }
+    /* content */
+    .content{max-width:880px;margin:0 auto;padding:15px 13px;}
+    .stats-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+    .sc{background:var(--w);border:1px solid var(--bdr);border-radius:4px;padding:7px 12px;}
+    .sn{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;line-height:1;color:var(--k);}
+    .sn.g{color:var(--grn);} .sn.r{color:var(--warn);}
+    .sl{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:3px;}
+    .tot-bar{background:var(--k);border-radius:4px;padding:9px 14px;margin-bottom:12px;display:flex;align-items:baseline;gap:10px;}
+    .tot-a{font-family:'DM Mono',monospace;font-size:21px;font-weight:500;color:var(--tan);}
+    .tot-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.38);}
+    .tot-o{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.38);margin-left:auto;}
+    .sec-panel{display:none;} .sec-panel.vis{display:block;}
+    .sec-ey{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;}
+    .items-list{display:flex;flex-direction:column;gap:5px;margin-bottom:9px;}
+    .empty-s{background:var(--w);border:1px solid var(--bdr);border-radius:4px;padding:26px 18px;text-align:center;}
+    .empty-i{font-size:26px;margin-bottom:5px;}
+    .empty-t{font-size:12.5px;color:#CCC;}
 
-    .wb     { margin-top: 10px; padding: 7px 11px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .06em; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .wb-on  { background: rgba(58,140,92,.18);  border: 1px solid rgba(58,140,92,.35);  color: #6FCF97; }
-    .wb-off { background: rgba(139,42,42,.20);  border: 1px solid rgba(139,42,42,.40);  color: #F4A0A0; }
-    .wb-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .wd-on  { background: #3A8C5C; }
-    .wd-off { background: #8B2A2A; }
+    /* item row */
+    .ir{background:var(--w);border:1px solid var(--bdr);border-radius:4px;padding:8px 9px 8px 10px;display:grid;grid-template-columns:22px 20px 1fr auto;gap:7px;align-items:start;}
+    .ir.done{background:#FAFAF9;border-color:#EDECEA;}
+    .ir.crit{border-left:3px solid var(--warn);}
+    .ir.expi{border-left:3px solid var(--exp);}
+    .chk{width:19px;height:19px;border:1.5px solid #CCC;border-radius:4px;cursor:pointer;background:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:10px;transition:all .15s;}
+    .chk:hover{border-color:var(--tan);}
+    .chk.on{background:var(--grn);border-color:var(--grn);color:#fff;}
+    .ir-num{font-family:'DM Mono',monospace;font-size:9.5px;color:#C8C4C0;margin-top:3px;text-align:right;}
+    .ir-body{min-width:0;}
+    .ir-desc{font-size:13px;font-weight:500;color:var(--k);line-height:1.4;margin-bottom:5px;}
+    .ir.done .ir-desc{color:#AAA;text-decoration:line-through;}
+    .tags{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+    .b{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.04em;text-transform:uppercase;padding:2px 5px;border-radius:3px;line-height:1.5;}
+    .b-tr{background:rgba(199,170,139,.1);color:#7A6850;border:1px solid rgba(199,170,139,.3);}
+    .b-cr{background:#FFF0EB;color:var(--warn);border:1px solid rgba(212,113,74,.3);}
+    .b-std{background:#F2EFE9;color:#7A6850;border:1px solid #DDD;}
+    .b-mn{background:#F5F5F5;color:var(--mute);border:1px solid #E5E5E5;}
+    .b-op{background:#F0F0F0;color:#666;border:1px solid #DDD;}
+    .b-ip{background:#EBF4FF;color:var(--blu);border:1px solid rgba(43,108,176,.25);}
+    .b-sc{background:#FFFBEB;color:var(--amb);border:1px solid rgba(146,96,10,.25);}
+    .b-dn{background:#F0FBF4;color:var(--grn);border:1px solid rgba(58,140,92,.3);}
+    .b-iw{background:#F0FBF4;color:var(--grn);border:1px solid rgba(58,140,92,.3);}
+    .b-ow{background:#FFF0F0;color:var(--exp);border:1px solid rgba(139,42,42,.3);}
+    .b-sb{background:#FFF8F0;color:var(--amb);border:1px solid rgba(146,96,10,.25);}
+    .dt{font-family:'DM Mono',monospace;font-size:8.5px;color:#BBB;}
+    .dt-ok{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--grn);}
+    .meta-row{font-size:11px;color:#999;margin-top:4px;display:flex;align-items:flex-start;gap:4px;flex-wrap:wrap;}
+    .ml{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:#C8C4C0;flex-shrink:0;}
+    .mb{display:flex;align-items:center;gap:4px;margin-right:8px;}
+    .ir-acts{display:flex;gap:4px;flex-shrink:0;}
+    .a-btn{background:none;border:1px solid var(--bdr);border-radius:4px;color:#BBB;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 7px;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;}
+    .a-btn:hover{border-color:var(--tan);color:var(--tan);}
+    .a-btn.del:hover{border-color:var(--warn);color:var(--warn);}
+    .a-btn.mail{border-color:rgba(43,108,176,.3);color:var(--blu);}
+    .a-btn.mail:hover{background:rgba(43,108,176,.06);border-color:var(--blu);}
 
-    /* ── TABS ── */
-    .tab-bar { background: #17150F; border-bottom: 1px solid rgba(255,255,255,.05); padding: 0 14px; display: flex; overflow-x: auto; }
-    .tab-bar::-webkit-scrollbar { display: none; }
-    .t-btn { background: none; border: none; border-bottom: 2px solid transparent; color: rgba(255,255,255,.35); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; padding: 10px 13px 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: color .15s; }
-    .t-btn:hover { color: rgba(255,255,255,.6); }
-    .t-btn.on { color: #fff; border-bottom-color: var(--tan); }
-    .t-pill { background: rgba(255,255,255,.08); border-radius: 10px; font-family: 'DM Mono', monospace; font-size: 8.5px; padding: 1px 5px; line-height: 1.6; }
-    .t-btn.on .t-pill { background: var(--tan); color: var(--k); }
+    /* forms */
+    .add-form{background:var(--w);border:1.5px dashed rgba(199,170,139,.4);border-radius:4px;padding:12px;margin-bottom:9px;}
+    .edit-form{background:#FFFEF8;border:1.5px solid var(--tan);border-radius:4px;padding:11px;margin-bottom:5px;}
+    .fg{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+    @media(min-width:560px){.fg{grid-template-columns:1fr 1fr 1fr 1fr;}}
+    .ff{display:flex;flex-direction:column;gap:3px;}
+    .ff.c2{grid-column:1/-1;} .ff.c4{grid-column:1/-1;}
+    @media(min-width:560px){.ff.c2{grid-column:span 2;} .ff.c4{grid-column:span 4;}}
+    .fl{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);}
+    .fi{background:var(--smk);border:1px solid #DDD;border-radius:4px;color:var(--k);font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 8px;width:100%;outline:none;transition:border-color .15s;}
+    .fi:focus{border-color:var(--tan);}
+    textarea.fi{resize:vertical;min-height:48px;}
+    .dw{position:relative;}
+    .ds{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#AAA;font-size:12px;pointer-events:none;}
+    .dw .fi{padding-left:18px;}
+    .form-btns{display:flex;gap:7px;margin-top:9px;}
+    .bp{background:var(--k);border:1px solid var(--k);border-radius:4px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;padding:7px 15px;transition:background .15s;}
+    .bp:hover{background:#333;}
+    .bg{background:none;border:1px solid #DDD;border-radius:4px;color:var(--mute);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12.5px;padding:7px 15px;transition:all .15s;}
+    .bg:hover{border-color:#AAA;color:#555;}
+    .btn-add{background:none;border:1px solid rgba(199,170,139,.3);border-radius:4px;color:var(--tan);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;padding:9px 13px;width:100%;text-align:left;display:flex;align-items:center;gap:8px;transition:all .15s;}
+    .btn-add:hover{background:rgba(199,170,139,.06);border-color:var(--tan);}
 
-    /* ── CONTENT ── */
-    .content { max-width: 880px; margin: 0 auto; padding: 15px 13px; }
+    /* modal */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;}
+    .modal-box{background:var(--w);border-radius:4px;padding:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+    .modal-ttl{font-size:15px;font-weight:600;margin-bottom:14px;}
 
-    .stats-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
-    .sc { background: var(--w); border: 1px solid var(--bdr); border-radius: 4px; padding: 7px 12px; }
-    .sn { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; line-height: 1; color: var(--k); }
-    .sn.g { color: var(--grn); } .sn.r { color: var(--warn); }
-    .sl { font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); margin-top: 3px; }
+    /* bottom bar */
+    .btm-bar{position:fixed;bottom:0;left:0;right:0;background:var(--w);border-top:1px solid var(--bdr);padding:9px 13px;display:flex;gap:7px;align-items:center;z-index:200;}
+    .btn-pc{background:var(--k);border:1px solid var(--k);border-radius:4px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:8px 14px;}
+    .btn-pc:hover{background:#333;}
+    .btn-pi{background:none;border:1px solid var(--tan);border-radius:4px;color:var(--tan);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:8px 14px;}
+    .btn-pi:hover{background:rgba(199,170,139,.07);}
+    .bsep{width:1px;height:20px;background:var(--bdr);}
 
-    .tot-bar { background: var(--k); border-radius: 4px; padding: 9px 14px; margin-bottom: 12px; display: flex; align-items: baseline; gap: 10px; }
-    .tot-a { font-family: 'DM Mono', monospace; font-size: 21px; font-weight: 500; color: var(--tan); }
-    .tot-l { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.38); }
-    .tot-o { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,.38); margin-left: auto; }
-
-    .sec-panel     { display: none; }
-    .sec-panel.vis { display: block; }
-    .sec-ey { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin-bottom: 8px; }
-
-    .items-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 9px; }
-    .empty-s { background: var(--w); border: 1px solid var(--bdr); border-radius: 4px; padding: 26px 18px; text-align: center; }
-    .empty-i { font-size: 26px; margin-bottom: 5px; }
-    .empty-t { font-size: 12.5px; color: #CCC; }
-
-    /* Item row */
-    .ir { background: var(--w); border: 1px solid var(--bdr); border-radius: 4px; padding: 8px 9px 8px 10px; display: grid; grid-template-columns: 22px 20px 1fr auto; gap: 7px; align-items: start; }
-    .ir.done { background: #FAFAF9; border-color: #EDECEA; }
-    .ir.crit { border-left: 3px solid var(--warn); }
-    .ir.expi { border-left: 3px solid var(--exp); }
-
-    .chk { width: 19px; height: 19px; border: 1.5px solid #CCC; border-radius: 4px; cursor: pointer; background: none; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; font-size: 10px; transition: all .15s; }
-    .chk:hover { border-color: var(--tan); }
-    .chk.on { background: var(--grn); border-color: var(--grn); color: #fff; }
-
-    .ir-num  { font-family: 'DM Mono', monospace; font-size: 9.5px; color: #C8C4C0; margin-top: 3px; text-align: right; }
-    .ir-body { min-width: 0; }
-    .ir-desc { font-size: 13px; font-weight: 500; color: var(--k); line-height: 1.4; margin-bottom: 5px; }
-    .ir.done .ir-desc { color: #AAA; text-decoration: line-through; }
-
-    .tags { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-
-    .b     { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 5px; border-radius: 3px; line-height: 1.5; }
-    .b-tr  { background: rgba(199,170,139,.1); color: #7A6850; border: 1px solid rgba(199,170,139,.3); }
-    .b-cr  { background: #FFF0EB; color: var(--warn); border: 1px solid rgba(212,113,74,.3); }
-    .b-std { background: #F2EFE9; color: #7A6850; border: 1px solid #DDD; }
-    .b-mn  { background: #F5F5F5; color: var(--mute); border: 1px solid #E5E5E5; }
-    .b-op  { background: #F0F0F0; color: #666; border: 1px solid #DDD; }
-    .b-ip  { background: #EBF4FF; color: var(--blu); border: 1px solid rgba(43,108,176,.25); }
-    .b-sc  { background: #FFFBEB; color: var(--amb); border: 1px solid rgba(146,96,10,.25); }
-    .b-dn  { background: #F0FBF4; color: var(--grn); border: 1px solid rgba(58,140,92,.3); }
-    .b-iw  { background: #F0FBF4; color: var(--grn); border: 1px solid rgba(58,140,92,.3); }
-    .b-ow  { background: #FFF0F0; color: var(--exp); border: 1px solid rgba(139,42,42,.3); }
-    .b-sb  { background: #FFF8F0; color: var(--amb); border: 1px solid rgba(146,96,10,.25); }
-
-    .dt    { font-family: 'DM Mono', monospace; font-size: 8.5px; color: #BBB; }
-    .dt-ok { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--grn); }
-
-    .meta-row { font-size: 11px; color: #999; margin-top: 4px; display: flex; align-items: flex-start; gap: 4px; flex-wrap: wrap; }
-    .ml { font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: .08em; text-transform: uppercase; color: #C8C4C0; flex-shrink: 0; }
-    .mb { display: flex; align-items: center; gap: 4px; margin-right: 8px; }
-
-    .ir-acts { display: flex; gap: 4px; flex-shrink: 0; }
-    .a-btn { background: none; border: 1px solid var(--bdr); border-radius: 4px; color: #BBB; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 10px; padding: 3px 7px; transition: all .15s; text-decoration: none; display: inline-flex; align-items: center; }
-    .a-btn:hover { border-color: var(--tan); color: var(--tan); }
-    .a-btn.del:hover { border-color: var(--warn); color: var(--warn); }
-    .a-btn.mail { border-color: rgba(43,108,176,.3); color: var(--blu); }
-    .a-btn.mail:hover { background: rgba(43,108,176,.06); border-color: var(--blu); }
-
-    /* ── FORMS ── */
-    .add-form  { background: var(--w); border: 1.5px dashed rgba(199,170,139,.4); border-radius: 4px; padding: 12px; margin-bottom: 9px; }
-    .edit-form { background: #FFFEF8; border: 1.5px solid var(--tan); border-radius: 4px; padding: 11px; margin-bottom: 5px; }
-
-    .fg { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-    @media(min-width:560px) { .fg { grid-template-columns: 1fr 1fr 1fr 1fr; } }
-    .ff    { display: flex; flex-direction: column; gap: 3px; }
-    .ff.c2 { grid-column: 1/-1; }
-    .ff.c4 { grid-column: 1/-1; }
-    @media(min-width:560px) { .ff.c2 { grid-column: span 2; } .ff.c4 { grid-column: span 4; } }
-
-    .fl { font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
-    .fi { background: var(--smk); border: 1px solid #DDD; border-radius: 4px; color: var(--k); font-family: 'DM Sans', sans-serif; font-size: 12.5px; padding: 6px 8px; width: 100%; outline: none; transition: border-color .15s; }
-    .fi:focus { border-color: var(--tan); }
-    textarea.fi { resize: vertical; min-height: 48px; }
-
-    .dw { position: relative; }
-    .ds { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #AAA; font-size: 12px; pointer-events: none; }
-    .dw .fi { padding-left: 18px; }
-
-    .form-btns { display: flex; gap: 7px; margin-top: 9px; }
-    .bp { background: var(--k); border: 1px solid var(--k); border-radius: 4px; color: #fff; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; padding: 7px 15px; transition: background .15s; }
-    .bp:hover { background: #333; }
-    .bg { background: none; border: 1px solid #DDD; border-radius: 4px; color: var(--mute); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12.5px; padding: 7px 15px; transition: all .15s; }
-    .bg:hover { border-color: #AAA; color: #555; }
-    .btn-add { background: none; border: 1px solid rgba(199,170,139,.3); border-radius: 4px; color: var(--tan); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; padding: 9px 13px; width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; transition: all .15s; }
-    .btn-add:hover { background: rgba(199,170,139,.06); border-color: var(--tan); }
-
-    /* Modal */
-    .modal-bg  { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .modal-box { background: var(--w); border-radius: 4px; padding: 20px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
-    .modal-ttl { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
-
-    /* Bottom bar */
-    .btm-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--w); border-top: 1px solid var(--bdr); padding: 9px 13px; display: flex; gap: 7px; align-items: center; z-index: 200; }
-    .btn-pc { background: var(--k); border: 1px solid var(--k); border-radius: 4px; color: #fff; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 8px 14px; }
-    .btn-pc:hover { background: #333; }
-    .btn-pi { background: none; border: 1px solid var(--tan); border-radius: 4px; color: var(--tan); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 8px 14px; }
-    .btn-pi:hover { background: rgba(199,170,139,.07); }
-    .bsep { width: 1px; height: 20px; background: var(--bdr); }
-
-    /* ── PRINT ── */
+    /* print */
     @media print {
-      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { background: #fff; padding-bottom: 0; }
-      .no-print { display: none !important; }
-      .print-only { display: block !important; }
-      .sec-panel { display: block !important; }
-      .sec-panel.empty-p { display: none !important; }
-      .tab-bar, .btm-bar, .btn-add, .ir-acts, .add-form, .edit-form,
-      .stats-row, .tot-bar, .sec-ey, .chk, .proj-row { display: none !important; }
-
-      .sph { display: flex !important; background: #1E1C1A; color: #fff; padding: 7px 11px; border-radius: 4px; align-items: center; gap: 8px; margin-bottom: 8px; margin-top: 18px; page-break-inside: avoid; }
-      .sph-e { font-size: 13px; }
-      .sph-l { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: #C7AA8B; }
-      .sph-c { font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,.45); margin-left: auto; }
-
-      .print-tot { display: flex !important; background: #1E1C1A; border-radius: 4px; padding: 8px 12px; margin-bottom: 10px; align-items: baseline; gap: 10px; page-break-inside: avoid; }
-      .pt-a { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: #C7AA8B; }
-      .pt-l { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4); }
-
-      .ir { break-inside: avoid; border: 1px solid #CCC; margin-bottom: 4px; }
-      .ir.crit { border-left: 2.5px solid #D4714A; }
-      .ir.expi { border-left: 2.5px solid #8B2A2A; }
-      .print-chk { display: flex !important; width: 13px; height: 13px; border: 1.5px solid #999; border-radius: 2px; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; font-size: 9px; }
-
-      body[data-print="client"] .internal-only { display: none !important; }
-      .sig-block { display: none !important; }
-      body[data-print="client"] .sig-block { display: table !important; }
-      .content { padding: 8px 0; }
-      @page { margin: .5in; size: letter portrait; }
+      *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      body{background:#fff;padding-bottom:0;}
+      .no-print{display:none !important;}
+      .print-only{display:block !important;}
+      .sec-panel{display:block !important;}
+      .sec-panel.empty-p{display:none !important;}
+      .tab-bar,.btm-bar,.btn-add,.ir-acts,.add-form,.edit-form,.stats-row,.tot-bar,.sec-ey,.chk,.proj-row{display:none !important;}
+      .sph{display:flex !important;background:#1E1C1A;color:#fff;padding:7px 11px;border-radius:4px;align-items:center;gap:8px;margin-bottom:8px;margin-top:18px;page-break-inside:avoid;}
+      .sph-e{font-size:13px;} .sph-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#C7AA8B;} .sph-c{font-family:'DM Mono',monospace;font-size:8.5px;color:rgba(255,255,255,.45);margin-left:auto;}
+      .print-tot{display:flex !important;background:#1E1C1A;border-radius:4px;padding:8px 12px;margin-bottom:10px;align-items:baseline;gap:10px;page-break-inside:avoid;}
+      .pt-a{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:#C7AA8B;} .pt-l{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+      .ir{break-inside:avoid;border:1px solid #CCC;margin-bottom:4px;}
+      .ir.crit{border-left:2.5px solid #D4714A;} .ir.expi{border-left:2.5px solid #8B2A2A;}
+      .print-chk{display:flex !important;width:13px;height:13px;border:1.5px solid #999;border-radius:2px;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;font-size:9px;}
+      body[data-print="client"] .internal-only{display:none !important;}
+      .sig-block{display:none !important;}
+      body[data-print="client"] .sig-block{display:table !important;}
+      .content{padding:8px 0;}
+      @page{margin:.5in;size:letter portrait;}
     }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG — paste your Apps Script Web App URL here
 // ─────────────────────────────────────────────────────────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBLf5Lsj_cCsy85cwakrNgDI6sR-XfDNtCEnZbErawxjr69eSfCMPmyVjh8oTTTcco/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBLf5Lsj_cCsy85cwakrNgDI6sR-XfDNtCEnZbErawxjr69eSfCMPmyVjh8oTTTcco/exec';
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { useState, useEffect, useMemo, useRef } = React;
+var useState  = React.useState;
+var useEffect = React.useEffect;
+var useMemo   = React.useMemo;
+var useRef    = React.useRef;
 
-const TRADES  = ['Carpentry','Concrete','Drywall','Electrical','Exterior','Flooring','Framing','HVAC','Landscaping','Masonry','Paint','Plumbing','Roofing','Tile','Windows/Doors','Other'];
-const PRIS    = ['Critical','Standard','Minor'];
-const STATS   = ['Open','In Progress','Scheduled','Complete'];
-const RESP_P  = ['OVB','Sub-Contractor','Shared'];
-const RECOV_S = ['Not Pursued','In Progress','Recovered','Written Off'];
-const PROJ_T  = ['New Build','Addition','Full Remodel','Kitchen Remodel','Bath Remodel','Basement Finish','ADU','Other'];
+var TRADES  = ['Carpentry','Concrete','Drywall','Electrical','Exterior','Flooring','Framing','HVAC','Landscaping','Masonry','Paint','Plumbing','Roofing','Tile','Windows/Doors','Other'];
+var PRIS    = ['Critical','Standard','Minor'];
+var STATS   = ['Open','In Progress','Scheduled','Complete'];
+var RESP_P  = ['OVB','Sub-Contractor','Shared'];
+var RECOV_S = ['Not Pursued','In Progress','Recovered','Written Off'];
+var PROJ_T  = ['New Build','Addition','Full Remodel','Kitchen Remodel','Bath Remodel','Basement Finish','ADU','Other'];
 
-const SECTIONS = [
+var SECTIONS = [
   { key:'weOwes',    label:'We Owes',   emoji:'📋', tab:'WeOwes',    desc:'Items OVB committed to deliver' },
   { key:'punchlist', label:'Punchlist', emoji:'✅', tab:'Punchlist', desc:'Final walkthrough & commissioning' },
-  { key:'warranty',  label:'Warranty',  emoji:'🛡️', tab:'Warranty',  desc:'Post-closeout warranty & callback requests' },
+  { key:'warranty',  label:'Warranty',  emoji:'🛡️', tab:'Warranty',  desc:'Post-closeout warranty & callback requests' }
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function todayISO() { return new Date().toISOString().split('T')[0]; }
-function fmtDate(s) { if (!s) return ''; var p = s.split('-'); return p[1]+'/'+p[2]+'/'+p[0]; }
-function addMo(s,n)  { var d = new Date(s+'T12:00:00'); d.setMonth(d.getMonth()+n); return d.toISOString().split('T')[0]; }
-function isExp(s)    { return s && new Date(s+'T23:59:59') < new Date(); }
-function money(v)    { var n = parseFloat(v); return (isNaN(n)||!v) ? '' : '$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); }
-function sumC(arr)   { return arr.reduce(function(a,i){ return a+(parseFloat(i.cost)||0); }, 0); }
-function priC(p)     { return p==='Critical'?'b-cr':p==='Minor'?'b-mn':'b-std'; }
-function staC(s)     { return s==='In Progress'?'b-ip':s==='Scheduled'?'b-sc':s==='Complete'?'b-dn':'b-op'; }
-function tmpId()     { return 'tmp_'+Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+function fmtDate(s) {
+  if (!s || s.length < 8) return '';
+  var p = s.split('-');
+  if (p.length < 3) return '';
+  return p[1] + '/' + p[2] + '/' + p[0];
+}
+
+function safeAddMonths(dateStr, n) {
+  if (!dateStr || dateStr.length < 8) return '';
+  var d = new Date(dateStr + 'T12:00:00');
+  if (isNaN(d.getTime())) return '';
+  d.setMonth(d.getMonth() + n);
+  if (isNaN(d.getTime())) return '';
+  return d.toISOString().split('T')[0];
+}
+
+function isExpired(dateStr) {
+  if (!dateStr || dateStr.length < 8) return false;
+  var d = new Date(dateStr + 'T23:59:59');
+  if (isNaN(d.getTime())) return false;
+  return d < new Date();
+}
+
+function formatMoney(v) {
+  var n = parseFloat(v);
+  if (isNaN(n) || !v) return '';
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function sumCost(arr) {
+  return arr.reduce(function(a, i) { return a + (parseFloat(i.cost) || 0); }, 0);
+}
+
+function priClass(p) { return p === 'Critical' ? 'b-cr' : p === 'Minor' ? 'b-mn' : 'b-std'; }
+function staClass(s) { return s === 'In Progress' ? 'b-ip' : s === 'Scheduled' ? 'b-sc' : s === 'Complete' ? 'b-dn' : 'b-op'; }
+function makeTmpId() { return 'tmp_' + Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 function blankProj() {
-  return { client:'', address:'', projectType:'Full Remodel', closeDate:'', pm:'Taylor Whitesides' };
+  return { client: '', address: '', projectType: 'Full Remodel', closeDate: '', pm: 'Taylor Whitesides' };
 }
 
 function blankItem(sec) {
-  var base = { description:'', trade:'Other', priority:'Standard', status:'Open', assignedTo:'', internalNotes:'', completedDate:'' };
-  var subFields = { responsibleParty:'OVB', subName:'', recoveryStatus:'Not Pursued', recoveryAmount:'' };
-  if (sec === 'weOwes')    return Object.assign({}, base, { cost:'', dueDate:'' });
-  if (sec === 'punchlist') return Object.assign({}, base, { dueDate:'' }, subFields);
-  if (sec === 'warranty')  return Object.assign({}, base, { requestDate:todayISO(), responseDate:'', resolutionDate:'' }, subFields);
-  return Object.assign({}, base, { dueDate:'' });
+  var base = { description: '', trade: 'Other', priority: 'Standard', status: 'Open', assignedTo: '', internalNotes: '', completedDate: '' };
+  var sub  = { responsibleParty: 'OVB', subName: '', recoveryStatus: 'Not Pursued', recoveryAmount: '' };
+  if (sec === 'weOwes')    return Object.assign({}, base, { cost: '', dueDate: '' });
+  if (sec === 'punchlist') return Object.assign({}, base, { dueDate: '' }, sub);
+  if (sec === 'warranty')  return Object.assign({}, base, { requestDate: todayISO(), responseDate: '', resolutionDate: '' }, sub);
+  return Object.assign({}, base);
 }
 
-// ── API call ──────────────────────────────────────────────────────────────────
 function apiCall(action, payload) {
-  var data = Object.assign({ action: action }, payload || {});
-  var raw  = JSON.stringify(data);
-  var enc  = btoa(encodeURIComponent(raw));
+  var body = Object.assign({ action: action }, payload || {});
+  var enc  = btoa(encodeURIComponent(JSON.stringify(body)));
   var url  = SCRIPT_URL + '?d=' + encodeURIComponent(enc);
   return fetch(url)
-    .then(function(res) {
-      if (!res.ok) throw new Error('Network error ' + res.status);
-      return res.json();
-    })
-    .then(function(json) {
-      if (!json.ok) throw new Error(json.error || 'API error');
-      return json.data;
-    });
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(j) { if (!j.ok) throw new Error(j.error || 'API error'); return j.data; });
 }
 
-// ── Warranty email ────────────────────────────────────────────────────────────
 function makeMailto(item, proj) {
   var subj = 'New Warranty Work — ' + (proj ? proj.client : '') + ' — ' + (proj ? proj.address : '');
-  var lines = [
+  var body = [
     'PROJECT DETAILS',
     'Client:       ' + (proj ? proj.client : ''),
     'Address:      ' + (proj ? proj.address : ''),
@@ -400,57 +314,55 @@ function makeMailto(item, proj) {
     'Description:  ' + item.description,
     'Trade:        ' + item.trade,
     'Priority:     ' + item.priority,
-    'Requested:    ' + fmtDate(item.requestDate),
+    'Requested:    ' + fmtDate(item.requestDate || ''),
     '',
-    'Responsible:  ' + (item.responsibleParty || '—'),
+    'Responsible:  ' + (item.responsibleParty || 'OVB'),
     item.subName ? ('Sub:          ' + item.subName) : null,
     '',
-    'ACTION REQUIRED: Please create a new warranty job in JobTread for this item.',
+    'ACTION REQUIRED: Create a new warranty job in JobTread for this item.',
     '',
     '—',
     'Ogden Valley Builders | GC #14219939-5501',
-    '(385) 288-7921 | info@ogdenvalleybuilders.com',
-  ].filter(function(l){ return l !== null; }).join('\n');
-  return 'mailto:warranty@ogdenvalleybuilders.com?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(lines);
+    '(385) 288-7921 | info@ogdenvalleybuilders.com'
+  ].filter(function(l) { return l !== null; }).join('\n');
+  return 'mailto:info@ogdenvalleybuilders.com?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(body);
 }
 
-// ── Bear Loading ──────────────────────────────────────────────────────────────
+// ── Components ────────────────────────────────────────────────────────────────
+
 function BearLoading() {
-  return (
-    <div className="ovl">
-      <div>
-        <div className="bear-wrap">
-          <img
-            src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png"
-            alt="OVB"
-          />
-        </div>
-        <div className="bear-lbl">Loading…</div>
-      </div>
-    </div>
+  return React.createElement('div', { className: 'ovl' },
+    React.createElement('div', { style: { textAlign: 'center' } },
+      React.createElement('div', { className: 'bear-wrap' },
+        React.createElement('img', {
+          src: 'https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png',
+          alt: 'OVB'
+        })
+      ),
+      React.createElement('div', { className: 'bear-lbl' }, 'Loading...')
+    )
   );
 }
 
-// ── Setup Screen ──────────────────────────────────────────────────────────────
 function SetupScreen() {
   var steps = [
-    ['1', 'Go to <strong>sheets.google.com</strong> and create a new blank sheet. Name it <code>OVB Closeout Tracker</code>. Leave all tabs empty — the script will build them.'],
-    ['2', 'Inside the sheet go to <strong>Extensions → Apps Script</strong>. Delete any existing code and paste the entire contents of <strong>OVB-Closeout-AppScript.gs</strong>. Save with Ctrl+S.'],
-    ['3', 'In the function dropdown, select <code>setupSheet</code> and click <strong>▶ Run</strong>. Approve permissions. You will see a confirmation in the log.'],
-    ['4', 'Click <strong>Deploy → New Deployment</strong>. Type: Web App. Execute as: Me. Who has access: Anyone. Click Deploy and copy the URL.'],
-    ['5', 'Open <strong>OVB-Closeout-Tracker.html</strong> in a text editor. Find <code>YOUR_APPS_SCRIPT_URL_HERE</code> and replace it with your URL. Save and upload to GitHub.'],
+    ['1', 'Go to <strong>sheets.google.com</strong> — create a new blank sheet named <code>OVB Closeout Tracker</code>.'],
+    ['2', 'In the sheet: <strong>Extensions → Apps Script</strong> — paste the full contents of <code>OVB-Closeout-AppScript.gs</code> and save.'],
+    ['3', 'In the function dropdown select <code>setupSheet</code> and click <strong>▶ Run</strong>. Approve permissions.'],
+    ['4', '<strong>Deploy → New Deployment</strong> — Web App, Execute as: Me, Who has access: Anyone. Copy the URL.'],
+    ['5', 'Open this HTML file — find <code>YOUR_APPS_SCRIPT_URL_HERE</code>, replace with your URL, save, upload to GitHub.']
   ];
   return (
     <div className="ovl">
       <div className="ovl-box">
         <div className="ovl-kicker">OVB Tools — One-Time Setup</div>
         <div className="ovl-ttl">Connect to Google Sheets</div>
-        <div className="ovl-sub">Complete these steps once to activate the tracker. Takes about 3 minutes.</div>
+        <div className="ovl-sub">Complete these steps once to activate the tracker.</div>
         {steps.map(function(s) {
           return (
             <div key={s[0]} className="step">
               <div className="step-n">{s[0]}</div>
-              <div className="step-b" dangerouslySetInnerHTML={{__html: s[1]}} />
+              <div className="step-b" dangerouslySetInnerHTML={{ __html: s[1] }} />
             </div>
           );
         })}
@@ -459,110 +371,99 @@ function SetupScreen() {
   );
 }
 
-// ── Item Form ─────────────────────────────────────────────────────────────────
 function ItemForm(props) {
-  var sec      = props.sec;
-  var init     = props.init;
-  var onSave   = props.onSave;
+  var sec = props.sec;
+  var init = props.init;
+  var onSave = props.onSave;
   var onCancel = props.onCancel;
-
-  var stateResult = useState(Object.assign({}, init));
-  var d    = stateResult[0];
-  var setD = stateResult[1];
-
-  function up(k, v) { setD(function(p){ return Object.assign({}, p, {[k]: v}); }); }
-
+  var rs = useState(Object.assign({}, init));
+  var d = rs[0]; var setD = rs[1];
+  function up(k, v) { setD(function(p) { return Object.assign({}, p, { [k]: v }); }); }
   var hasSub  = sec === 'warranty' || sec === 'punchlist';
   var showSub = hasSub && (d.responsibleParty === 'Sub-Contractor' || d.responsibleParty === 'Shared');
   var showRec = hasSub && (d.recoveryStatus === 'In Progress' || d.recoveryStatus === 'Recovered');
-
   return (
     <div className="fg">
       <div className="ff c4">
         <span className="fl">Description *</span>
         <input className="fi" value={d.description} autoFocus
-          onChange={function(e){ up('description', e.target.value); }}
+          onChange={function(e) { up('description', e.target.value); }}
           placeholder="Describe the item..."
-          onKeyDown={function(e){ if(e.key==='Enter') onSave(d); if(e.key==='Escape') onCancel(); }}
-        />
+          onKeyDown={function(e) { if (e.key === 'Enter') onSave(d); if (e.key === 'Escape') onCancel(); }} />
       </div>
       <div className="ff">
         <span className="fl">Trade</span>
-        <select className="fi" value={d.trade} onChange={function(e){ up('trade', e.target.value); }}>
-          {TRADES.map(function(t){ return <option key={t}>{t}</option>; })}
+        <select className="fi" value={d.trade} onChange={function(e) { up('trade', e.target.value); }}>
+          {TRADES.map(function(t) { return <option key={t} value={t}>{t}</option>; })}
         </select>
       </div>
       <div className="ff">
         <span className="fl">Priority</span>
-        <select className="fi" value={d.priority} onChange={function(e){ up('priority', e.target.value); }}>
-          {PRIS.map(function(p){ return <option key={p}>{p}</option>; })}
+        <select className="fi" value={d.priority} onChange={function(e) { up('priority', e.target.value); }}>
+          {PRIS.map(function(p) { return <option key={p} value={p}>{p}</option>; })}
         </select>
       </div>
       <div className="ff">
         <span className="fl">Status</span>
-        <select className="fi" value={d.status} onChange={function(e){ up('status', e.target.value); }}>
-          {STATS.map(function(s){ return <option key={s}>{s}</option>; })}
+        <select className="fi" value={d.status} onChange={function(e) { up('status', e.target.value); }}>
+          {STATS.map(function(s) { return <option key={s} value={s}>{s}</option>; })}
         </select>
       </div>
       {sec !== 'warranty' && (
         <div className="ff">
           <span className="fl">Due Date</span>
-          <input type="date" className="fi" value={d.dueDate || ''} onChange={function(e){ up('dueDate', e.target.value); }} />
+          <input type="date" className="fi" value={d.dueDate || ''} onChange={function(e) { up('dueDate', e.target.value); }} />
         </div>
       )}
       {sec === 'weOwes' && (
         <div className="ff">
           <span className="fl">Est. Cost</span>
-          <div className="dw">
-            <span className="ds">$</span>
-            <input className="fi" value={d.cost || ''} placeholder="0"
-              onChange={function(e){ up('cost', e.target.value.replace(/[^0-9.]/g, '')); }} />
+          <div className="dw"><span className="ds">$</span>
+            <input className="fi" value={d.cost || ''} placeholder="0" onChange={function(e) { up('cost', e.target.value.replace(/[^0-9.]/g, '')); }} />
           </div>
         </div>
       )}
       {sec === 'warranty' && (
-        <div style={{display:'contents'}}>
+        <div style={{ display: 'contents' }}>
           <div className="ff">
             <span className="fl">Request Date</span>
-            <input type="date" className="fi" value={d.requestDate || ''} onChange={function(e){ up('requestDate', e.target.value); }} />
+            <input type="date" className="fi" value={d.requestDate || ''} onChange={function(e) { up('requestDate', e.target.value); }} />
           </div>
           <div className="ff">
             <span className="fl">Response Date</span>
-            <input type="date" className="fi" value={d.responseDate || ''} onChange={function(e){ up('responseDate', e.target.value); }} />
+            <input type="date" className="fi" value={d.responseDate || ''} onChange={function(e) { up('responseDate', e.target.value); }} />
           </div>
           <div className="ff">
             <span className="fl">Resolution Date</span>
-            <input type="date" className="fi" value={d.resolutionDate || ''} onChange={function(e){ up('resolutionDate', e.target.value); }} />
+            <input type="date" className="fi" value={d.resolutionDate || ''} onChange={function(e) { up('resolutionDate', e.target.value); }} />
           </div>
         </div>
       )}
       {hasSub && (
-        <div style={{display:'contents'}}>
+        <div style={{ display: 'contents' }}>
           <div className="ff internal-only">
             <span className="fl">Responsible Party</span>
-            <select className="fi" value={d.responsibleParty || 'OVB'} onChange={function(e){ up('responsibleParty', e.target.value); }}>
-              {RESP_P.map(function(r){ return <option key={r}>{r}</option>; })}
+            <select className="fi" value={d.responsibleParty || 'OVB'} onChange={function(e) { up('responsibleParty', e.target.value); }}>
+              {RESP_P.map(function(r) { return <option key={r} value={r}>{r}</option>; })}
             </select>
           </div>
           {showSub && (
             <div className="ff internal-only">
               <span className="fl">Sub Name</span>
-              <input className="fi" value={d.subName || ''} onChange={function(e){ up('subName', e.target.value); }} placeholder="Company name" />
+              <input className="fi" value={d.subName || ''} onChange={function(e) { up('subName', e.target.value); }} placeholder="Company name" />
             </div>
           )}
           <div className="ff internal-only">
             <span className="fl">Recovery Status</span>
-            <select className="fi" value={d.recoveryStatus || 'Not Pursued'} onChange={function(e){ up('recoveryStatus', e.target.value); }}>
-              {RECOV_S.map(function(r){ return <option key={r}>{r}</option>; })}
+            <select className="fi" value={d.recoveryStatus || 'Not Pursued'} onChange={function(e) { up('recoveryStatus', e.target.value); }}>
+              {RECOV_S.map(function(r) { return <option key={r} value={r}>{r}</option>; })}
             </select>
           </div>
           {showRec && (
             <div className="ff internal-only">
               <span className="fl">Recovery Amount</span>
-              <div className="dw">
-                <span className="ds">$</span>
-                <input className="fi" value={d.recoveryAmount || ''} placeholder="0"
-                  onChange={function(e){ up('recoveryAmount', e.target.value.replace(/[^0-9.]/g, '')); }} />
+              <div className="dw"><span className="ds">$</span>
+                <input className="fi" value={d.recoveryAmount || ''} placeholder="0" onChange={function(e) { up('recoveryAmount', e.target.value.replace(/[^0-9.]/g, '')); }} />
               </div>
             </div>
           )}
@@ -570,15 +471,15 @@ function ItemForm(props) {
       )}
       <div className="ff c2 internal-only">
         <span className="fl">Assigned To (internal)</span>
-        <input className="fi" value={d.assignedTo || ''} onChange={function(e){ up('assignedTo', e.target.value); }} placeholder="Sub, vendor, or OVB" />
+        <input className="fi" value={d.assignedTo || ''} onChange={function(e) { up('assignedTo', e.target.value); }} placeholder="Sub, vendor, or OVB" />
       </div>
       <div className="ff c4 internal-only">
         <span className="fl">Internal Notes</span>
-        <textarea className="fi" value={d.internalNotes || ''} onChange={function(e){ up('internalNotes', e.target.value); }} placeholder="Won't appear on client version" />
+        <textarea className="fi" value={d.internalNotes || ''} onChange={function(e) { up('internalNotes', e.target.value); }} placeholder="Won't appear on client version" />
       </div>
       <div className="ff c4">
         <div className="form-btns">
-          <button className="bp" onClick={function(){ onSave(d); }}>{init.id ? 'Save Changes' : 'Add Item'}</button>
+          <button className="bp" onClick={function() { onSave(d); }}>{init.id ? 'Save Changes' : 'Add Item'}</button>
           <button className="bg" onClick={onCancel}>Cancel</button>
         </div>
       </div>
@@ -586,18 +487,10 @@ function ItemForm(props) {
   );
 }
 
-// ── New Project Modal ─────────────────────────────────────────────────────────
 function NewProjectModal(props) {
-  var onSave   = props.onSave;
-  var onCancel = props.onCancel;
-  var saving   = props.saving;
-
-  var stateResult = useState(blankProj());
-  var d    = stateResult[0];
-  var setD = stateResult[1];
-
-  function up(k, v) { setD(function(p){ return Object.assign({}, p, {[k]: v}); }); }
-
+  var rs = useState(blankProj());
+  var d = rs[0]; var setD = rs[1];
+  function up(k, v) { setD(function(p) { return Object.assign({}, p, { [k]: v }); }); }
   return (
     <div className="modal-bg">
       <div className="modal-box">
@@ -605,32 +498,32 @@ function NewProjectModal(props) {
         <div className="fg">
           <div className="ff c2">
             <span className="fl">Client Name *</span>
-            <input className="fi" value={d.client} autoFocus onChange={function(e){ up('client', e.target.value); }} placeholder="Last Name, First" />
+            <input className="fi" value={d.client} autoFocus onChange={function(e) { up('client', e.target.value); }} placeholder="Last Name, First" />
           </div>
           <div className="ff c2">
             <span className="fl">Project Address</span>
-            <input className="fi" value={d.address} onChange={function(e){ up('address', e.target.value); }} placeholder="123 Main St, Ogden UT 84401" />
+            <input className="fi" value={d.address} onChange={function(e) { up('address', e.target.value); }} placeholder="123 Main St, Ogden UT 84401" />
           </div>
           <div className="ff">
             <span className="fl">Project Type</span>
-            <select className="fi" value={d.projectType} onChange={function(e){ up('projectType', e.target.value); }}>
-              {PROJ_T.map(function(t){ return <option key={t}>{t}</option>; })}
+            <select className="fi" value={d.projectType} onChange={function(e) { up('projectType', e.target.value); }}>
+              {PROJ_T.map(function(t) { return <option key={t} value={t}>{t}</option>; })}
             </select>
           </div>
           <div className="ff">
             <span className="fl">Close Date</span>
-            <input type="date" className="fi" value={d.closeDate} onChange={function(e){ up('closeDate', e.target.value); }} />
+            <input type="date" className="fi" value={d.closeDate} onChange={function(e) { up('closeDate', e.target.value); }} />
           </div>
           <div className="ff c2">
             <span className="fl">Project Manager</span>
-            <input className="fi" value={d.pm} onChange={function(e){ up('pm', e.target.value); }} />
+            <input className="fi" value={d.pm} onChange={function(e) { up('pm', e.target.value); }} />
           </div>
         </div>
-        <div className="form-btns" style={{marginTop:14}}>
-          <button className="bp" disabled={saving || !d.client.trim()} onClick={function(){ onSave(d); }}>
-            {saving ? 'Creating...' : 'Create Project'}
+        <div className="form-btns" style={{ marginTop: 14 }}>
+          <button className="bp" disabled={props.saving || !d.client.trim()} onClick={function() { props.onSave(d); }}>
+            {props.saving ? 'Creating...' : 'Create Project'}
           </button>
-          <button className="bg" onClick={onCancel}>Cancel</button>
+          <button className="bg" onClick={props.onCancel}>Cancel</button>
         </div>
       </div>
     </div>
@@ -639,43 +532,20 @@ function NewProjectModal(props) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 function App() {
-  var configured = SCRIPT_URL && SCRIPT_URL.indexOf('YOUR_APPS') === -1;
+  var configured = SCRIPT_URL.indexOf('YOUR_APPS') === -1;
 
-  var s1 = useState(configured ? 'loading' : 'setup');
-  var screen   = s1[0]; var setScreen = s1[1];
-
-  var s2 = useState([]);
-  var projects = s2[0]; var setProjects = s2[1];
-
-  var s3 = useState(null);
-  var activeId = s3[0]; var setActiveId = s3[1];
-
-  var s4 = useState(null);
-  var proj = s4[0]; var setProj = s4[1];
-
-  var s5 = useState({ weOwes:[], punchlist:[], warranty:[] });
-  var lists = s5[0]; var setLists = s5[1];
-
-  var s6 = useState('weOwes');
-  var tab = s6[0]; var setTab = s6[1];
-
-  var s7 = useState(null);
-  var adding = s7[0]; var setAdding = s7[1];
-
-  var s8 = useState(null);
-  var editId = s8[0]; var setEditId = s8[1];
-
-  var s9 = useState(false);
-  var showNew = s9[0]; var setShowNew = s9[1];
-
-  var s10 = useState(false);
-  var npSaving = s10[0]; var setNpSaving = s10[1];
-
-  var s11 = useState('idle');
-  var sync = s11[0]; var setSync = s11[1];
-
-  var s12 = useState(null);
-  var loadErr = s12[0]; var setLoadErr = s12[1];
+  var r1 = useState(configured ? 'loading' : 'setup'); var screen = r1[0]; var setScreen = r1[1];
+  var r2 = useState([]); var projects = r2[0]; var setProjects = r2[1];
+  var r3 = useState(null); var activeId = r3[0]; var setActiveId = r3[1];
+  var r4 = useState(null); var proj = r4[0]; var setProj = r4[1];
+  var r5 = useState({ weOwes: [], punchlist: [], warranty: [] }); var lists = r5[0]; var setLists = r5[1];
+  var r6 = useState('weOwes'); var tab = r6[0]; var setTab = r6[1];
+  var r7 = useState(null); var adding = r7[0]; var setAdding = r7[1];
+  var r8 = useState(null); var editId = r8[0]; var setEditId = r8[1];
+  var r9 = useState(false); var showNew = r9[0]; var setShowNew = r9[1];
+  var r10 = useState(false); var npSaving = r10[0]; var setNpSaving = r10[1];
+  var r11 = useState('idle'); var sync = r11[0]; var setSync = r11[1];
+  var r12 = useState(null); var loadErr = r12[0]; var setLoadErr = r12[1];
 
   var syncTimer = useRef(null);
   var projTimer = useRef(null);
@@ -685,119 +555,95 @@ function App() {
   function flash(st) {
     setSync(st);
     clearTimeout(syncTimer.current);
-    if (st === 'ok' || st === 'err') {
-      syncTimer.current = setTimeout(function(){ setSync('idle'); }, 2200);
-    }
+    if (st === 'ok' || st === 'err') syncTimer.current = setTimeout(function() { setSync('idle'); }, 2200);
   }
 
   function load() {
-    setScreen('loading');
-    setLoadErr(null);
+    setScreen('loading'); setLoadErr(null);
     apiCall('getProjects')
       .then(function(data) {
         setProjects(data);
-        if (data.length > 0) {
-          return loadProject(data[0].id, data[0]);
-        } else {
-          setScreen('ready');
-          setShowNew(true);
-        }
+        if (data.length > 0) { return loadProject(data[0].id, data[0]); }
+        else { setScreen('ready'); setShowNew(true); }
       })
-      .catch(function(e) {
-        setScreen('error');
-        setLoadErr(e.message);
-      });
+      .catch(function(e) { setScreen('error'); setLoadErr(e.message); });
   }
 
   function loadProject(id, pData) {
-    setScreen('loading');
-    setActiveId(id);
-    var p = pData || projects.find(function(x){ return x.id === id; });
+    setScreen('loading'); setActiveId(id);
+    var p = pData || projects.find(function(x) { return x.id === id; }) || {};
     setProj(Object.assign({}, p));
     return apiCall('getProject', { projectId: id })
       .then(function(data) {
-        setLists({ weOwes: data.weOwes||[], punchlist: data.punchlist||[], warranty: data.warranty||[] });
-        setScreen('ready');
-        setAdding(null);
-        setEditId(null);
+        setLists({ weOwes: data.weOwes || [], punchlist: data.punchlist || [], warranty: data.warranty || [] });
+        setScreen('ready'); setAdding(null); setEditId(null);
       })
-      .catch(function(e) {
-        setScreen('error');
-        setLoadErr(e.message);
-      });
+      .catch(function(e) { setScreen('error'); setLoadErr(e.message); });
   }
 
   function createProject(data) {
     setNpSaving(true);
     apiCall('saveProject', { project: data })
       .then(function(saved) {
-        setProjects(function(p){ return [saved].concat(p.filter(function(x){ return x.id !== saved.id; })); });
+        setProjects(function(prev) { return [saved].concat(prev.filter(function(x) { return x.id !== saved.id; })); });
         setShowNew(false);
         return loadProject(saved.id, saved);
       })
-      .catch(function(e) { alert('Failed to create project: ' + e.message); })
+      .catch(function(e) { alert('Failed: ' + e.message); })
       .finally(function() { setNpSaving(false); });
   }
 
   function upProjField(k, v) {
-    var updated = Object.assign({}, proj, {[k]: v});
+    var updated = Object.assign({}, proj, { [k]: v });
     setProj(updated);
-    setProjects(function(p){ return p.map(function(x){ return x.id === updated.id ? updated : x; }); });
-    clearTimeout(projTimer.current);
-    flash('saving');
+    setProjects(function(prev) { return prev.map(function(x) { return x.id === updated.id ? updated : x; }); });
+    clearTimeout(projTimer.current); flash('saving');
     projTimer.current = setTimeout(function() {
-      apiCall('saveProject', { project: updated })
-        .then(function(){ flash('ok'); })
-        .catch(function(){ flash('err'); });
+      apiCall('saveProject', { project: updated }).then(function() { flash('ok'); }).catch(function() { flash('err'); });
     }, 900);
   }
 
-  function secTab(sec) {
-    return SECTIONS.find(function(s){ return s.key === sec; }).tab;
-  }
+  function getSecTab(sec) { return SECTIONS.find(function(s) { return s.key === sec; }).tab; }
 
   function addItem(sec, data) {
     if (!data.description.trim()) return;
     var item = Object.assign({}, data, { projectId: activeId });
-    var tid  = tmpId();
-    setLists(function(p){ return Object.assign({}, p, {[sec]: p[sec].concat([Object.assign({}, item, {id: tid})])}); });
-    setAdding(null);
-    flash('saving');
-    apiCall('upsertItem', { tab: secTab(sec), item: item })
+    var tid = makeTmpId();
+    setLists(function(p) { return Object.assign({}, p, { [sec]: p[sec].concat([Object.assign({}, item, { id: tid })]) }); });
+    setAdding(null); flash('saving');
+    apiCall('upsertItem', { tab: getSecTab(sec), item: item })
       .then(function(saved) {
-        setLists(function(p){ return Object.assign({}, p, {[sec]: p[sec].map(function(i){ return i.id === tid ? saved : i; })}); });
+        setLists(function(p) { return Object.assign({}, p, { [sec]: p[sec].map(function(i) { return i.id === tid ? saved : i; }) }); });
         flash('ok');
       })
       .catch(function() {
-        setLists(function(p){ return Object.assign({}, p, {[sec]: p[sec].filter(function(i){ return i.id !== tid; })}); });
+        setLists(function(p) { return Object.assign({}, p, { [sec]: p[sec].filter(function(i) { return i.id !== tid; }) }); });
         flash('err');
       });
   }
 
   function saveItem(sec, data) {
-    setLists(function(p){ return Object.assign({}, p, {[sec]: p[sec].map(function(i){ return i.id === data.id ? data : i; })}); });
-    setEditId(null);
-    flash('saving');
-    apiCall('upsertItem', { tab: secTab(sec), item: data })
-      .then(function(){ flash('ok'); })
-      .catch(function(){ flash('err'); });
+    setLists(function(p) { return Object.assign({}, p, { [sec]: p[sec].map(function(i) { return i.id === data.id ? data : i; }) }); });
+    setEditId(null); flash('saving');
+    apiCall('upsertItem', { tab: getSecTab(sec), item: data })
+      .then(function() { flash('ok'); }).catch(function() { flash('err'); });
   }
 
   function toggleDone(sec, id) {
-    var item = lists[sec].find(function(i){ return i.id === id; });
+    var item = lists[sec].find(function(i) { return i.id === id; });
     if (!item) return;
     var nowDone = item.status !== 'Complete';
     var updated = Object.assign({}, item, {
-      status:        nowDone ? 'Complete' : 'Open',
-      completedDate: nowDone ? fmtDate(todayISO()) : '',
+      status: nowDone ? 'Complete' : 'Open',
+      completedDate: nowDone ? fmtDate(todayISO()) : ''
     });
     if (nowDone && sec === 'warranty') updated.resolutionDate = todayISO();
-    setLists(function(p){ return Object.assign({}, p, {[sec]: p[sec].map(function(i){ return i.id === id ? updated : i; })}); });
+    setLists(function(p) { return Object.assign({}, p, { [sec]: p[sec].map(function(i) { return i.id === id ? updated : i; }) }); });
     flash('saving');
-    apiCall('upsertItem', { tab: secTab(sec), item: updated })
-      .then(function(){ flash('ok'); })
+    apiCall('upsertItem', { tab: getSecTab(sec), item: updated })
+      .then(function() { flash('ok'); })
       .catch(function() {
-        setLists(function(p){ return Object.assign({}, p, {[sec]: p[sec].map(function(i){ return i.id === id ? item : i; })}); });
+        setLists(function(p) { return Object.assign({}, p, { [sec]: p[sec].map(function(i) { return i.id === id ? item : i; }) }); });
         flash('err');
       });
   }
@@ -805,53 +651,44 @@ function App() {
   function delItem(sec, id) {
     if (!window.confirm('Delete this item?')) return;
     var prev = lists[sec].slice();
-    setLists(function(p){ return Object.assign({}, p, {[sec]: p[sec].filter(function(i){ return i.id !== id; })}); });
+    setLists(function(p) { return Object.assign({}, p, { [sec]: p[sec].filter(function(i) { return i.id !== id; }) }); });
     flash('saving');
-    apiCall('deleteItem', { tab: secTab(sec), id: id })
-      .then(function(){ flash('ok'); })
-      .catch(function() {
-        setLists(function(p){ return Object.assign({}, p, {[sec]: prev}); });
-        flash('err');
-      });
+    apiCall('deleteItem', { tab: getSecTab(sec), id: id })
+      .then(function() { flash('ok'); })
+      .catch(function() { setLists(function(p) { return Object.assign({}, p, { [sec]: prev }); }); flash('err'); });
   }
 
   function doPrint(type) {
     document.body.setAttribute('data-print', type);
-    setTimeout(function() {
-      window.print();
-      setTimeout(function(){ document.body.removeAttribute('data-print'); }, 500);
-    }, 60);
+    setTimeout(function() { window.print(); setTimeout(function() { document.body.removeAttribute('data-print'); }, 500); }, 60);
   }
 
-  var wExpiry  = useMemo(function(){ return proj && proj.closeDate ? addMo(proj.closeDate, 36) : null; }, [proj && proj.closeDate]);
-  var wActive  = wExpiry && !isExp(wExpiry);
-  var wExpired = wExpiry && isExp(wExpiry);
+  var closeDateVal = proj && proj.closeDate ? proj.closeDate : '';
+  var wExpiry  = useMemo(function() { return safeAddMonths(closeDateVal, 36); }, [closeDateVal]);
+  var wActive  = wExpiry && !isExpired(wExpiry);
+  var wExpired = wExpiry && isExpired(wExpiry);
 
   var allItems = lists.weOwes.concat(lists.punchlist).concat(lists.warranty);
-  var openCnt  = allItems.filter(function(i){ return i.status !== 'Complete'; }).length;
-  var critCnt  = allItems.filter(function(i){ return i.priority === 'Critical' && i.status !== 'Complete'; }).length;
-  var woTotal  = sumC(lists.weOwes);
-  var woOpen   = sumC(lists.weOwes.filter(function(i){ return i.status !== 'Complete'; }));
+  var openCnt  = allItems.filter(function(i) { return i.status !== 'Complete'; }).length;
+  var critCnt  = allItems.filter(function(i) { return i.priority === 'Critical' && i.status !== 'Complete'; }).length;
+  var woTotal  = sumCost(lists.weOwes);
+  var woOpen   = sumCost(lists.weOwes.filter(function(i) { return i.status !== 'Complete'; }));
 
-  // ── Screens ──
-  if (!configured)        return <SetupScreen />;
+  if (!configured)         return <SetupScreen />;
   if (screen === 'loading') return <BearLoading />;
-
   if (screen === 'error') return (
     <div className="ovl">
-      <div className="ovl-box" style={{textAlign:'center'}}>
-        <div style={{fontSize:32,marginBottom:10}}>⚠️</div>
+      <div className="ovl-box" style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 32, marginBottom: 10 }}>⚠️</div>
         <div className="ovl-ttl">Connection Error</div>
         <div className="ovl-sub">{loadErr || 'Could not connect to Google Sheets.'}</div>
-        <button className="bp" style={{margin:'0 auto'}} onClick={load}>Retry</button>
+        <button className="bp" style={{ margin: '0 auto' }} onClick={load}>Retry</button>
       </div>
     </div>
   );
 
-  // ── Main UI ──
   return (
     <div>
-      {/* SCREEN HEADER */}
       <div className="hdr no-print">
         <div className="hdr-top">
           <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png" className="wordmark" alt="OVB" />
@@ -861,88 +698,68 @@ function App() {
           </div>
           <div className="sync-wrap">
             {sync !== 'idle' && (
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <div className={'sync-dot ' + (sync==='saving'?'sd-spin':sync==='ok'?'sd-ok':'sd-err')}></div>
-                <span className="sync-lbl">{sync==='saving'?'Saving…':sync==='ok'?'Saved':'Error'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div className={'sync-dot ' + (sync === 'saving' ? 'sd-spin' : sync === 'ok' ? 'sd-ok' : 'sd-err')}></div>
+                <span className="sync-lbl">{sync === 'saving' ? 'Saving…' : sync === 'ok' ? 'Saved' : 'Error'}</span>
               </div>
             )}
           </div>
         </div>
-
         <div className="proj-row">
-          <select className="proj-sel" value={activeId || ''} onChange={function(e){ loadProject(e.target.value); }}>
-            {projects.map(function(p){
-              return <option key={p.id} value={p.id}>{p.client||'(No name)'} — {p.projectType} — {p.address||'No address'}</option>;
-            })}
+          <select className="proj-sel" value={activeId || ''} onChange={function(e) { loadProject(e.target.value); }}>
+            {projects.map(function(p) { return <option key={p.id} value={p.id}>{p.client || '(No name)'} — {p.projectType} — {p.address || 'No address'}</option>; })}
           </select>
-          <button className="btn-np" onClick={function(){ setShowNew(true); }}>+ New Project</button>
+          <button className="btn-np" onClick={function() { setShowNew(true); }}>+ New Project</button>
         </div>
-
         {proj && (
           <div className="info-grid">
-            <div className="ig wide">
-              <span className="ig-l">Client Name</span>
-              <input className="ig-i" value={proj.client} onChange={function(e){ upProjField('client', e.target.value); }} placeholder="Last Name, First" />
-            </div>
-            <div className="ig wide">
-              <span className="ig-l">Project Address</span>
-              <input className="ig-i" value={proj.address} onChange={function(e){ upProjField('address', e.target.value); }} placeholder="123 Main St, Ogden UT 84401" />
-            </div>
-            <div className="ig">
-              <span className="ig-l">Project Type</span>
-              <select className="ig-i" value={proj.projectType} onChange={function(e){ upProjField('projectType', e.target.value); }}>
-                {PROJ_T.map(function(t){ return <option key={t}>{t}</option>; })}
+            <div className="ig wide"><span className="ig-l">Client Name</span><input className="ig-i" value={proj.client || ''} onChange={function(e) { upProjField('client', e.target.value); }} placeholder="Last Name, First" /></div>
+            <div className="ig wide"><span className="ig-l">Project Address</span><input className="ig-i" value={proj.address || ''} onChange={function(e) { upProjField('address', e.target.value); }} placeholder="123 Main St" /></div>
+            <div className="ig"><span className="ig-l">Project Type</span>
+              <select className="ig-i" value={proj.projectType || 'Full Remodel'} onChange={function(e) { upProjField('projectType', e.target.value); }}>
+                {PROJ_T.map(function(t) { return <option key={t} value={t}>{t}</option>; })}
               </select>
             </div>
-            <div className="ig">
-              <span className="ig-l">Project Close Date</span>
-              <input type="date" className="ig-i" value={proj.closeDate} onChange={function(e){ upProjField('closeDate', e.target.value); }} />
-            </div>
-            <div className="ig">
-              <span className="ig-l">Project Manager</span>
-              <input className="ig-i" value={proj.pm} onChange={function(e){ upProjField('pm', e.target.value); }} />
-            </div>
+            <div className="ig"><span className="ig-l">Close Date</span><input type="date" className="ig-i" value={proj.closeDate || ''} onChange={function(e) { upProjField('closeDate', e.target.value); }} /></div>
+            <div className="ig"><span className="ig-l">PM</span><input className="ig-i" value={proj.pm || ''} onChange={function(e) { upProjField('pm', e.target.value); }} /></div>
           </div>
         )}
-
-        {proj && proj.closeDate && (
+        {wExpiry && (
           <div className={'wb ' + (wExpired ? 'wb-off' : 'wb-on')}>
             <div className={'wb-dot ' + (wExpired ? 'wd-off' : 'wd-on')}></div>
-            <span style={{fontWeight:500}}>OVB 36-Month Warranty — {wExpired ? 'EXPIRED' : 'Active'}</span>
-            <span style={{opacity:.72}}>
-              {fmtDate(proj.closeDate)} → {fmtDate(wExpiry)}
-              {wActive  && ' · ' + Math.ceil((new Date(wExpiry) - new Date()) / 864e5) + ' days remaining'}
-              {wExpired && ' · ' + Math.floor((new Date() - new Date(wExpiry)) / 864e5) + ' days past expiry'}
+            <span style={{ fontWeight: 500 }}>OVB 36-Month Warranty — {wExpired ? 'EXPIRED' : 'Active'}</span>
+            <span style={{ opacity: .72 }}>
+              {fmtDate(closeDateVal)} {'→'} {fmtDate(wExpiry)}
+              {wActive  && (' · ' + Math.ceil((new Date(wExpiry + 'T12:00:00') - new Date()) / 864e5) + ' days remaining')}
+              {wExpired && (' · ' + Math.floor((new Date() - new Date(wExpiry + 'T12:00:00')) / 864e5) + ' days past expiry')}
             </span>
           </div>
         )}
       </div>
 
-      {/* PRINT HEADER */}
-      <div className="print-only" style={{background:'#1E1C1A',padding:'13px 18px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+      <div className="print-only" style={{ background: '#1E1C1A', padding: '13px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <div style={{fontWeight:700,fontSize:15,color:'#fff',marginBottom:2}}>Ogden Valley Builders</div>
-          <div style={{fontFamily:'DM Mono,monospace',fontSize:8,letterSpacing:'.12em',textTransform:'uppercase',color:'#C7AA8B',marginBottom:9}}>Closeout &amp; Warranty Tracker</div>
-          {proj && proj.client  && <div style={{fontSize:14,fontWeight:600,color:'#fff'}}>{proj.client}</div>}
-          {proj && proj.address && <div style={{fontSize:11,color:'rgba(255,255,255,.6)',marginTop:2}}>{proj.address}</div>}
+          <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', marginBottom: 2 }}>Ogden Valley Builders</div>
+          <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 8, letterSpacing: '.12em', textTransform: 'uppercase', color: '#C7AA8B', marginBottom: 9 }}>Closeout &amp; Warranty Tracker</div>
+          {proj && proj.client  && <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{proj.client}</div>}
+          {proj && proj.address && <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', marginTop: 2 }}>{proj.address}</div>}
         </div>
-        <div style={{textAlign:'right',fontSize:11,color:'rgba(255,255,255,.6)',lineHeight:1.65}}>
-          {proj && <div style={{fontWeight:600,color:'#fff'}}>{proj.projectType}</div>}
+        <div style={{ textAlign: 'right', fontSize: 11, color: 'rgba(255,255,255,.6)', lineHeight: 1.65 }}>
+          {proj && <div style={{ fontWeight: 600, color: '#fff' }}>{proj.projectType}</div>}
           {proj && proj.closeDate && <div>Closed: {fmtDate(proj.closeDate)}</div>}
-          {wExpiry && <div style={{color:wExpired?'#F4A0A0':'#6FCF97'}}>Warranty {wExpired?'Expired':'Until'}: {fmtDate(wExpiry)}</div>}
+          {wExpiry && <div style={{ color: wExpired ? '#F4A0A0' : '#6FCF97' }}>Warranty {wExpired ? 'Expired' : 'Until'}: {fmtDate(wExpiry)}</div>}
           {proj && <div>PM: {proj.pm}</div>}
-          <div style={{marginTop:4,fontSize:9}}>GC #14219939-5501</div>
+          <div style={{ marginTop: 4, fontSize: 9 }}>GC #14219939-5501</div>
         </div>
       </div>
 
-      {/* TABS */}
       <div className="tab-bar no-print">
         {SECTIONS.map(function(s) {
-          var n    = lists[s.key].length;
-          var open = lists[s.key].filter(function(i){ return i.status !== 'Complete'; }).length;
+          var n = lists[s.key].length;
+          var open = lists[s.key].filter(function(i) { return i.status !== 'Complete'; }).length;
           return (
-            <button key={s.key} className={'t-btn' + (tab===s.key?' on':'')}
-              onClick={function(){ setTab(s.key); setAdding(null); setEditId(null); }}>
+            <button key={s.key} className={'t-btn' + (tab === s.key ? ' on' : '')}
+              onClick={function() { setTab(s.key); setAdding(null); setEditId(null); }}>
               {s.emoji} {s.label}
               {n > 0 && <span className="t-pill">{open}/{n}</span>}
             </button>
@@ -951,174 +768,120 @@ function App() {
       </div>
 
       <div className="content">
-
-        {/* Stats */}
         {allItems.length > 0 && (
           <div className="stats-row no-print">
             <div className="sc"><div className="sn">{allItems.length}</div><div className="sl">Total</div></div>
-            <div className="sc"><div className={'sn'+(openCnt===0?' g':'')}>{openCnt}</div><div className="sl">Open</div></div>
+            <div className="sc"><div className={'sn' + (openCnt === 0 ? ' g' : '')}>{openCnt}</div><div className="sl">Open</div></div>
             {critCnt > 0 && <div className="sc"><div className="sn r">{critCnt}</div><div className="sl">Critical</div></div>}
-            {openCnt===0 && allItems.length>0 && <div className="sc" style={{borderColor:'rgba(58,140,92,0.3)'}}><div className="sn g">✓</div><div className="sl">All Clear</div></div>}
+            {openCnt === 0 && allItems.length > 0 && <div className="sc" style={{ borderColor: 'rgba(58,140,92,0.3)' }}><div className="sn g">✓</div><div className="sl">All Clear</div></div>}
           </div>
         )}
 
-        {/* SECTIONS */}
         {SECTIONS.map(function(s) {
           var items   = lists[s.key];
           var noItems = items.length === 0;
-          var doneCnt = items.filter(function(i){ return i.status === 'Complete'; }).length;
-          var isVis   = tab === s.key;
+          var doneCnt = items.filter(function(i) { return i.status === 'Complete'; }).length;
           var sectExp = s.key === 'warranty' && wExpired;
 
           return (
-            <div key={s.key} className={'sec-panel' + (isVis?' vis':'') + (noItems?' empty-p':'')}>
-
+            <div key={s.key} className={'sec-panel' + (tab === s.key ? ' vis' : '') + (noItems ? ' empty-p' : '')}>
               <div className="sph">
                 <span className="sph-e">{s.emoji}</span>
                 <span className="sph-l">{s.label}</span>
                 <span className="sph-c">{doneCnt}/{items.length} complete</span>
               </div>
-
               {s.key === 'weOwes' && items.length > 0 && (
                 <div className="print-tot">
-                  <span className="pt-a">{money(woTotal)}</span>
+                  <span className="pt-a">{formatMoney(woTotal)}</span>
                   <span className="pt-l">Total We Owes</span>
-                  {woOpen > 0 && <span style={{marginLeft:'auto',fontFamily:'DM Mono,monospace',fontSize:8.5,color:'rgba(255,255,255,.4)'}}>{money(woOpen)} open</span>}
+                  {woOpen > 0 && <span style={{ marginLeft: 'auto', fontFamily: 'DM Mono,monospace', fontSize: 8.5, color: 'rgba(255,255,255,.4)' }}>{formatMoney(woOpen)} open</span>}
                 </div>
               )}
-
               <div className="sec-ey">{s.desc}</div>
-
               {s.key === 'weOwes' && items.length > 0 && (
                 <div className="tot-bar no-print">
-                  <span className="tot-a">{money(woTotal)}</span>
+                  <span className="tot-a">{formatMoney(woTotal)}</span>
                   <span className="tot-l">Total We Owes</span>
-                  {woOpen > 0 && <span className="tot-o">{money(woOpen)} open</span>}
+                  {woOpen > 0 && <span className="tot-o">{formatMoney(woOpen)} open</span>}
                 </div>
               )}
-
               <div className="items-list">
                 {noItems && !adding && (
-                  <div className="empty-s">
-                    <div className="empty-i">{s.emoji}</div>
-                    <div className="empty-t">No items yet — tap Add Item to start</div>
-                  </div>
+                  <div className="empty-s"><div className="empty-i">{s.emoji}</div><div className="empty-t">No items yet — tap Add Item to start</div></div>
                 )}
-
                 {items.map(function(item, idx) {
                   var itemExp = sectExp && item.status !== 'Complete';
-                  var showSubRow = (s.key==='warranty'||s.key==='punchlist') && item.responsibleParty && item.responsibleParty !== 'OVB';
-
+                  var showSubRow = (s.key === 'warranty' || s.key === 'punchlist') && item.responsibleParty && item.responsibleParty !== 'OVB';
                   if (editId === item.id) {
                     return (
                       <div key={item.id} className="edit-form no-print">
-                        <ItemForm sec={s.key} init={item}
-                          onSave={function(data){ saveItem(s.key, data); }}
-                          onCancel={function(){ setEditId(null); }} />
+                        <ItemForm sec={s.key} init={item} onSave={function(data) { saveItem(s.key, data); }} onCancel={function() { setEditId(null); }} />
                       </div>
                     );
                   }
-
                   return (
-                    <div key={item.id} className={'ir'+(item.status==='Complete'?' done':'')+(item.priority==='Critical'?' crit':'')+(itemExp?' expi':'')}>
-                      <button className={'chk no-print'+(item.status==='Complete'?' on':'')}
-                        onClick={function(){ toggleDone(s.key, item.id); }}>
-                        {item.status === 'Complete' && '✓'}
+                    <div key={item.id} className={'ir' + (item.status === 'Complete' ? ' done' : '') + (item.priority === 'Critical' ? ' crit' : '') + (itemExp ? ' expi' : '')}>
+                      <button className={'chk no-print' + (item.status === 'Complete' ? ' on' : '')} onClick={function() { toggleDone(s.key, item.id); }}>
+                        {item.status === 'Complete' ? '✓' : ''}
                       </button>
-                      <div className="print-chk">{item.status==='Complete'?'✓':''}</div>
-                      <div className="ir-num">{idx+1}</div>
+                      <div className="print-chk">{item.status === 'Complete' ? '✓' : ''}</div>
+                      <div className="ir-num">{idx + 1}</div>
                       <div className="ir-body">
                         <div className="ir-desc">{item.description}</div>
                         <div className="tags">
                           <span className="b b-tr">{item.trade}</span>
-                          <span className={'b '+priC(item.priority)}>{item.priority}</span>
-                          <span className={'b '+staC(item.status)}>{item.status}</span>
-                          {s.key==='warranty' && wExpiry && (
-                            <span className={'b '+(itemExp?'b-ow':'b-iw')}>{itemExp?'⚠ Out of Warranty':'✓ In Warranty'}</span>
-                          )}
-                          {item.dueDate && s.key!=='warranty' && <span className="dt">Due {fmtDate(item.dueDate)}</span>}
+                          <span className={'b ' + priClass(item.priority)}>{item.priority}</span>
+                          <span className={'b ' + staClass(item.status)}>{item.status}</span>
+                          {s.key === 'warranty' && wExpiry && <span className={'b ' + (itemExp ? 'b-ow' : 'b-iw')}>{itemExp ? '⚠ Out of Warranty' : '✓ In Warranty'}</span>}
+                          {item.dueDate && s.key !== 'warranty' && <span className="dt">Due {fmtDate(item.dueDate)}</span>}
                           {item.completedDate && <span className="dt-ok">✓ {item.completedDate}</span>}
                         </div>
-
-                        {s.key==='warranty' && (item.requestDate||item.responseDate||item.resolutionDate) && (
+                        {s.key === 'warranty' && (item.requestDate || item.responseDate || item.resolutionDate) && (
                           <div className="meta-row">
                             {item.requestDate    && <span className="mb"><span className="ml">Requested</span>{fmtDate(item.requestDate)}</span>}
                             {item.responseDate   && <span className="mb"><span className="ml">Response</span>{fmtDate(item.responseDate)}</span>}
                             {item.resolutionDate && <span className="mb"><span className="ml">Resolved</span>{fmtDate(item.resolutionDate)}</span>}
                           </div>
                         )}
-
                         {showSubRow && (
                           <div className="meta-row internal-only">
-                            <span className="mb">
-                              <span className="ml">Responsible</span>
-                              <span className="b b-sb">{item.responsibleParty}</span>
-                            </span>
+                            <span className="mb"><span className="ml">Responsible</span><span className="b b-sb">{item.responsibleParty}</span></span>
                             {item.subName && <span className="mb"><span className="ml">Sub</span>{item.subName}</span>}
-                            {item.recoveryStatus && item.recoveryStatus!=='Not Pursued' && (
-                              <span className="mb">
-                                <span className="ml">Recovery</span>
-                                {item.recoveryStatus}{item.recoveryAmount?' · '+money(item.recoveryAmount):''}
-                              </span>
+                            {item.recoveryStatus && item.recoveryStatus !== 'Not Pursued' && (
+                              <span className="mb"><span className="ml">Recovery</span>{item.recoveryStatus}{item.recoveryAmount ? ' · ' + formatMoney(item.recoveryAmount) : ''}</span>
                             )}
                           </div>
                         )}
-
-                        {s.key==='weOwes' && item.cost && (
-                          <div className="meta-row">
-                            <span className="ml">Cost</span>
-                            <span style={{fontFamily:'DM Mono,monospace',fontSize:11.5,color:'#7A6850',fontWeight:500}}>{money(item.cost)}</span>
-                          </div>
+                        {s.key === 'weOwes' && item.cost && (
+                          <div className="meta-row"><span className="ml">Cost</span><span style={{ fontFamily: 'DM Mono,monospace', fontSize: 11.5, color: '#7A6850', fontWeight: 500 }}>{formatMoney(item.cost)}</span></div>
                         )}
-
                         {item.assignedTo    && <div className="meta-row internal-only"><span className="ml">Assigned</span>{item.assignedTo}</div>}
                         {item.internalNotes && <div className="meta-row internal-only"><span className="ml">Note</span>{item.internalNotes}</div>}
                       </div>
-
                       <div className="ir-acts no-print">
-                        <button className="a-btn" onClick={function(){ setEditId(item.id); }}>Edit</button>
-                        {s.key==='warranty' && (
-                          <a className="a-btn mail" href={makeMailto(item, proj)}>✉ Email</a>
-                        )}
-                        <button className="a-btn del" onClick={function(){ delItem(s.key, item.id); }}>✕</button>
+                        <button className="a-btn" onClick={function() { setEditId(item.id); }}>Edit</button>
+                        {s.key === 'warranty' && <a className="a-btn mail" href={makeMailto(item, proj)}>✉ Email</a>}
+                        <button className="a-btn del" onClick={function() { delItem(s.key, item.id); }}>✕</button>
                       </div>
                     </div>
                   );
                 })}
               </div>
-
               {adding === s.key ? (
                 <div className="add-form no-print">
-                  <ItemForm sec={s.key} init={blankItem(s.key)}
-                    onSave={function(data){ addItem(s.key, data); }}
-                    onCancel={function(){ setAdding(null); }} />
+                  <ItemForm sec={s.key} init={blankItem(s.key)} onSave={function(data) { addItem(s.key, data); }} onCancel={function() { setAdding(null); }} />
                 </div>
               ) : (
-                <button className="btn-add no-print" onClick={function(){ setAdding(s.key); setEditId(null); }}>
-                  <span style={{fontSize:17,lineHeight:1}}>+</span> Add {s.label} Item
+                <button className="btn-add no-print" onClick={function() { setAdding(s.key); setEditId(null); }}>
+                  <span style={{ fontSize: 17, lineHeight: 1 }}>+</span> Add {s.label} Item
                 </button>
               )}
-
               {s.key === 'punchlist' && (
-                <table className="sig-block" style={{width:'100%',marginTop:28,borderCollapse:'collapse'}}>
+                <table className="sig-block" style={{ width: '100%', marginTop: 28, borderCollapse: 'collapse' }}>
                   <tbody><tr>
-                    <td style={{width:'48%',paddingRight:16}}>
-                      <div style={{borderTop:'1.5px solid #1E1C1A',paddingTop:6}}>
-                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8.5,letterSpacing:'.08em',textTransform:'uppercase',color:'#666'}}>Client Signature</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8,color:'#AAA',marginTop:4}}>{proj ? proj.client : '_______________________'}</div>
-                      </div>
-                    </td>
-                    <td style={{width:'20%',paddingRight:16}}>
-                      <div style={{borderTop:'1.5px solid #1E1C1A',paddingTop:6}}>
-                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8.5,letterSpacing:'.08em',textTransform:'uppercase',color:'#666'}}>Date</div>
-                      </div>
-                    </td>
-                    <td style={{width:'32%'}}>
-                      <div style={{borderTop:'1.5px solid #1E1C1A',paddingTop:6}}>
-                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8.5,letterSpacing:'.08em',textTransform:'uppercase',color:'#666'}}>OVB — Taylor Whitesides</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8,color:'#AAA',marginTop:4}}>GC #14219939-5501</div>
-                      </div>
-                    </td>
+                    <td style={{ width: '48%', paddingRight: 16 }}><div style={{ borderTop: '1.5px solid #1E1C1A', paddingTop: 6 }}><div style={{ fontFamily: 'DM Mono,monospace', fontSize: 8.5, letterSpacing: '.08em', textTransform: 'uppercase', color: '#666' }}>Client Signature</div><div style={{ fontFamily: 'DM Mono,monospace', fontSize: 8, color: '#AAA', marginTop: 4 }}>{proj ? proj.client : '_______________________'}</div></div></td>
+                    <td style={{ width: '20%', paddingRight: 16 }}><div style={{ borderTop: '1.5px solid #1E1C1A', paddingTop: 6 }}><div style={{ fontFamily: 'DM Mono,monospace', fontSize: 8.5, letterSpacing: '.08em', textTransform: 'uppercase', color: '#666' }}>Date</div></div></td>
+                    <td style={{ width: '32%' }}><div style={{ borderTop: '1.5px solid #1E1C1A', paddingTop: 6 }}><div style={{ fontFamily: 'DM Mono,monospace', fontSize: 8.5, letterSpacing: '.08em', textTransform: 'uppercase', color: '#666' }}>OVB — Taylor Whitesides</div><div style={{ fontFamily: 'DM Mono,monospace', fontSize: 8, color: '#AAA', marginTop: 4 }}>GC #14219939-5501</div></div></td>
                   </tr></tbody>
                 </table>
               )}
@@ -1126,31 +889,26 @@ function App() {
           );
         })}
 
-        <div className="print-only" style={{marginTop:24,paddingTop:9,borderTop:'1px solid #DDD',display:'flex',justifyContent:'space-between'}}>
-          <span style={{fontFamily:'DM Mono,monospace',fontSize:7.5,color:'#AAA',letterSpacing:'.06em'}}>Ogden Valley Builders · GC #14219939-5501 · (385) 288-7921 · info@ogdenvalleybuilders.com · Weber &amp; Morgan County, UT</span>
-          <span style={{fontFamily:'DM Mono,monospace',fontSize:7.5,color:'#CCC'}}>Printed {fmtDate(todayISO())}</span>
+        <div className="print-only" style={{ marginTop: 24, paddingTop: 9, borderTop: '1px solid #DDD', display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontFamily: 'DM Mono,monospace', fontSize: 7.5, color: '#AAA', letterSpacing: '.06em' }}>Ogden Valley Builders · GC #14219939-5501 · (385) 288-7921 · info@ogdenvalleybuilders.com</span>
+          <span style={{ fontFamily: 'DM Mono,monospace', fontSize: 7.5, color: '#CCC' }}>Printed {fmtDate(todayISO())}</span>
         </div>
-
       </div>
 
       <div className="btm-bar no-print">
-        <button className="btn-pc" onClick={function(){ doPrint('client'); }}>🖨 Print — Client</button>
+        <button className="btn-pc" onClick={function() { doPrint('client'); }}>🖨 Print — Client</button>
         <div className="bsep"></div>
-        <button className="btn-pi" onClick={function(){ doPrint('internal'); }}>📋 Print — Internal</button>
+        <button className="btn-pi" onClick={function() { doPrint('internal'); }}>📋 Print — Internal</button>
       </div>
 
       {showNew && (
-        <NewProjectModal
-          saving={npSaving}
-          onSave={createProject}
-          onCancel={function(){ if(projects.length > 0) setShowNew(false); }}
-        />
+        <NewProjectModal saving={npSaving} onSave={createProject} onCancel={function() { if (projects.length > 0) setShowNew(false); }} />
       )}
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));
 </script>
 </body>
 </html>
