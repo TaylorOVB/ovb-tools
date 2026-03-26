@@ -196,24 +196,30 @@ async function getOrgInfo(grantKey) {
   return org;
 }
 
-// Returns flat map of { "Field Name": "fieldId" } for all org custom fields
-async function getOrgCustomFields(grantKey, orgId) {
-  var data = await pave(grantKey, {
-    organization: {
-      $: { id: orgId },
-      customFields: {
-        nodes: { id: {}, name: {} },
-      },
-    },
-  });
-  var nodes = (data && data.query && data.query.organization && data.query.organization.customFields && data.query.organization.customFields.nodes)
-           || (data && data.organization && data.organization.customFields && data.organization.customFields.nodes)
-           || [];
-  var all = {};
-  nodes.forEach(function(f) { all[f.name] = f.id; });
-  // Return same map for both jobs and locations — scoping is handled by updateJob / updateLocation calls
-  return { jobs: all, locations: all };
-}
+// ─── Hardcoded field IDs from OVB JT account (sourced via discoverLocationFields 2026-03-25) ───
+
+// Job-level custom field IDs
+var JF = {
+  jobStatus: '22P93aBUAE5W',
+};
+
+// Location-level custom field IDs
+var LF = {
+  foundationType:  '22PC8EYPHWPT',
+  basementType:    '22PDgc8VnatZ',
+  entryCode:       '22PCKKNmNkkQ',
+  notes:           '22PC8EYhkE3E',
+  siteAccessNotes: '22PDgcBpz8ng',
+  lotSize:         '22PDgcDmaB2R',
+  utilityStatus:   '22PDgcVExe9m',
+  permitNumber:    '22PDgcXqRe8v',
+  subdivisionHOA:  '22PDgcZLYaLb',
+  stagingArea:     '22PDgcadTyVp',
+};
+
+// No longer needed — IDs are hardcoded above
+// async function getOrgCustomFields() {}
+
 
 // Find a job by its display number (e.g. 747) — returns full job node or null
 async function getJobByNumber(grantKey, orgId, jobNumber) {
@@ -221,6 +227,7 @@ async function getJobByNumber(grantKey, orgId, jobNumber) {
     organization: {
       $: { id: orgId },
       jobs: {
+        $: { number: parseInt(jobNumber, 10) },
         nodes: {
           id: {},
           number: {},
@@ -233,16 +240,15 @@ async function getJobByNumber(grantKey, orgId, jobNumber) {
   var nodes = (data && data.query && data.query.organization && data.query.organization.jobs && data.query.organization.jobs.nodes)
            || (data && data.organization && data.organization.jobs && data.organization.jobs.nodes)
            || [];
-  return nodes.find(function(j) { return String(j.number) === String(jobNumber); }) || null;
+  return nodes[0] || null;
 }
 
 // ─── Operations ───────────────────────────────────────────────────────────────
 
-// Debug helper — call once via browser console to see all field IDs in account
+// Debug helper — returns org info and hardcoded field ID map
 async function discoverFields(grantKey) {
   var org = await getOrgInfo(grantKey);
-  var fields = await getOrgCustomFields(grantKey, org.id);
-  return { org: org, fields: fields };
+  return { org: org, fields: { jobs: JF, locations: LF } };
 }
 
 // Fetch a location's custom field values directly to discover location field IDs
@@ -289,14 +295,7 @@ async function updateJobSiteVisit(grantKey, params) {
   var org = await getOrgInfo(grantKey);
   var orgId = org.id;
 
-  // 2. Discover field IDs dynamically (no hardcoding needed for job/location fields)
-  var fields = await getOrgCustomFields(grantKey, orgId);
-  var JF = fields.jobs;
-  var LF = fields.locations;
-  results.steps.fieldsDiscovered = true;
-  results.debug = { jobFieldNames: Object.keys(JF), locationFieldNames: Object.keys(LF) };
-
-  // 3. Find the job
+  // 2. Find the job by number
   if (!params.jobNumber) throw new Error('jobNumber is required.');
   var job = await getJobByNumber(grantKey, orgId, params.jobNumber);
   if (!job) throw new Error('Job #' + params.jobNumber + ' not found. Check the number and try again.');
@@ -306,70 +305,41 @@ async function updateJobSiteVisit(grantKey, params) {
   results.url     = 'https://app.jobtread.com/jobs/' + jobId;
   results.steps.jobFound = true;
 
-  // 4. Update job-level fields
+  // 3. Update job-level fields
   var jobFieldValues = {};
+  jobFieldValues[JF.jobStatus] = 'Estimating';
+  if (params.noteBlock) jobFieldValues['22PC8F6Jsqf8'] = params.noteBlock; // Job Notes field (same as customer notes)
 
-  // Advance status to Estimating
-  if (JF['Job Status']) jobFieldValues[JF['Job Status']] = 'Estimating';
+  await pave(grantKey, {
+    updateJob: { $: { id: jobId, customFieldValues: jobFieldValues } },
+  }).then(function() {
+    results.steps.jobFieldsUpdated = true;
+  }).catch(function(err) {
+    console.warn('[jobtread proxy] updateJob fields:', err.message);
+    results.steps.jobFieldsError = err.message;
+  });
 
-  // Write the full site visit note block into Notes
-  if (JF['Notes'] && params.noteBlock) {
-    jobFieldValues[JF['Notes']] = params.noteBlock;
-  }
-
-  // Next action date
-  if (JF['Next Action Date'] && params.nextDate) {
-    jobFieldValues[JF['Next Action Date']] = params.nextDate;
-  }
-
-  if (Object.keys(jobFieldValues).length > 0) {
-    await pave(grantKey, {
-      updateJob: { $: { id: jobId, customFieldValues: jobFieldValues } },
-    }).then(function() {
-      results.steps.jobFieldsUpdated = true;
-    }).catch(function(err) {
-      console.warn('[jobtread proxy] updateJob fields:', err.message);
-      results.steps.jobFieldsError = err.message;
-    });
-  }
-
-  // 5. Update location fields
+  // 4. Update location fields
   var location = job.location;
   if (location && location.id) {
     var locFieldValues = {};
 
-    if (LF['Foundation Type'] && params.foundType)
-      locFieldValues[LF['Foundation Type']] = normalizeFoundationType(params.foundType);
+    if (params.foundType)  locFieldValues[LF.foundationType]  = normalizeFoundationType(params.foundType);
+    if (params.entryCode)  locFieldValues[LF.entryCode]       = params.entryCode;
+    if (params.siteAccess) locFieldValues[LF.siteAccessNotes] = params.siteAccess;
+    if (params.lotSize)    locFieldValues[LF.lotSize]         = params.lotSize;
+    if (params.utilities)  locFieldValues[LF.utilityStatus]   = normalizeUtilityStatus(params.utilities);
+    if (params.staging)    locFieldValues[LF.stagingArea]     = params.staging;
+    if (params.hoaName)    locFieldValues[LF.subdivisionHOA]  = params.hoaName;
+    if (params.scopeDesc)  locFieldValues[LF.notes]           = params.scopeDesc;
 
     // Basement Type — derive from foundation type
-    if (LF['Basement Type'] && params.foundType) {
+    if (params.foundType) {
       var ft = params.foundType.toLowerCase().replace(/\s/g, '');
       if (ft === 'fullbasement' || ft === 'walkoutbasement') {
-        locFieldValues[LF['Basement Type']] = params.foundType;
+        locFieldValues[LF.basementType] = params.foundType;
       }
     }
-
-    if (LF['Entry Code'] && params.entryCode)
-      locFieldValues[LF['Entry Code']] = params.entryCode;
-
-    if (LF['Site Access Notes'] && params.siteAccess)
-      locFieldValues[LF['Site Access Notes']] = params.siteAccess;
-
-    if (LF['Lot Size / Acreage'] && params.lotSize)
-      locFieldValues[LF['Lot Size / Acreage']] = params.lotSize;
-
-    if (LF['Utility Status'] && params.utilities)
-      locFieldValues[LF['Utility Status']] = normalizeUtilityStatus(params.utilities);
-
-    if (LF['Staging Area'] && params.staging)
-      locFieldValues[LF['Staging Area']] = params.staging;
-
-    if (LF['Subdivision / HOA'] && params.hoaName)
-      locFieldValues[LF['Subdivision / HOA']] = params.hoaName;
-
-    // Location notes — scope description
-    if (LF['Notes'] && params.scopeDesc)
-      locFieldValues[LF['Notes']] = params.scopeDesc;
 
     if (Object.keys(locFieldValues).length > 0) {
       await pave(grantKey, {
