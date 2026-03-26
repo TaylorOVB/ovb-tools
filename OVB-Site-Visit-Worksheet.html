@@ -402,6 +402,24 @@
     .btn-ghost:hover { border-color: #1E1C1A; }
     .btn-dark { background: #1E1C1A; border: 1px solid #1E1C1A; color: #F7F7F7; }
     .btn-dark:hover { background: #C7AA8B; border-color: #C7AA8B; color: #1E1C1A; }
+    .btn-jt {
+      background: #1E1C1A;
+      border: 1.5px solid #C7AA8B;
+      color: #C7AA8B;
+      border-radius: 4px;
+      padding: 8px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.1s;
+      min-width: 170px;
+      text-align: center;
+    }
+    .btn-jt:hover:not(:disabled) { background: rgba(199,170,139,0.1); }
+    .btn-jt:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-jt.jt-loading { opacity: 0.55; cursor: wait; }
+    .btn-jt.jt-done { border-color: #4CAF84; color: #4CAF84; cursor: default; }
+    .btn-jt.jt-fail { border-color: #D4714A; color: #D4714A; }
 
     /* MISC */
     .hint { font-size: 11px; color: #999; margin-top: 5px; font-style: italic; }
@@ -647,6 +665,9 @@ function App() {
   const [finalNotes, setFinalNotes]     = useState('');
 
   const [copied, setCopied] = useState(false);
+  const [jtState, setJtState] = useState('idle'); // idle | loading | done | fail
+  const [jtResult, setJtResult] = useState(null);
+  const [jtErr, setJtErr]     = useState('');
 
   const isNewBuild = projType === 'New Build';
 
@@ -751,6 +772,47 @@ function App() {
     });
   };
 
+  const handlePushToJT = async () => {
+    if (!jtJob.trim()) return;
+    if (jtState === 'loading') return;
+    setJtState('loading');
+    setJtErr('');
+    setJtResult(null);
+    try {
+      const res = await fetch('/api/jobtread', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          operation: 'updateJobSiteVisit',
+          params: {
+            jobNumber:  jtJob.trim(),
+            noteBlock:  jtNote,
+            nextDate:   nextDate || '',
+            // Location fields
+            foundType:  foundType,
+            entryCode:  entryCode,
+            siteAccess: siteAccess,
+            lotSize:    lotSize,
+            utilities:  utilities,
+            staging:    staging,
+            hoaName:    hoa === 'yes' ? (hoaName || 'Yes') : '',
+            scopeDesc:  scopeDesc,
+          },
+        }),
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      setJtResult(data);
+      setJtState('done');
+    } catch (err) {
+      setJtErr(err.message);
+      setJtState('fail');
+    }
+  };
+
   const doReset = () => {
     if (!confirm('Reset all fields?')) return;
     setClient(''); setAddress(''); setJtJob(''); setVisitDate(''); setProjType(''); setPlansStatus('');
@@ -763,6 +825,7 @@ function App() {
     setSubs(initSubs);
     setClStatus({});
     setNextAction(''); setNextDate(''); setFinalNotes('');
+    setJtState('idle'); setJtResult(null); setJtErr('');
   };
 
   const checklist = getChecklist(projType);
@@ -796,7 +859,7 @@ function App() {
                 <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Last, First" />
               </div>
               <div>
-                <Lbl>JT Job # (if created)</Lbl>
+                <Lbl>JT Job # — required to push</Lbl>
                 <input type="text" value={jtJob} onChange={e => setJtJob(e.target.value)} placeholder="e.g. 747" />
               </div>
             </div>
@@ -1136,6 +1199,47 @@ function App() {
             </div>
           )}
 
+          {/* JT PUSH RESULT */}
+          {jtState === 'done' && jtResult && (
+            <div className="s-card">
+              <div className="s-card-hdr">
+                <span className="s-card-ttl">Pushed to JobTread</span>
+                <span className="badge badge-green">✓ Done</span>
+              </div>
+              <div className="s-card-body">
+                <div style={{fontFamily:'DM Mono', fontSize:'10px', color:'rgba(247,247,247,0.7)', lineHeight:'1.7'}}>
+                  {jtResult.jobName && <div>Job: {jtResult.jobName}</div>}
+                  {jtResult.steps && jtResult.steps.jobFieldsUpdated && <div>✓ Job status → Estimating</div>}
+                  {jtResult.steps && jtResult.steps.jobFieldsUpdated && <div>✓ Note block written</div>}
+                  {jtResult.steps && jtResult.steps.locationFieldsUpdated && <div>✓ Location fields updated</div>}
+                  {jtResult.steps && jtResult.steps.locationSkipped && <div style={{color:'#C7AA8B'}}>⚠ {jtResult.steps.locationSkipped}</div>}
+                </div>
+                {jtResult.url && (
+                  <a href={jtResult.url} target="_blank" rel="noopener noreferrer"
+                    style={{display:'block', marginTop:'10px', textAlign:'center', fontFamily:'DM Mono', fontSize:'10px',
+                      color:'#C7AA8B', border:'1px solid rgba(199,170,139,0.4)', borderRadius:'4px', padding:'7px',
+                      textDecoration:'none', letterSpacing:'0.06em'}}>
+                    View Job in JobTread ↗
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+          {jtState === 'fail' && (
+            <div className="s-card">
+              <div className="s-card-hdr">
+                <span className="s-card-ttl">Push Failed</span>
+                <span className="badge badge-red">Error</span>
+              </div>
+              <div className="s-card-body">
+                <div style={{fontFamily:'DM Mono', fontSize:'10px', color:'#D4714A', lineHeight:'1.6'}}>{jtErr}</div>
+                <div style={{fontFamily:'DM Mono', fontSize:'9px', color:'rgba(247,247,247,0.35)', marginTop:'8px'}}>
+                  Check Job # and try again. If the job has no location, location fields will be skipped.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* JT NOTE BLOCK */}
           <div className="s-card">
             <div className="s-card-hdr">
@@ -1161,6 +1265,17 @@ function App() {
         </div>
         <button className="btn btn-ghost" onClick={doReset}>Reset</button>
         <button className="btn btn-dark" onClick={() => window.print()}>Print / Save PDF</button>
+        <button
+          className={`btn btn-jt${jtState === 'loading' ? ' jt-loading' : ''}${jtState === 'done' ? ' jt-done' : ''}${jtState === 'fail' ? ' jt-fail' : ''}`}
+          onClick={jtState === 'done' ? undefined : handlePushToJT}
+          disabled={!jtJob.trim() || jtState === 'loading'}
+          title={!jtJob.trim() ? 'Enter JT Job # to enable push' : ''}
+        >
+          {jtState === 'idle'    && '↑ Push to JobTread'}
+          {jtState === 'loading' && 'Pushing…'}
+          {jtState === 'done'    && '✓ Pushed to JobTread'}
+          {jtState === 'fail'    && '↺ Retry Push'}
+        </button>
       </div>
     </div>
   );
