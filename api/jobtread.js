@@ -229,11 +229,21 @@ async function getOrgInfo(grantKey) {
   return org;
 }
 
-// ─── Hardcoded field IDs from OVB JT account (sourced via discoverLocationFields 2026-03-25) ───
+// ─── Hardcoded field IDs from OVB JT account (sourced via discoverJobFields 2026-03-25) ───
 
 // Job-level custom field IDs
 var JF = {
-  jobStatus: '22P93aBUAE5W',
+  jobStatus:        '22P93aBUAE5W',
+  notes:            '22PCKJxczTan',
+  nextActionDate:   '22PDggbMJDHR',
+  contractSigned:   '22PDgbGJVmnq',
+  constructionStart:'22PPS4N7rqS',
+  targetCompletion: '22PS4NBhVfJA',
+  siteVisitDate:    '22PUQqSahKCE',
+  // TODO: set a value on job 702 for these 3 fields then run discoverJobFields to get IDs
+  plansStatus:      null,
+  occupied:         null,
+  structuralConcerns: null,
 };
 
 // Location-level custom field IDs
@@ -374,7 +384,12 @@ async function updateJobSiteVisit(grantKey, params) {
   // 3. Update job-level fields
   var jobFieldValues = {};
   jobFieldValues[JF.jobStatus] = 'Estimating';
-  if (params.noteBlock) jobFieldValues['22PC8F6Jsqf8'] = params.noteBlock; // Job Notes field (same as customer notes)
+  if (params.noteBlock)   jobFieldValues[JF.notes]          = params.noteBlock;
+  if (params.nextDate)    jobFieldValues[JF.nextActionDate]  = params.nextDate;
+  if (params.visitDate)   jobFieldValues[JF.siteVisitDate]   = params.visitDate;
+  if (params.plansStatus  && JF.plansStatus)         jobFieldValues[JF.plansStatus]         = params.plansStatus;
+  if (params.occupied     && JF.occupied)            jobFieldValues[JF.occupied]            = params.occupied;
+  if (params.structural   && JF.structuralConcerns)  jobFieldValues[JF.structuralConcerns]  = params.structural;
 
   await pave(grantKey, {
     updateJob: { $: { id: jobId, customFieldValues: jobFieldValues } },
