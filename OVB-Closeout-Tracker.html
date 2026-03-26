@@ -295,7 +295,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG — replace after Apps Script deployment
 // ─────────────────────────────────────────────────────────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/library/d/1O9Ewl2okNpXVx8jjdEU6ge4v3tGU3mWTiEUzSAlK4kBGaw7bBR2vMZNj/1';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBLf5Lsj_cCsy85cwakrNgDI6sR-XfDNtCEnZbErawxjr69eSfCMPmyVjh8oTTTcco/exec';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
@@ -372,7 +372,7 @@ function makeMailto(item, proj) {
     'Ogden Valley Builders | GC #14219939-5501',
     '(385) 288-7921 | info@ogdenvalleybuilders.com',
   ].filter(l=>l!==null).join('\n');
-  return `mailto:info@ogdenvalleybuilders.com?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(lines)}`;
+  return `mailto:warranty@ogdenvalleybuilders.com?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(lines)}`;
 }
 
 // ── ItemForm ──────────────────────────────────────────────────────────────────
