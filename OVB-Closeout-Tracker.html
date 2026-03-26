@@ -223,7 +223,7 @@
     .modal-ttl { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
 
     /* ── OVERLAY SCREENS ── */
-    .ovl      { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .ovl      { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--smk); }
     .ovl-box  { background: var(--w); border: 1px solid var(--bdr); border-radius: 4px; padding: 28px; max-width: 520px; width: 100%; }
     .ovl-kicker { font-family:'DM Mono',monospace; font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--tan); margin-bottom: 8px; }
     .ovl-ttl  { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
@@ -235,9 +235,15 @@
     .step-b strong { color: var(--k); font-weight: 600; }
     .step-b code { font-family:'DM Mono',monospace; font-size: 11px; background: #F0EDE8; padding: 1px 5px; border-radius: 3px; color: var(--k); }
 
-    /* spinner */
-    .spinner { width: 30px; height: 30px; border: 3px solid var(--bdr); border-top-color: var(--tan); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* bear bounce */
+    .bear-bounce { display: flex; justify-content: center; align-items: flex-end; height: 88px; }
+    .bear-bounce img { animation: bear-drop .55s cubic-bezier(.33,0,.66,1) infinite alternate; transform-origin: center bottom; }
+    @keyframes bear-drop {
+      0%   { transform: translateY(0px) scaleY(1) scaleX(1); }
+      85%  { transform: translateY(0px) scaleY(1) scaleX(1); }
+      92%  { transform: translateY(0px) scaleY(.82) scaleX(1.12); }
+      100% { transform: translateY(-34px) scaleY(1.06) scaleX(.95); }
+    }
 
     /* ── BOTTOM BAR ── */
     .btm-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--w); border-top: 1px solid var(--bdr); padding: 9px 13px; display: flex; gap: 7px; align-items: center; z-index: 200; }
@@ -289,7 +295,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG — replace after Apps Script deployment
 // ─────────────────────────────────────────────────────────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBLf5Lsj_cCsy85cwakrNgDI6sR-XfDNtCEnZbErawxjr69eSfCMPmyVjh8oTTTcco/exec';
+const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
@@ -694,8 +700,11 @@ function App() {
   if (screen==='loading') return (
     <div className="ovl no-print">
       <div style={{textAlign:'center'}}>
-        <div className="spinner"></div>
-        <div style={{fontFamily:'DM Mono,monospace',fontSize:10,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--mute)'}}>Loading…</div>
+        <div className="bear-bounce">
+          <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png"
+            style={{width:72,height:72,objectFit:'contain',filter:'brightness(0) invert(1)',mixBlendMode:'normal'}} alt="OVB"/>
+        </div>
+        <div style={{fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--mute)',marginTop:10}}>Loading…</div>
       </div>
     </div>
   );
