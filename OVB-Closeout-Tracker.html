@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OVB — Closeout &amp; Warranty Tracker</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
+  <meta name="theme-color" content="#1A1F2E" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --near-black: #1E1C1A;
+      --tan:        #C7AA8B;
+      --smoke:      #F7F7F7;
+      --white:      #fff;
+      --border:     #E5E2DF;
+      --muted:      #999;
+      --warning:    #D4714A;
+      --green:      #3A8C5C;
+      --blue:       #2B6CB0;
+      --amber:      #92600A;
+      --expired:    #8B2A2A;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--smoke);
+      color: var(--near-black);
+      min-height: 100vh;
+      padding-bottom: 70px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .print-only       { display: none !important; }
+    .print-chk        { display: none; }
+    .section-print-hdr{ display: none; }
+    .print-total-bar  { display: none; }
+    .sig-block        { display: none; }
+
+    /* ── HEADER ── */
+    .tool-header { background: var(--near-black); padding: 16px 18px 14px; }
+    .hdr-top { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
+    .wordmark { height: 17px; opacity: .92; }
+    .hdr-divider { border-left: 1px solid rgba(255,255,255,.14); padding-left: 11px; }
+    .hdr-title { font-size: 13px; font-weight: 600; color: #fff; line-height: 1.2; }
+    .hdr-sub { font-family:'DM Mono',monospace; font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tan); margin-top:2px; }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    @media (min-width:620px) { .info-grid { grid-template-columns: 2fr 2fr 1.2fr 1.2fr 1.2fr; } }
+    .ig-field { display: flex; flex-direction: column; gap: 3px; }
+    .ig-field.wide { grid-column: 1/-1; }
+    @media (min-width:620px) { .ig-field.wide { grid-column: span 2; } }
+    .ig-lbl { font-family:'DM Mono',monospace; font-size:7.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(199,170,139,.75); }
+    .ig-inp {
+      background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-radius:4px;
+      color:#fff; font-family:'DM Sans',sans-serif; font-size:12.5px;
+      padding:5px 8px; width:100%; outline:none; transition:border-color .15s;
+    }
+    .ig-inp:focus { border-color:var(--tan); background:rgba(255,255,255,.1); }
+    .ig-inp::placeholder { color:rgba(255,255,255,.25); }
+    .ig-inp option { background:#1E1C1A; color:#fff; }
+
+    .warranty-banner {
+      margin-top:10px; padding:8px 12px; border-radius:4px;
+      font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:.06em;
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .wb-active  { background:rgba(58,140,92,.18); border:1px solid rgba(58,140,92,.35); color:#6FCF97; }
+    .wb-expired { background:rgba(139,42,42,.2); border:1px solid rgba(139,42,42,.4); color:#F4A0A0; }
+    .wb-none    { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.38); }
+    .wb-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .dot-green { background:#3A8C5C; } .dot-red { background:#8B2A2A; } .dot-grey { background:#555; }
+    .wb-label { font-weight:500; }
+    .wb-dates { opacity:.75; }
+
+    /* ── TABS ── */
+    .tab-bar { background:#17150F; border-bottom:1px solid rgba(255,255,255,.05); padding:0 14px; display:flex; gap:1px; overflow-x:auto; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-btn {
+      background:none; border:none; border-bottom:2px solid transparent;
+      color:rgba(255,255,255,.38); cursor:pointer;
+      font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:500;
+      padding:10px 13px 8px; display:flex; align-items:center; gap:6px; white-space:nowrap; transition:color .15s;
+    }
+    .tab-btn:hover { color:rgba(255,255,255,.65); }
+    .tab-btn.active { color:#fff; border-bottom-color:var(--tan); }
+    .tab-pill { background:rgba(255,255,255,.08); border-radius:10px; font-family:'DM Mono',monospace; font-size:8.5px; padding:1px 5px; line-height:1.6; }
+    .tab-btn.active .tab-pill { background:var(--tan); color:var(--near-black); }
+
+    /* ── CONTENT ── */
+    .content { max-width:880px; margin:0 auto; padding:16px 13px; }
+
+    .stats-row { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; }
+    .stat-card { background:var(--white); border:1px solid var(--border); border-radius:4px; padding:7px 13px; }
+    .sn { font-family:'DM Mono',monospace; font-size:20px; font-weight:500; line-height:1; color:var(--near-black); }
+    .sn.green { color:var(--green); } .sn.warn { color:var(--warning); }
+    .sl { font-family:'DM Mono',monospace; font-size:7.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:3px; }
+
+    .total-bar {
+      background:var(--near-black); border-radius:4px; padding:10px 14px; margin-bottom:14px;
+      display:flex; align-items:baseline; gap:10px;
+    }
+    .total-amt { font-family:'DM Mono',monospace; font-size:22px; font-weight:500; color:var(--tan); }
+    .total-lbl { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.4); }
+    .total-open { font-family:'DM Mono',monospace; font-size:11px; color:rgba(255,255,255,.4); margin-left:auto; }
+
+    .sec-panel { display:none; }
+    .sec-panel.visible { display:block; }
+    .sec-eyebrow { font-family:'DM Mono',monospace; font-size:8.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:9px; }
+
+    .items-list { display:flex; flex-direction:column; gap:5px; margin-bottom:9px; }
+    .empty-state { background:var(--white); border:1px solid var(--border); border-radius:4px; padding:26px 18px; text-align:center; }
+    .empty-ico { font-size:26px; margin-bottom:5px; }
+    .empty-txt { font-size:12.5px; color:#CCC; }
+
+    .item-row {
+      background:var(--white); border:1px solid var(--border); border-radius:4px;
+      padding:8px 9px 8px 11px;
+      display:grid; grid-template-columns:22px 22px 1fr auto;
+      gap:7px; align-items:start;
+    }
+    .item-row.done { background:#FAFAF9; border-color:#EDECEA; }
+    .item-row.crit { border-left:3px solid var(--warning); }
+    .item-row.exp  { border-left:3px solid var(--expired); }
+
+    .chk-btn {
+      width:19px; height:19px; border:1.5px solid #CCC; border-radius:4px;
+      cursor:pointer; background:none; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; margin-top:1px; font-size:10px; transition:all .15s;
+    }
+    .chk-btn:hover { border-color:var(--tan); }
+    .chk-btn.checked { background:var(--green); border-color:var(--green); color:#fff; }
+
+    .item-num { font-family:'DM Mono',monospace; font-size:9.5px; color:#C8C4C0; margin-top:3px; text-align:right; }
+    .item-body { min-width:0; }
+    .item-desc { font-size:13px; font-weight:500; color:var(--near-black); line-height:1.4; margin-bottom:5px; }
+    .item-row.done .item-desc { color:#AAA; text-decoration:line-through; }
+
+    .tags { display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
+
+    .bdg { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:.04em; text-transform:uppercase; padding:2px 5px; border-radius:3px; line-height:1.5; }
+    .b-trade  { background:rgba(199,170,139,.1); color:#7A6850; border:1px solid rgba(199,170,139,.3); }
+    .b-crit   { background:#FFF0EB; color:var(--warning); border:1px solid rgba(212,113,74,.3); }
+    .b-std    { background:#F2EFE9; color:#7A6850; border:1px solid #DDD; }
+    .b-minor  { background:#F5F5F5; color:var(--muted); border:1px solid #E5E5E5; }
+    .b-open   { background:#F0F0F0; color:#666; border:1px solid #DDD; }
+    .b-inprog { background:#EBF4FF; color:var(--blue); border:1px solid rgba(43,108,176,.25); }
+    .b-sched  { background:#FFFBEB; color:var(--amber); border:1px solid rgba(146,96,10,.25); }
+    .b-done   { background:#F0FBF4; color:var(--green); border:1px solid rgba(58,140,92,.3); }
+    .b-inwarr { background:#F0FBF4; color:var(--green); border:1px solid rgba(58,140,92,.3); }
+    .b-exp    { background:#FFF0F0; color:var(--expired); border:1px solid rgba(139,42,42,.3); }
+
+    .item-date     { font-family:'DM Mono',monospace; font-size:8.5px; color:#BBB; }
+    .item-done-date{ font-family:'DM Mono',monospace; font-size:8.5px; color:var(--green); }
+
+    .item-meta { font-size:11px; color:#999; margin-top:4px; display:flex; align-items:flex-start; gap:4px; flex-wrap:wrap; }
+    .meta-lbl  { font-family:'DM Mono',monospace; font-size:7.5px; letter-spacing:.08em; text-transform:uppercase; color:#C8C4C0; flex-shrink:0; }
+    .meta-block{ display:flex; align-items:center; gap:4px; margin-right:8px; }
+
+    .item-actions { display:flex; gap:4px; flex-shrink:0; }
+    .act-btn { background:none; border:1px solid var(--border); border-radius:4px; color:#BBB; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:10.5px; padding:3px 7px; transition:all .15s; }
+    .act-btn:hover { border-color:var(--tan); color:var(--tan); }
+    .act-btn.del:hover { border-color:var(--warning); color:var(--warning); }
+
+    /* ── FORMS ── */
+    .add-form  { background:var(--white); border:1.5px dashed rgba(199,170,139,.45); border-radius:4px; padding:13px; margin-bottom:9px; }
+    .edit-form { background:#FFFEF8; border:1.5px solid var(--tan); border-radius:4px; padding:11px; margin-bottom:5px; }
+    .f-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    @media (min-width:560px) { .f-grid { grid-template-columns:1fr 1fr 1fr 1fr; } }
+    .f-field { display:flex; flex-direction:column; gap:3px; }
+    .f-field.c2 { grid-column:1/-1; }
+    .f-field.c4 { grid-column:1/-1; }
+    @media (min-width:560px) { .f-field.c2 { grid-column:span 2; } .f-field.c4 { grid-column:span 4; } }
+    .f-lbl { font-family:'DM Mono',monospace; font-size:7.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+    .f-inp { background:var(--smoke); border:1px solid #DDD; border-radius:4px; color:var(--near-black); font-family:'DM Sans',sans-serif; font-size:12.5px; padding:6px 8px; width:100%; outline:none; transition:border-color .15s; }
+    .f-inp:focus { border-color:var(--tan); }
+    textarea.f-inp { resize:vertical; min-height:50px; }
+    .dollar-wrap { position:relative; }
+    .dollar-sym { position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#AAA; font-size:12px; pointer-events:none; }
+    .dollar-wrap .f-inp { padding-left:20px; }
+    .form-btns { display:flex; gap:7px; margin-top:9px; }
+    .btn-pri { background:var(--near-black); border:1px solid var(--near-black); border-radius:4px; color:#fff; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:500; padding:7px 15px; transition:background .15s; }
+    .btn-pri:hover { background:#333; }
+    .btn-ghost { background:none; border:1px solid #DDD; border-radius:4px; color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12.5px; padding:7px 15px; transition:all .15s; }
+    .btn-ghost:hover { border-color:#AAA; color:#555; }
+    .btn-add { background:none; border:1px solid rgba(199,170,139,.3); border-radius:4px; color:var(--tan); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:500; padding:9px 13px; width:100%; text-align:left; display:flex; align-items:center; gap:8px; transition:all .15s; }
+    .btn-add:hover { background:rgba(199,170,139,.06); border-color:var(--tan); }
+
+    /* ── BOTTOM BAR ── */
+    .bottom-bar { position:fixed; bottom:0; left:0; right:0; background:var(--white); border-top:1px solid var(--border); padding:9px 13px; display:flex; gap:7px; align-items:center; z-index:200; }
+    .btn-print-c { background:var(--near-black); border:1px solid var(--near-black); border-radius:4px; color:#fff; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; padding:8px 14px; }
+    .btn-print-c:hover { background:#333; }
+    .btn-print-i { background:none; border:1px solid var(--tan); border-radius:4px; color:var(--tan); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; padding:8px 14px; }
+    .btn-print-i:hover { background:rgba(199,170,139,.07); }
+    .bar-sep { width:1px; height:20px; background:var(--border); }
+    .btn-rst { background:none; border:none; color:#CCC; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:11.5px; margin-left:auto; padding:6px 8px; border-radius:4px; }
+    .btn-rst:hover { color:var(--warning); }
+
+    /* ── PRINT ── */
+    @media print {
+      * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      body { background:#fff; padding-bottom:0; }
+      .no-print { display:none !important; }
+      .print-only { display:block !important; }
+      .sec-panel { display:block !important; }
+      .sec-panel.no-items { display:none !important; }
+      .tab-bar,.bottom-bar,.btn-add,.item-actions,.add-form,.edit-form,.stats-row,.total-bar,.sec-eyebrow,.chk-btn { display:none !important; }
+
+      .section-print-hdr {
+        display:flex !important; background:#1E1C1A; color:#fff;
+        padding:7px 11px; border-radius:4px; align-items:center; gap:8px;
+        margin-bottom:8px; margin-top:18px; page-break-inside:avoid;
+      }
+      .sph-emoji { font-size:13px; }
+      .sph-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#C7AA8B; }
+      .sph-count { font-family:'DM Mono',monospace; font-size:8.5px; color:rgba(255,255,255,.45); margin-left:auto; }
+
+      .print-total-bar {
+        display:flex !important; background:#1E1C1A; border-radius:4px;
+        padding:8px 12px; margin-bottom:10px; align-items:baseline; gap:10px;
+        page-break-inside:avoid;
+      }
+      .pt-amt { font-family:'DM Mono',monospace; font-size:15px; font-weight:500; color:#C7AA8B; }
+      .pt-lbl { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.4); }
+
+      .item-row { break-inside:avoid; border:1px solid #CCC; margin-bottom:4px; }
+      .item-row.crit { border-left:2.5px solid #D4714A; }
+      .item-row.exp  { border-left:2.5px solid #8B2A2A; }
+
+      .print-chk { display:flex !important; width:13px; height:13px; border:1.5px solid #999; border-radius:2px; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; font-size:9px; }
+
+      body[data-print="client"] .internal-only { display:none !important; }
+
+      /* Sig block — client print only, after punchlist */
+      .sig-block { display:none !important; }
+      body[data-print="client"] .sig-block { display:table !important; }
+
+      .content { padding:8px 0; }
+      @page { margin:0.5in; size:letter portrait; }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+const TRADES = ['Carpentry','Concrete','Drywall','Electrical','Exterior','Flooring','Framing','HVAC','Landscaping','Masonry','Paint','Plumbing','Roofing','Tile','Windows/Doors','Other'];
+const PRIORITIES = ['Critical','Standard','Minor'];
+const STATUSES   = ['Open','In Progress','Scheduled','Complete'];
+const SECTIONS   = [
+  { key:'weOwes',    label:'We Owes',   emoji:'📋', desc:'Items OVB committed to deliver — not yet complete' },
+  { key:'punchlist', label:'Punchlist', emoji:'✅', desc:'Final walkthrough & commissioning items' },
+  { key:'warranty',  label:'Warranty',  emoji:'🛡️', desc:'Post-closeout warranty & callback requests' },
+];
+const PROJECT_TYPES = ['New Build','Addition','Full Remodel','Kitchen Remodel','Bath Remodel','Basement Finish','ADU','Other'];
+
+function genId()    { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function todayISO() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return m+'/'+d+'/'+y;
+}
+function addMonths(iso, n) {
+  const d = new Date(iso+'T12:00:00');
+  d.setMonth(d.getMonth()+n);
+  return d.toISOString().split('T')[0];
+}
+function isExpiredDate(iso) {
+  if (!iso) return false;
+  return new Date(iso+'T23:59:59') < new Date();
+}
+function fmtMoney(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)||!val) return '';
+  return '$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+function sumCost(items) { return items.reduce((a,i)=>a+(parseFloat(i.cost)||0),0); }
+function priClass(p){ return p==='Critical'?'b-crit':p==='Minor'?'b-minor':'b-std'; }
+function staClass(s){ return s==='In Progress'?'b-inprog':s==='Scheduled'?'b-sched':s==='Complete'?'b-done':'b-open'; }
+
+function blankItem(sec) {
+  const base = { description:'', trade:'Other', priority:'Standard', status:'Open', assignedTo:'', internalNotes:'', completedDate:'' };
+  if (sec==='weOwes')    return {...base, cost:'', dueDate:''};
+  if (sec==='warranty')  return {...base, requestDate:todayISO(), responseDate:'', resolutionDate:''};
+  return {...base, dueDate:''};
+}
+
+/* ── Item Form ── */
+function ItemForm({ sec, init, onSave, onCancel }) {
+  const [d, setD] = useState({...init});
+  const up = (k,v) => setD(p=>({...p,[k]:v}));
+
+  return (
+    <div className="f-grid">
+      <div className="f-field c4">
+        <span className="f-lbl">Description *</span>
+        <input className="f-inp" value={d.description}
+          onChange={e=>up('description',e.target.value)} autoFocus
+          placeholder="Describe the item..."
+          onKeyDown={e=>{ if(e.key==='Enter') onSave(d); if(e.key==='Escape') onCancel(); }} />
+      </div>
+      <div className="f-field">
+        <span className="f-lbl">Trade</span>
+        <select className="f-inp" value={d.trade} onChange={e=>up('trade',e.target.value)}>
+          {TRADES.map(t=><option key={t}>{t}</option>)}
+        </select>
+      </div>
+      <div className="f-field">
+        <span className="f-lbl">Priority</span>
+        <select className="f-inp" value={d.priority} onChange={e=>up('priority',e.target.value)}>
+          {PRIORITIES.map(p=><option key={p}>{p}</option>)}
+        </select>
+      </div>
+      <div className="f-field">
+        <span className="f-lbl">Status</span>
+        <select className="f-inp" value={d.status} onChange={e=>up('status',e.target.value)}>
+          {STATUSES.map(s=><option key={s}>{s}</option>)}
+        </select>
+      </div>
+      {sec!=='warranty' && (
+        <div className="f-field">
+          <span className="f-lbl">Due Date</span>
+          <input type="date" className="f-inp" value={d.dueDate} onChange={e=>up('dueDate',e.target.value)} />
+        </div>
+      )}
+      {sec==='weOwes' && (
+        <div className="f-field">
+          <span className="f-lbl">Est. Cost</span>
+          <div className="dollar-wrap">
+            <span className="dollar-sym">$</span>
+            <input className="f-inp" value={d.cost}
+              onChange={e=>up('cost',e.target.value.replace(/[^0-9.]/g,''))} placeholder="0" />
+          </div>
+        </div>
+      )}
+      {sec==='warranty' && <>
+        <div className="f-field">
+          <span className="f-lbl">Request Date</span>
+          <input type="date" className="f-inp" value={d.requestDate} onChange={e=>up('requestDate',e.target.value)} />
+        </div>
+        <div className="f-field">
+          <span className="f-lbl">Response Date</span>
+          <input type="date" className="f-inp" value={d.responseDate} onChange={e=>up('responseDate',e.target.value)} />
+        </div>
+        <div className="f-field">
+          <span className="f-lbl">Resolution Date</span>
+          <input type="date" className="f-inp" value={d.resolutionDate} onChange={e=>up('resolutionDate',e.target.value)} />
+        </div>
+      </>}
+      <div className="f-field c2 internal-only">
+        <span className="f-lbl">Assigned To (internal)</span>
+        <input className="f-inp" value={d.assignedTo}
+          onChange={e=>up('assignedTo',e.target.value)} placeholder="Sub, vendor, or OVB" />
+      </div>
+      <div className="f-field c4 internal-only">
+        <span className="f-lbl">Internal Notes</span>
+        <textarea className="f-inp" value={d.internalNotes}
+          onChange={e=>up('internalNotes',e.target.value)}
+          placeholder="Won't appear on client version" />
+      </div>
+      <div className="f-field c4">
+        <div className="form-btns">
+          <button className="btn-pri" onClick={()=>onSave(d)}>{init.id?'Save Changes':'Add Item'}</button>
+          <button className="btn-ghost" onClick={onCancel}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── App ── */
+function App() {
+  const [info, setInfo] = useState({
+    client:'', address:'', projectType:'Remodel', closeDate:'', pm:'Taylor Whitesides'
+  });
+  const [tab, setTab]     = useState('weOwes');
+  const [lists, setLists] = useState({ weOwes:[], punchlist:[], warranty:[] });
+  const [adding, setAdding] = useState(null);
+  const [editId, setEditId] = useState(null);
+
+  const upInfo = (k,v) => setInfo(p=>({...p,[k]:v}));
+
+  const warrantyExpiry = useMemo(()=> info.closeDate ? addMonths(info.closeDate,36) : null, [info.closeDate]);
+  const warrantyActive  = warrantyExpiry && !isExpiredDate(warrantyExpiry);
+  const warrantyExpired = warrantyExpiry && isExpiredDate(warrantyExpiry);
+
+  function addItem(sec, data) {
+    if (!data.description.trim()) return;
+    setLists(p=>({...p,[sec]:[...p[sec],{...data,id:genId()}]}));
+    setAdding(null);
+  }
+  function saveItem(sec, data) {
+    setLists(p=>({...p,[sec]:p[sec].map(i=>i.id===data.id?{...data}:i)}));
+    setEditId(null);
+  }
+  function delItem(sec,id) {
+    if (!window.confirm('Delete this item?')) return;
+    setLists(p=>({...p,[sec]:p[sec].filter(i=>i.id!==id)}));
+  }
+  function toggleDone(sec,id) {
+    setLists(p=>({
+      ...p,
+      [sec]: p[sec].map(item => {
+        if (item.id!==id) return item;
+        const nowDone = item.status!=='Complete';
+        return {
+          ...item,
+          status: nowDone ? 'Complete' : 'Open',
+          completedDate: nowDone ? fmtDate(todayISO()) : '',
+          ...(nowDone && sec==='warranty' ? {resolutionDate:todayISO()} : {})
+        };
+      })
+    }));
+  }
+
+  function doPrint(type) {
+    document.body.setAttribute('data-print',type);
+    setTimeout(()=>{ window.print(); setTimeout(()=>document.body.removeAttribute('data-print'),500); },60);
+  }
+  function doReset() {
+    if (!window.confirm('Reset all data?')) return;
+    setInfo({client:'',address:'',projectType:'Remodel',closeDate:'',pm:'Taylor Whitesides'});
+    setLists({weOwes:[],punchlist:[],warranty:[]});
+    setAdding(null); setEditId(null);
+  }
+
+  const allItems   = [...lists.weOwes,...lists.punchlist,...lists.warranty];
+  const totalCount = allItems.length;
+  const openCount  = allItems.filter(i=>i.status!=='Complete').length;
+  const critCount  = allItems.filter(i=>i.priority==='Critical'&&i.status!=='Complete').length;
+  const weOwesTotal    = sumCost(lists.weOwes);
+  const weOwesOpenCost = sumCost(lists.weOwes.filter(i=>i.status!=='Complete'));
+
+  return (
+    <div>
+      {/* ── SCREEN HEADER ── */}
+      <div className="tool-header no-print">
+        <div className="hdr-top">
+          <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png"
+            className="wordmark" alt="OVB" />
+          <div className="hdr-divider">
+            <div className="hdr-title">Closeout &amp; Warranty Tracker</div>
+            <div className="hdr-sub">We Owes · Punchlist · Warranty</div>
+          </div>
+        </div>
+        <div className="info-grid">
+          <div className="ig-field wide">
+            <span className="ig-lbl">Client Name</span>
+            <input className="ig-inp" value={info.client} onChange={e=>upInfo('client',e.target.value)} placeholder="Last Name, First" />
+          </div>
+          <div className="ig-field wide">
+            <span className="ig-lbl">Project Address</span>
+            <input className="ig-inp" value={info.address} onChange={e=>upInfo('address',e.target.value)} placeholder="123 Main St, Ogden UT 84401" />
+          </div>
+          <div className="ig-field">
+            <span className="ig-lbl">Project Type</span>
+            <select className="ig-inp" value={info.projectType} onChange={e=>upInfo('projectType',e.target.value)}>
+              {PROJECT_TYPES.map(t=><option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="ig-field">
+            <span className="ig-lbl">Project Close Date</span>
+            <input type="date" className="ig-inp" value={info.closeDate} onChange={e=>upInfo('closeDate',e.target.value)} />
+          </div>
+          <div className="ig-field">
+            <span className="ig-lbl">Project Manager</span>
+            <input className="ig-inp" value={info.pm} onChange={e=>upInfo('pm',e.target.value)} />
+          </div>
+        </div>
+        {info.closeDate && (
+          <div className={'warranty-banner '+(warrantyExpired?'wb-expired':warrantyActive?'wb-active':'wb-none')}>
+            <div className={'wb-dot '+(warrantyExpired?'dot-red':warrantyActive?'dot-green':'dot-grey')}></div>
+            <span className="wb-label">OVB 36-Month Warranty — {warrantyExpired?'EXPIRED':'Active'}</span>
+            <span className="wb-dates">
+              {fmtDate(info.closeDate)} → {fmtDate(warrantyExpiry)}
+              {warrantyActive && ' · '+Math.ceil((new Date(warrantyExpiry)-new Date())/(1000*60*60*24))+' days remaining'}
+              {warrantyExpired && ' · Expired '+Math.floor((new Date()-new Date(warrantyExpiry))/(1000*60*60*24))+' days ago'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* ── PRINT HEADER ── */}
+      <div className="print-only" style={{background:'#1E1C1A',padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:16,color:'#fff',marginBottom:2}}>Ogden Valley Builders</div>
+          <div style={{fontFamily:'DM Mono,monospace',fontSize:8.5,letterSpacing:'0.12em',textTransform:'uppercase',color:'#C7AA8B',marginBottom:10}}>
+            Closeout &amp; Warranty Tracker
+          </div>
+          {info.client  && <div style={{fontSize:14,fontWeight:600,color:'#fff'}}>{info.client}</div>}
+          {info.address && <div style={{fontSize:11.5,color:'rgba(255,255,255,0.62)',marginTop:2}}>{info.address}</div>}
+        </div>
+        <div style={{textAlign:'right',fontSize:11,color:'rgba(255,255,255,0.6)',lineHeight:1.65}}>
+          <div style={{fontWeight:600,color:'#fff'}}>{info.projectType}</div>
+          {info.closeDate && <div>Closed: {fmtDate(info.closeDate)}</div>}
+          {warrantyExpiry && (
+            <div style={{color:warrantyExpired?'#F4A0A0':'#6FCF97'}}>
+              Warranty {warrantyExpired?'Expired':'Until'}: {fmtDate(warrantyExpiry)}
+            </div>
+          )}
+          <div>PM: {info.pm}</div>
+          <div style={{marginTop:5,fontSize:9.5}}>GC #14219939-5501</div>
+        </div>
+      </div>
+
+      {/* ── TABS ── */}
+      <div className="tab-bar no-print">
+        {SECTIONS.map(s=>{
+          const n    = lists[s.key].length;
+          const open = lists[s.key].filter(i=>i.status!=='Complete').length;
+          return (
+            <button key={s.key}
+              className={'tab-btn'+(tab===s.key?' active':'')}
+              onClick={()=>{setTab(s.key);setAdding(null);setEditId(null);}}>
+              {s.emoji} {s.label}
+              {n>0 && <span className="tab-pill">{open}/{n}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="content">
+        {/* Stats (screen) */}
+        {totalCount>0 && (
+          <div className="stats-row no-print">
+            <div className="stat-card"><div className="sn">{totalCount}</div><div className="sl">Total</div></div>
+            <div className="stat-card"><div className={'sn'+(openCount===0?' green':'')}>{openCount}</div><div className="sl">Open</div></div>
+            {critCount>0 && <div className="stat-card"><div className="sn warn">{critCount}</div><div className="sl">Critical</div></div>}
+            {openCount===0&&totalCount>0 && <div className="stat-card" style={{borderColor:'rgba(58,140,92,0.3)'}}><div className="sn green">✓</div><div className="sl">All Clear</div></div>}
+          </div>
+        )}
+
+        {/* ── SECTIONS ── */}
+        {SECTIONS.map(s=>{
+          const items     = lists[s.key];
+          const noItems   = items.length===0;
+          const doneCount = items.filter(i=>i.status==='Complete').length;
+          const isVis     = tab===s.key;
+
+          return (
+            <div key={s.key} className={'sec-panel'+(isVis?' visible':'')+(noItems?' no-items':'')}>
+
+              {/* Print section header */}
+              <div className="section-print-hdr">
+                <span className="sph-emoji">{s.emoji}</span>
+                <span className="sph-label">{s.label}</span>
+                <span className="sph-count">{doneCount}/{items.length} complete</span>
+              </div>
+
+              {/* Print total bar (We Owes) */}
+              {s.key==='weOwes' && items.length>0 && (
+                <div className="print-total-bar">
+                  <span className="pt-amt">{fmtMoney(weOwesTotal)}</span>
+                  <span className="pt-lbl">Total We Owes</span>
+                  {weOwesOpenCost>0 && (
+                    <span style={{marginLeft:'auto',fontFamily:'DM Mono,monospace',fontSize:9,color:'rgba(255,255,255,0.4)'}}>
+                      {fmtMoney(weOwesOpenCost)} open
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <div className="sec-eyebrow">{s.desc}</div>
+
+              {/* Screen total bar */}
+              {s.key==='weOwes' && items.length>0 && (
+                <div className="total-bar no-print">
+                  <span className="total-amt">{fmtMoney(weOwesTotal)}</span>
+                  <span className="total-lbl">Total We Owes</span>
+                  {weOwesOpenCost>0 && <span className="total-open">{fmtMoney(weOwesOpenCost)} open</span>}
+                </div>
+              )}
+
+              <div className="items-list">
+                {noItems && !adding && (
+                  <div className="empty-state">
+                    <div className="empty-ico">{s.emoji}</div>
+                    <div className="empty-txt">No items yet — tap Add Item to start</div>
+                  </div>
+                )}
+
+                {items.map((item,idx)=>{
+                  const itemExpired = s.key==='warranty' && warrantyExpired;
+
+                  if (editId===item.id) {
+                    return (
+                      <div key={item.id} className="edit-form no-print">
+                        <ItemForm sec={s.key} init={item}
+                          onSave={data=>saveItem(s.key,data)}
+                          onCancel={()=>setEditId(null)} />
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={item.id}
+                      className={'item-row'+(item.status==='Complete'?' done':'')+(item.priority==='Critical'?' crit':'')+(itemExpired&&item.status!=='Complete'?' exp':'')}>
+                      <button className={'chk-btn no-print'+(item.status==='Complete'?' checked':'')}
+                        onClick={()=>toggleDone(s.key,item.id)}>
+                        {item.status==='Complete'&&'✓'}
+                      </button>
+                      <div className="print-chk">{item.status==='Complete'?'✓':''}</div>
+                      <div className="item-num">{idx+1}</div>
+                      <div className="item-body">
+                        <div className="item-desc">{item.description}</div>
+                        <div className="tags">
+                          <span className="bdg b-trade">{item.trade}</span>
+                          <span className={'bdg '+priClass(item.priority)}>{item.priority}</span>
+                          <span className={'bdg '+staClass(item.status)}>{item.status}</span>
+                          {s.key==='warranty' && warrantyExpiry && (
+                            <span className={'bdg '+(itemExpired?'b-exp':'b-inwarr')}>
+                              {itemExpired?'⚠ Out of Warranty':'✓ In Warranty'}
+                            </span>
+                          )}
+                          {item.dueDate && s.key!=='warranty' && (
+                            <span className="item-date">Due {fmtDate(item.dueDate)}</span>
+                          )}
+                          {item.completedDate && (
+                            <span className="item-done-date">✓ {item.completedDate}</span>
+                          )}
+                        </div>
+                        {/* Warranty dates */}
+                        {s.key==='warranty' && (item.requestDate||item.responseDate||item.resolutionDate) && (
+                          <div className="item-meta">
+                            {item.requestDate && <span className="meta-block"><span className="meta-lbl">Requested</span>{fmtDate(item.requestDate)}</span>}
+                            {item.responseDate && <span className="meta-block"><span className="meta-lbl">Response</span>{fmtDate(item.responseDate)}</span>}
+                            {item.resolutionDate && <span className="meta-block"><span className="meta-lbl">Resolved</span>{fmtDate(item.resolutionDate)}</span>}
+                          </div>
+                        )}
+                        {/* Cost */}
+                        {s.key==='weOwes' && item.cost && (
+                          <div className="item-meta">
+                            <span className="meta-lbl">Cost</span>
+                            <span style={{fontFamily:'DM Mono,monospace',fontSize:11.5,color:'#7A6850',fontWeight:500}}>{fmtMoney(item.cost)}</span>
+                          </div>
+                        )}
+                        {/* Internal */}
+                        {item.assignedTo && <div className="item-meta internal-only"><span className="meta-lbl">Assigned</span>{item.assignedTo}</div>}
+                        {item.internalNotes && <div className="item-meta internal-only"><span className="meta-lbl">Note</span>{item.internalNotes}</div>}
+                      </div>
+                      <div className="item-actions no-print">
+                        <button className="act-btn" onClick={()=>setEditId(item.id)}>Edit</button>
+                        <button className="act-btn del" onClick={()=>delItem(s.key,item.id)}>✕</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {adding===s.key ? (
+                <div className="add-form no-print">
+                  <ItemForm sec={s.key} init={blankItem(s.key)}
+                    onSave={data=>addItem(s.key,data)}
+                    onCancel={()=>setAdding(null)} />
+                </div>
+              ) : (
+                <button className="btn-add no-print"
+                  onClick={()=>{setAdding(s.key);setEditId(null);}}>
+                  <span style={{fontSize:17,lineHeight:1}}>+</span> Add {s.label} Item
+                </button>
+              )}
+
+              {/* Signature block — after punchlist, client print only */}
+              {s.key==='punchlist' && (
+                <table className="sig-block" style={{width:'100%',marginTop:28,borderCollapse:'collapse'}}>
+                  <tbody><tr>
+                    <td style={{width:'48%',paddingRight:16}}>
+                      <div style={{borderTop:'1.5px solid #1E1C1A',paddingTop:6}}>
+                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8.5,letterSpacing:'.08em',textTransform:'uppercase',color:'#666'}}>Client Signature</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8,color:'#AAA',marginTop:4}}>{info.client||'_______________________'}</div>
+                      </div>
+                    </td>
+                    <td style={{width:'20%',paddingRight:16}}>
+                      <div style={{borderTop:'1.5px solid #1E1C1A',paddingTop:6}}>
+                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8.5,letterSpacing:'.08em',textTransform:'uppercase',color:'#666'}}>Date</div>
+                      </div>
+                    </td>
+                    <td style={{width:'32%'}}>
+                      <div style={{borderTop:'1.5px solid #1E1C1A',paddingTop:6}}>
+                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8.5,letterSpacing:'.08em',textTransform:'uppercase',color:'#666'}}>OVB — Taylor Whitesides</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontSize:8,color:'#AAA',marginTop:4}}>GC #14219939-5501</div>
+                      </div>
+                    </td>
+                  </tr></tbody>
+                </table>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Print footer */}
+        <div className="print-only" style={{marginTop:24,paddingTop:9,borderTop:'1px solid #DDD',display:'flex',justifyContent:'space-between'}}>
+          <span style={{fontFamily:'DM Mono,monospace',fontSize:7.5,color:'#AAA',letterSpacing:'.06em'}}>
+            Ogden Valley Builders · GC #14219939-5501 · (385) 288-7921 · info@ogdenvalleybuilders.com · Weber &amp; Morgan County, UT
+          </span>
+          <span style={{fontFamily:'DM Mono,monospace',fontSize:7.5,color:'#CCC'}}>Printed {fmtDate(todayISO())}</span>
+        </div>
+      </div>
+
+      <div className="bottom-bar no-print">
+        <button className="btn-print-c" onClick={()=>doPrint('client')}>🖨 Print — Client</button>
+        <div className="bar-sep"></div>
+        <button className="btn-print-i" onClick={()=>doPrint('internal')}>📋 Print — Internal</button>
+        <button className="btn-rst" onClick={doReset}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
