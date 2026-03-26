@@ -1,1288 +1,563 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
-  <meta name="theme-color" content="#1A1F2E" />
-  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
-  <title>OVB — Site Visit Worksheet</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+// api/jobtread.js — OVB Tools · JobTread Proxy
+// Deploy at /api/jobtread.js in repo root.
+// Set JOBTREAD_GRANT_KEY in Vercel -> Settings -> Environment Variables.
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: #F7F7F7;
-      color: #1E1C1A;
-      font-size: 13px;
-      padding-bottom: 68px;
-    }
+module.exports = async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    /* PRINT */
-    @media print {
-      body { background: white; padding-bottom: 0; font-size: 11px; }
-      .no-print { display: none !important; }
-      .layout { display: block !important; }
-      .sidebar { display: none !important; }
-      .bottom-bar { display: none !important; }
-      .section { break-inside: avoid; border: 1px solid #ccc !important; margin-bottom: 12px; }
-      .section-header { background: #1E1C1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      input, textarea { border: none !important; padding: 2px 0 !important; background: transparent !important; font-size: 11px; }
-      .pill.active { background: #1E1C1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    }
+  const grantKey = process.env.JOBTREAD_GRANT_KEY;
+  if (!grantKey) return res.status(500).json({ error: 'JOBTREAD_GRANT_KEY not set in Vercel env vars' });
 
-    /* LAYOUT */
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 290px;
-      gap: 0;
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 20px 16px;
-      align-items: start;
-    }
-    .main-content { padding-right: 20px; }
+  const { operation, params = {} } = req.body || {};
+  if (!operation) return res.status(400).json({ error: 'Missing operation' });
 
-    /* PAGE HEADER */
-    .page-header {
-      background: #1E1C1A;
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+  try {
+    let result;
+    switch (operation) {
+      case 'createCustomer':      result = await createCustomer(grantKey, params);      break;
+      case 'getOrgInfo':          result = await getOrgInfo(grantKey);                   break;
+      case 'getContact':          result = await getContact(grantKey, params);           break;
+      case 'updateJobSiteVisit':      result = await updateJobSiteVisit(grantKey, params);      break;
+      case 'discoverFields':          result = await discoverFields(grantKey);                   break;
+      case 'discoverLocationFields':  result = await discoverLocationFields(grantKey, params);  break;
+      case 'discoverJobFields':       result = await discoverJobFields(grantKey, params);        break;
+      default: return res.status(400).json({ error: 'Unknown operation: ' + operation });
     }
-    .page-header-left { display: flex; align-items: center; gap: 14px; }
-    .page-header-eyebrow {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #C7AA8B;
-      margin-bottom: 3px;
-    }
-    .page-header-title { color: #F7F7F7; font-size: 15px; font-weight: 600; }
-    .page-header-badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 4px 9px;
-      border-radius: 3px;
-      border: 1px solid rgba(199,170,139,0.3);
-      color: #C7AA8B;
-    }
-
-    /* SECTION */
-    .section {
-      background: white;
-      border: 1px solid rgba(30,28,26,0.1);
-      border-radius: 4px;
-      margin-bottom: 14px;
-      overflow: hidden;
-    }
-    .section-header {
-      background: #1E1C1A;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .section-num {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: #C7AA8B;
-      border: 1px solid rgba(199,170,139,0.35);
-      border-radius: 3px;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .section-title { color: #F7F7F7; font-size: 13px; font-weight: 600; }
-    .section-subtitle { color: rgba(247,247,247,0.45); font-size: 11px; margin-left: auto; font-family: 'DM Mono', monospace; }
-    .section-body { padding: 16px; }
-
-    /* FIELD ROWS */
-    .field-row { margin-bottom: 14px; }
-    .field-row:last-child { margin-bottom: 0; }
-    .col-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-    .col-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-
-    /* LABELS */
-    .lbl {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #888;
-      margin-bottom: 6px;
-    }
-
-    /* INPUTS */
-    input[type="text"],
-    input[type="date"],
-    textarea {
-      width: 100%;
-      background: #F7F7F7;
-      border: 1px solid rgba(30,28,26,0.14);
-      border-radius: 4px;
-      padding: 7px 10px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      color: #1E1C1A;
-      outline: none;
-      transition: border-color 0.1s;
-    }
-    input:focus, textarea:focus { border-color: #C7AA8B; background: white; }
-    textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
-
-    /* PILL SELECT */
-    .pills { display: flex; flex-wrap: wrap; gap: 5px; }
-    .pill {
-      background: white;
-      border: 1px solid rgba(30,28,26,0.18);
-      border-radius: 4px;
-      padding: 5px 11px;
-      font-size: 12px;
-      cursor: pointer;
-      color: #1E1C1A;
-      transition: all 0.1s;
-      user-select: none;
-      white-space: nowrap;
-    }
-    .pill:hover { border-color: #C7AA8B; }
-    .pill.active { background: #1E1C1A; border-color: #1E1C1A; color: #F7F7F7; }
-    .pill.warn { background: #D4714A; border-color: #D4714A; color: white; }
-
-    /* YES / NO / UNKNOWN */
-    .yn { display: flex; }
-    .yn-opt {
-      padding: 5px 13px;
-      font-size: 12px;
-      border: 1px solid rgba(30,28,26,0.18);
-      cursor: pointer;
-      background: white;
-      color: #1E1C1A;
-      transition: all 0.1s;
-      user-select: none;
-    }
-    .yn-opt:first-child { border-radius: 4px 0 0 4px; }
-    .yn-opt:last-child { border-radius: 0 4px 4px 0; }
-    .yn-opt + .yn-opt { border-left: none; }
-    .yn-opt:hover { background: #F0EBE3; }
-    .yn-opt.on { background: #1E1C1A; border-color: #1E1C1A; color: #F7F7F7; }
-
-    /* CHECKBOX GRID */
-    .chk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-    .chk-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 9px;
-      border-radius: 4px;
-      border: 1px solid rgba(30,28,26,0.1);
-      background: #F7F7F7;
-      cursor: pointer;
-      transition: all 0.1s;
-    }
-    .chk-item:hover { border-color: rgba(199,170,139,0.5); }
-    .chk-item.on { background: #1E1C1A; border-color: #1E1C1A; color: #F7F7F7; }
-    .chk-item.on-warn { background: #FFF5F1; border: 1.5px solid #D4714A; }
-    .chk-box {
-      width: 14px;
-      height: 14px;
-      border: 1.5px solid rgba(30,28,26,0.25);
-      border-radius: 3px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .chk-item.on .chk-box { background: #C7AA8B; border-color: #C7AA8B; }
-    .chk-item.on-warn .chk-box { background: #D4714A; border-color: #D4714A; }
-    .chk-txt { font-size: 12px; }
-
-    /* SUB VISIT ITEMS */
-    .sub-item { margin-bottom: 9px; }
-    .sub-header {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      cursor: pointer;
-      padding: 7px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(30,28,26,0.1);
-      background: #F7F7F7;
-      transition: all 0.1s;
-    }
-    .sub-header:hover { border-color: rgba(199,170,139,0.4); }
-    .sub-header.on { background: #1E1C1A; border-color: #1E1C1A; }
-    .sub-check {
-      width: 16px;
-      height: 16px;
-      border: 1.5px solid rgba(30,28,26,0.25);
-      border-radius: 3px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .sub-header.on .sub-check { background: #C7AA8B; border-color: #C7AA8B; }
-    .sub-lbl { font-size: 13px; font-weight: 500; }
-    .sub-header.on .sub-lbl { color: #F7F7F7; }
-    .sub-notes { margin-top: 5px; padding-left: 25px; }
-
-    /* CHECKLIST STATUS */
-    .cl-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(30,28,26,0.08);
-      margin-bottom: 5px;
-      background: white;
-      transition: background 0.1s;
-    }
-    .cl-item.s-in { background: #F0FAF3; border-color: rgba(60,122,78,0.3); }
-    .cl-item.s-na { opacity: 0.45; }
-    .cl-txt { flex: 1; font-size: 12px; }
-    .cl-item.s-na .cl-txt { text-decoration: line-through; }
-    .cl-btns { display: flex; gap: 3px; }
-    .cl-btn {
-      padding: 3px 7px;
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      border-radius: 3px;
-      border: 1px solid rgba(30,28,26,0.15);
-      cursor: pointer;
-      background: white;
-      color: #999;
-      transition: all 0.1s;
-      white-space: nowrap;
-    }
-    .cl-btn:hover { border-color: #C7AA8B; color: #8B7355; }
-    .cl-btn.b-in { background: #E8F5ED; border-color: #3C7A4E; color: #3C7A4E; }
-    .cl-btn.b-tbd { background: #FFF8EE; border-color: #C7AA8B; color: #8B7355; }
-    .cl-btn.b-na { background: #F0F0F0; border-color: #bbb; color: #777; }
-
-    /* CONDITIONAL BOX */
-    .cond-box {
-      margin-top: 8px;
-      padding: 10px 12px;
-      background: #F7F7F7;
-      border-radius: 4px;
-      border: 1px solid rgba(30,28,26,0.1);
-    }
-    .cond-box.warn { border-color: rgba(212,113,74,0.4); background: #FFF9F7; }
-
-    /* DIVIDER */
-    .div { height: 1px; background: rgba(30,28,26,0.07); margin: 14px 0; }
-
-    /* SIDEBAR */
-    .sidebar { position: sticky; top: 16px; }
-    .s-card {
-      background: #2A2826;
-      border: 1px solid rgba(199,170,139,0.1);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .s-card-hdr {
-      padding: 9px 13px;
-      border-bottom: 1px solid rgba(199,170,139,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .s-card-ttl {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #C7AA8B;
-    }
-    .s-card-body { padding: 13px; }
-    .badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      padding: 2px 7px;
-      border-radius: 3px;
-    }
-    .badge-red { background: rgba(212,113,74,0.25); color: #D4714A; border: 1px solid rgba(212,113,74,0.4); }
-    .badge-green { background: rgba(60,122,78,0.2); color: #68B07C; border: 1px solid rgba(60,122,78,0.3); }
-    .badge-tan { background: rgba(199,170,139,0.15); color: #C7AA8B; border: 1px solid rgba(199,170,139,0.3); }
-
-    /* FLAG ITEMS IN SIDEBAR */
-    .s-flag {
-      padding: 8px 10px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-    }
-    .s-flag:last-child { margin-bottom: 0; }
-    .s-flag.f-stop { background: rgba(212,113,74,0.12); border: 1px solid rgba(212,113,74,0.3); }
-    .s-flag.f-warn { background: rgba(199,170,139,0.08); border: 1px solid rgba(199,170,139,0.2); }
-    .s-flag-ttl {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-    .s-flag.f-stop .s-flag-ttl { color: #D4714A; }
-    .s-flag.f-warn .s-flag-ttl { color: #C7AA8B; }
-    .s-flag-body { font-size: 11px; color: rgba(247,247,247,0.65); line-height: 1.5; }
-    .empty-msg { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(247,247,247,0.3); }
-
-    /* JT NOTE */
-    .jt-pre {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: rgba(247,247,247,0.8);
-      line-height: 1.75;
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-height: 340px;
-      overflow-y: auto;
-    }
-    .jt-pre::-webkit-scrollbar { width: 4px; }
-    .jt-pre::-webkit-scrollbar-track { background: transparent; }
-    .jt-pre::-webkit-scrollbar-thumb { background: rgba(199,170,139,0.3); border-radius: 2px; }
-    .copy-btn {
-      background: transparent;
-      border: 1px solid rgba(199,170,139,0.5);
-      border-radius: 4px;
-      padding: 7px 12px;
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #C7AA8B;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 10px;
-      transition: all 0.15s;
-    }
-    .copy-btn:hover, .copy-btn.copied { background: #C7AA8B; color: #1E1C1A; border-color: #C7AA8B; }
-
-    /* BOTTOM BAR */
-    .bottom-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      border-top: 1px solid rgba(30,28,26,0.1);
-      padding: 11px 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 100;
-    }
-    .bb-info { font-family: 'DM Mono', monospace; font-size: 10px; color: #999; margin-right: auto; }
-    .btn {
-      border-radius: 4px;
-      padding: 8px 18px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.1s;
-    }
-    .btn-ghost { background: transparent; border: 1px solid rgba(30,28,26,0.2); color: #1E1C1A; }
-    .btn-ghost:hover { border-color: #1E1C1A; }
-    .btn-dark { background: #1E1C1A; border: 1px solid #1E1C1A; color: #F7F7F7; }
-    .btn-dark:hover { background: #C7AA8B; border-color: #C7AA8B; color: #1E1C1A; }
-    .btn-jt {
-      background: #1E1C1A;
-      border: 1.5px solid #C7AA8B;
-      color: #C7AA8B;
-      border-radius: 4px;
-      padding: 8px 18px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.1s;
-      min-width: 170px;
-      text-align: center;
-    }
-    .btn-jt:hover:not(:disabled) { background: rgba(199,170,139,0.1); }
-    .btn-jt:disabled { opacity: 0.35; cursor: not-allowed; }
-    .btn-jt.jt-loading { opacity: 0.55; cursor: wait; }
-    .btn-jt.jt-done { border-color: #4CAF84; color: #4CAF84; cursor: default; }
-    .btn-jt.jt-fail { border-color: #D4714A; color: #D4714A; }
-
-    /* MISC */
-    .hint { font-size: 11px; color: #999; margin-top: 5px; font-style: italic; }
-
-    @media (max-width: 720px) {
-      .layout { grid-template-columns: 1fr; padding: 12px; }
-      .main-content { padding-right: 0; }
-      .sidebar { position: static; }
-      .col-2, .col-3 { grid-template-columns: 1fr; }
-      .chk-grid { grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useMemo } = React;
-
-/* ── CHECKLIST DATA ── */
-const CHECKLISTS = {
-  'Addition': [
-    'Permit fees confirmed (Weber or Morgan County)',
-    'Geotechnical / soils report required?',
-    'Foundation connection to existing (waterproofing, rebar dowels)',
-    'Load path from addition through existing structure to foundation',
-    'Roof tie-in detail (ridge, valley, step flashing)',
-    'Exterior cladding match — can existing product be sourced?',
-    'Window match or full replacement?',
-    'HVAC: extend existing system or add new unit?',
-    'Electrical panel capacity for additional square footage',
-    'Plumbing rough-in if adding bath or kitchen',
-    'Energy code compliance (blower door test required?)',
-    'Temporary weather protection during open-wall phase',
-    'Demolition and disposal scope confirmed',
-    'Landscaping and finish grade restoration',
-    'Fire suppression extension if required',
-    'HOA approval if applicable',
-  ],
-  'Remodel': [
-    'Asbestos / lead paint testing (pre-1980 required)',
-    'Plumbing rough-in relocation confirmed',
-    'Waterproofing scope (shower pan, wet wall, curb)',
-    'Electrical: dedicated circuits, GFCI, arc-fault requirements',
-    'Ventilation routing (range hood, bath fan to exterior)',
-    'Structural scope if removing walls (beam, header, post)',
-    'Cabinet lead time accounted for in schedule',
-    'Countertop template sequenced after cabinet install',
-    'Permit fees (city vs county jurisdiction confirmed)',
-    'Temporary kitchen or bath provided for client',
-    'Finish match scope — partial replace or full?',
-    'Debris haul — dumpster access and staging confirmed',
-  ],
-  'New Build': [
-    'Soils / geotechnical report',
-    'Survey and staking',
-    'Water meter application and fee',
-    'Sewer connection or septic system bid',
-    'Gas service line and meter application',
-    'Electric service — temp power and permanent drop',
-    'Permit fees and impact fees (can be significant)',
-    'Fire suppression required by jurisdiction?',
-    'Energy code — blower door test and HERS rating',
-    'Finish grading and landscaping allowance scoped',
-    'Driveway approach permit (road department)',
-    'HOA architectural approval if applicable',
-    'Soil conditions confirmed for foundation type selected',
-    'Road access confirmed for delivery trucks and equipment',
-  ],
-  'Basement Finish': [
-    'Egress windows — required for all sleeping rooms',
-    'Radon mitigation system — existing or install new?',
-    'Fire blocking and draft stopping at all penetrations',
-    'Bathroom rough-in — already stubbed in slab?',
-    'Ceiling height — code compliant throughout (7\' min)?',
-    'Electrical panel — capacity for new circuits confirmed',
-    'HVAC extension — ductwork or mini-split?',
-    'Permit fees confirmed',
-    'Moisture barrier / flooring prep under slab',
-    'Stair rail and guard rail to current code',
-    'Asbestos or lead paint testing if pre-1980',
-  ],
-  'ADU': [
-    'ADU allowed in zone — zoning and setbacks confirmed',
-    'Separate utility meters required or shared?',
-    'Separate address / addressing confirmation with county',
-    'Permit fees — ADU permitting can require extra review',
-    'Parking requirements per zoning ordinance',
-    'Fire separation if attached to main structure',
-    'HVAC — separate system or shared?',
-    'Entry and egress independent of main house',
-    'Deed restriction or STR compliance if applicable',
-    'Impact fees (some Utah jurisdictions waive for ADUs)',
-  ],
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('[jobtread proxy] ' + operation + ' error:', err.message);
+    return res.status(500).json({ error: err.message || 'Unknown error' });
+  }
 };
 
-function getChecklist(type) {
-  if (!type || type === 'Other') return [];
-  return CHECKLISTS[type] || [];
-}
+// ─── Customer field IDs (hardcoded from OVB JT account 2026-03-21) ───────────
 
-/* ── COMPONENTS ── */
-function Section({ num, title, sub, children }) {
-  return (
-    <div className="section">
-      <div className="section-header">
-        <div className="section-num">{num}</div>
-        <div className="section-title">{title}</div>
-        {sub && <div className="section-subtitle">{sub}</div>}
-      </div>
-      <div className="section-body">{children}</div>
-    </div>
-  );
-}
+var CF = {
+  phone: '22P93aBeTXDg',
+  email: '22P93aBU4cbB',
+};
 
-function Lbl({ children }) {
-  return <div className="lbl">{children}</div>;
-}
+var F = {
+  status:             '22PC8F47A63H',
+  customerType:       '22PC8EvauCvJ',
+  budgetRange:        '22PTyjrdmBSZ',
+  needs:              '22PC8EwY5jUc',
+  leadSource:         '22PC8ExjK8js',
+  referredBy:         '22PC8F6kzjw6',
+  apptDateTime:       '22PRzSrKdQ9x',
+  preferredContact:   '22PDggcWaQ7c',
+  notes:              '22PC8F6Jsqf8',
+  financingType:      '22PTyk3VEJgw',
+  decisionMakers:     '22PTyk82js39',
+  competingBids:      '22PTykAq8fQQ',
+  timeline:           '22PTykFP3inv',
+  projectLocation:    '22PTykJYuX3a',
+  dqFlag:             '22PTykQuWm3Q',
+  qualificationScore: '22PTykURtF6Z',
+};
 
-function Pills({ options, value, onChange, multi }) {
-  const toggle = (opt) => {
-    if (multi) {
-      const arr = Array.isArray(value) ? value : [];
-      onChange(arr.includes(opt) ? arr.filter(v => v !== opt) : [...arr, opt]);
-    } else {
-      onChange(value === opt ? '' : opt);
-    }
+// ─── Normalizers ──────────────────────────────────────────────────────────────
+
+function normalizeBudget(val) {
+  if (!val) return val;
+  var lookup = {
+    'under$50k':  'Under $100K',
+    'under$100k': 'Under $100K',
+    '$100k$200k': '$100K-$200K',
+    '$200k$400k': '$200K-$400K',
+    '$400k$600k': '$400K-$600K',
+    '$600k$800k': '$600K-$800K',
+    '$800k$1m':   '$800K-$1M',
+    '$1m+':       '$1M+',
+    'notsure':    'Not Sure',
   };
-  const isOn = (opt) => multi ? (Array.isArray(value) && value.includes(opt)) : value === opt;
-  return (
-    <div className="pills">
-      {options.map(opt => (
-        <div key={opt} className={`pill ${isOn(opt) ? 'active' : ''}`} onClick={() => toggle(opt)}>{opt}</div>
-      ))}
-    </div>
-  );
+  var key = val.toLowerCase().replace(/[\s\-\u2013\u2014]/g, '');
+  return lookup[key] || val;
 }
 
-function YN({ value, onChange, includeUnknown }) {
-  const opts = includeUnknown ? ['Yes', 'No', 'Unknown'] : ['Yes', 'No'];
-  return (
-    <div className="yn">
-      {opts.map(o => (
-        <div key={o} className={`yn-opt ${value === o.toLowerCase() ? 'on' : ''}`}
-          onClick={() => onChange(value === o.toLowerCase() ? '' : o.toLowerCase())}>{o}</div>
-      ))}
-    </div>
-  );
+function normalizeFinancing(val) {
+  var map = {
+    'cash':              'Cash',
+    'heloc':             'HELOC',
+    'constructionloan':  'Construction Loan',
+    'financingready':    'Construction Loan',
+    'exploringoptions':  'Unknown - Needs Guidance',
+    'notsure':           'Unknown',
+    'unknown':           'Unknown',
+  };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\-]/g, '');
+  return map[key] || val;
 }
 
-function Chk({ label, checked, onChange, warn }) {
-  return (
-    <div className={`chk-item ${checked ? (warn ? 'on-warn' : 'on') : ''}`} onClick={onChange}>
-      <div className="chk-box">
-        {checked && <span style={{fontSize:'9px', color: warn ? 'white' : (checked ? '#1E1C1A' : 'transparent')}}>✓</span>}
-      </div>
-      <span className="chk-txt">{label}</span>
-    </div>
-  );
+function normalizeDM(val) {
+  var map = {
+    'solo':                 'Solo',
+    'singledm':             'Solo',
+    'spouseinvolved':       'Spouse Involved',
+    'multipledms':          'Multiple Stakeholders',
+    'multiplestakeholders': 'Multiple Stakeholders',
+    'unknown':              'Unknown',
+  };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\-]/g, '');
+  return map[key] || val;
 }
 
-/* ── MAIN APP ── */
-function App() {
-  // § 1 — Project Info
-  const [client, setClient]       = useState('');
-  const [address, setAddress]     = useState('');
-  const [jtJob, setJtJob]         = useState('');
-  const [visitDate, setVisitDate] = useState('');
-  const [projType, setProjType]   = useState('');
-  const [plansStatus, setPlansStatus] = useState('');
-
-  // § 2 — Site Conditions
-  const [foundType, setFoundType]   = useState('');
-  const [foundCond, setFoundCond]   = useState('');
-  const [utilities, setUtilities]   = useState('');
-  const [lotSize, setLotSize]       = useState('');
-  const [hoa, setHoa]               = useState('');
-  const [hoaName, setHoaName]       = useState('');
-  const [siteAccess, setSiteAccess] = useState('');
-  const [staging, setStaging]       = useState('');
-  const [entryCode, setEntryCode]   = useState('');
-
-  // § 3 — Existing Structure
-  const [yearBuilt, setYearBuilt]       = useState('');
-  const [roofCond, setRoofCond]         = useState('');
-  const [roofAge, setRoofAge]           = useState('');
-  const [exterior, setExterior]         = useState('');
-  const [windows, setWindows]           = useState('');
-  const [panelAmps, setPanelAmps]       = useState('');
-  const [panelCond, setPanelCond]       = useState('');
-  const [panelNotes, setPanelNotes]     = useState('');
-  const [hvacType, setHvacType]         = useState('');
-  const [hvacAge, setHvacAge]           = useState('');
-  const [plumbing, setPlumbing]         = useState('');
-  const [issues, setIssues]             = useState([]);
-
-  // § 4 — Scope Walk
-  const [scopeDesc, setScopeDesc]           = useState('');
-  const [demo, setDemo]                     = useState('');
-  const [demoNotes, setDemoNotes]           = useState('');
-  const [structural, setStructural]         = useState('');
-  const [structNotes, setStructNotes]       = useState('');
-  const [occupied, setOccupied]             = useState('');
-  const [exteriorWork, setExteriorWork]     = useState('');
-  const [matchFinish, setMatchFinish]       = useState('');
-  const [matchNotes, setMatchNotes]         = useState('');
-
-  // § 5 — Sub Visits
-  const initSubs = {
-    structural: { on: false, notes: '' },
-    hvac:       { on: false, notes: '' },
-    electrical: { on: false, notes: '' },
-    plumbing:   { on: false, notes: '' },
-    roofing:    { on: false, notes: '' },
-    survey:     { on: false, notes: '' },
-    soils:      { on: false, notes: '' },
-    other:      { on: false, notes: '' },
+function normalizeTimeline(val) {
+  var map = {
+    'asap':          'ASAP',
+    '13months':      '1-3 Months',
+    '1-3months':     '1-3 Months',
+    '36months':      '3-6 Months',
+    '3-6months':     '3-6 Months',
+    '612months':     '6-12 Months',
+    '6-12months':    '6-12 Months',
+    'justplanning':  'Planning Phase',
+    'planningphase': 'Planning Phase',
   };
-  const [subs, setSubs] = useState(initSubs);
-  const setSub = (key, field, val) => setSubs(p => ({ ...p, [key]: { ...p[key], [field]: val } }));
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\u2013\u2014]/g, '');
+  return map[key] || val;
+}
 
-  const SUB_LABELS = {
-    structural: 'Structural / Engineer',
-    hvac:       'HVAC',
-    electrical: 'Electrical',
-    plumbing:   'Plumbing',
-    roofing:    'Roofing',
-    survey:     'Survey / Staking',
-    soils:      'Soils / Geotech',
-    other:      'Other',
+function normalizeQualScore(val) {
+  if (!val) return val;
+  var v = val.toLowerCase();
+  if (v.indexOf('hot') !== -1)  return 'Hot';
+  if (v.indexOf('warm') !== -1) return 'Warm';
+  if (v.indexOf('dq') !== -1)   return "DQ'd";
+  if (v.indexOf('cold') !== -1 || v.indexOf('filler') !== -1) return 'Cold';
+  return val;
+}
+
+// Map site visit utility status → JT Location picklist value
+function normalizeUtilityStatus(val) {
+  var map = {
+    'allconnected':      'All Utilities Active',
+    'allutilitiesactive':'All Utilities Active',
+    'partial':           'Partial',
+    'none':              'None on Site',
+    'noneonsite':        'None on Site',
+    'unknown':           'Unknown',
   };
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\/]/g, '');
+  return map[key] || val;
+}
 
-  // § 6 — Checklist
-  const [clStatus, setClStatus] = useState({});
-  const cycleStatus = (item) => {
-    const cycle = { '': 'in', 'in': 'tbd', 'tbd': 'na', 'na': '' };
-    setClStatus(p => ({ ...p, [item]: cycle[p[item] || ''] }));
+// Map foundation type form values → exact JT picklist values
+function normalizeFoundationType(val) {
+  var map = {
+    'slab':                       'Slab on Grade',
+    'slabongrade':                'Slab on Grade',
+    'crawlspace':                 'Crawlspace',
+    'crawl space':                'Crawlspace',
+    'stemwall':                   'Stem Wall w/ CrawlSpace',
+    'stem wall':                  'Stem Wall w/ CrawlSpace',
+    'stemwallwcrawlspace':        'Stem Wall w/ CrawlSpace',
+    'fullbasement':               'Full Basement Foundation',
+    'full basement':              'Full Basement Foundation',
+    'fullbasementfoundation':     'Full Basement Foundation',
+    'walkoutbasement':            'Walk-Out Basement Foundation',
+    'walk-out basement':          'Walk-Out Basement Foundation',
+    'walkoutbasementfoundation':  'Walk-Out Basement Foundation',
+    'daylightbasement':           'Daylight Basement Foundation',
+    'daylight basement':          'Daylight Basement Foundation',
+    'pierbeam':                   'Pier & Beam',
+    'pier & beam':                'Pier & Beam',
+    'posttensionslab':            'Post-Tension Slab',
+    'unknown':                    'Other (Specify in Notes)',
   };
-  const setStatus = (item, s) => setClStatus(p => ({ ...p, [item]: p[item] === s ? '' : s }));
+  if (!val) return val;
+  var key = val.toLowerCase().replace(/[\s\-\/]/g, '');
+  return map[key] || map[val.toLowerCase()] || val;
+}
 
-  // § 7 — Next Steps
-  const [nextAction, setNextAction]     = useState('');
-  const [nextDate, setNextDate]         = useState('');
-  const [finalNotes, setFinalNotes]     = useState('');
-
-  const [copied, setCopied] = useState(false);
-  const [jtState, setJtState] = useState('idle'); // idle | loading | done | fail
-  const [jtResult, setJtResult] = useState(null);
-  const [jtErr, setJtErr]     = useState('');
-
-  const isNewBuild = projType === 'New Build';
-
-  /* ── FLAGS ── */
-  const flags = useMemo(() => {
-    const f = [];
-    if (structural === 'yes')
-      f.push({ lv: 'stop', t: 'Structural Concerns', b: 'Engineer visit required before estimate can be locked. Do not issue a contract until structural scope is fully defined.' });
-    if (issues.includes('Asbestos Risk'))
-      f.push({ lv: 'stop', t: 'Asbestos Risk', b: 'Professional testing required before any demo. Abatement must complete before GC scope begins — get separate abatement bid.' });
-    if (issues.includes('Knob & Tube Wiring'))
-      f.push({ lv: 'stop', t: 'Knob & Tube Wiring', b: 'Full rewire likely required by code when walls are opened. Significant cost add — confirm with electrical sub before estimating.' });
-    if (utilities === 'none')
-      f.push({ lv: 'stop', t: 'No Utilities on Site', b: 'Utility connections are major cost drivers. Get utility company estimates separately before budgeting this project.' });
-    if (foundCond === 'Issues Noted')
-      f.push({ lv: 'warn', t: 'Foundation Issues Noted', b: 'Verify scope and cost impact before locking estimate. May require engineer assessment.' });
-    if (hoa === 'yes')
-      f.push({ lv: 'warn', t: 'HOA Approval Required', b: 'HOA architectural approval required before permit application. Confirm timeline and submittal requirements.' });
-    const yr = parseInt(yearBuilt);
-    if (!isNewBuild && yr && yr < 1980)
-      f.push({ lv: 'warn', t: 'Pre-1980 Build', b: 'Asbestos and lead paint testing required before any demo. Budget for testing and potential abatement as a separate line.' });
-    if (!isNewBuild && panelAmps === '100A' && (projType === 'Addition' || projType === 'Remodel'))
-      f.push({ lv: 'warn', t: '100A Panel — Likely Undersized', b: 'Addition/remodel scope may require panel upgrade to 200A. Confirm with electrical sub before estimate.' });
-    if (!isNewBuild && plumbing === 'Galvanized')
-      f.push({ lv: 'warn', t: 'Galvanized Plumbing', b: 'Full replumb may be required depending on scope. Get plumbing sub opinion before estimating.' });
-    if (issues.includes('Active Mold / Moisture'))
-      f.push({ lv: 'warn', t: 'Mold / Moisture Present', b: 'Remediation required before GC scope proceeds. Get remediation bid separately — do not include in construction estimate.' });
-    if (issues.includes('Previous Unpermitted Work'))
-      f.push({ lv: 'warn', t: 'Unpermitted Work Present', b: 'Permit application may trigger code correction requirements. Consider a pre-application meeting with building department.' });
-    if (demo === 'yes' && occupied === 'yes')
-      f.push({ lv: 'warn', t: 'Demo in Occupied Home', b: 'Dust control, temp walls, and careful phasing required. Add protection, cleanup, and sequencing line items to estimate.' });
-    if (matchFinish === 'yes')
-      f.push({ lv: 'warn', t: 'Finish Matching Required', b: 'Existing siding, roofing, or interior finishes may be discontinued. Confirm material availability — may require full replacement.' });
-    return f;
-  }, [structural, issues, utilities, foundCond, hoa, yearBuilt, isNewBuild, panelAmps, projType, plumbing, demo, occupied, matchFinish]);
-
-  /* ── JT NOTE BLOCK ── */
-  const jtNote = useMemo(() => {
-    const lines = [];
-    lines.push(`── SITE VISIT${visitDate ? ' — ' + visitDate : ''} ──`);
-    if (jtJob) lines.push(`JT Job #${jtJob}`);
-    lines.push(address || '[Address not entered]');
-    lines.push('');
-    lines.push('PROJECT');
-    lines.push(`Type: ${projType || '—'}`);
-    lines.push(`Plans: ${plansStatus || '—'}`);
-    lines.push('');
-    lines.push('SITE CONDITIONS');
-    if (foundType) lines.push(`Foundation: ${foundType}${foundCond ? ' (' + foundCond + ')' : ''}`);
-    if (utilities) lines.push(`Utilities: ${utilities}`);
-    if (lotSize) lines.push(`Lot: ${lotSize}`);
-    const hoaLine = hoa === 'yes' ? `Yes${hoaName ? ' — ' + hoaName : ''}` : hoa === 'no' ? 'No' : hoa === 'unknown' ? 'Unknown' : null;
-    if (hoaLine) lines.push(`HOA: ${hoaLine}`);
-    if (siteAccess) lines.push(`Access: ${siteAccess}`);
-    if (staging) lines.push(`Staging: ${staging}`);
-    if (entryCode) lines.push(`Entry Code: ${entryCode}`);
-    if (!isNewBuild) {
-      lines.push('');
-      lines.push('EXISTING STRUCTURE');
-      if (yearBuilt) lines.push(`Year Built: ~${yearBuilt}`);
-      if (roofCond) lines.push(`Roof: ${roofCond}${roofAge ? ' (~' + roofAge + ' yrs)' : ''}`);
-      if (exterior) lines.push(`Exterior: ${exterior}`);
-      if (panelAmps) lines.push(`Panel: ${panelAmps}${panelCond ? ' — ' + panelCond : ''}${panelNotes ? ' — ' + panelNotes : ''}`);
-      if (hvacType) lines.push(`HVAC: ${hvacType}${hvacAge ? ' (~' + hvacAge + ' yrs)' : ''}`);
-      if (plumbing) lines.push(`Plumbing: ${plumbing}`);
-      if (issues.length) lines.push(`Known Issues: ${issues.join(', ')}`);
-    }
-    lines.push('');
-    lines.push('SCOPE');
-    if (scopeDesc) lines.push(scopeDesc);
-    if (demo === 'yes') lines.push(`Demo Required: Yes${demoNotes ? ' — ' + demoNotes : ''}`);
-    if (structural === 'yes') lines.push(`⚠ STRUCTURAL CONCERNS: ${structNotes || 'See notes — engineer visit needed'}`);
-    if (occupied === 'yes') lines.push('Occupied home during construction');
-    if (matchFinish === 'yes') lines.push(`Finish match required${matchNotes ? ': ' + matchNotes : ''}`);
-    const neededSubs = Object.entries(subs).filter(([, v]) => v.on);
-    if (neededSubs.length) {
-      lines.push('');
-      lines.push('SUB VISITS NEEDED:');
-      neededSubs.forEach(([k, v]) => lines.push(`  ${SUB_LABELS[k]}${v.notes ? ': ' + v.notes : ''}`));
-    }
-    if (flags.length) {
-      lines.push('');
-      lines.push('FLAGS:');
-      flags.forEach(f => lines.push(`${f.lv === 'stop' ? '🔴' : '⚠️'} ${f.t}`));
-    }
-    if (nextAction) {
-      lines.push('');
-      lines.push(`NEXT: ${nextAction}${nextDate ? ' by ' + nextDate : ''}`);
-    }
-    if (finalNotes) {
-      lines.push('');
-      lines.push('NOTES:');
-      lines.push(finalNotes);
-    }
-    return lines.join('\n');
-  }, [visitDate, jtJob, address, projType, plansStatus, foundType, foundCond, utilities, lotSize, hoa, hoaName, siteAccess, staging, entryCode, isNewBuild, yearBuilt, roofCond, roofAge, exterior, panelAmps, panelCond, panelNotes, hvacType, hvacAge, plumbing, issues, scopeDesc, demo, demoNotes, structural, structNotes, occupied, matchFinish, matchNotes, subs, flags, nextAction, nextDate, finalNotes]);
-
-  const doCopy = () => {
-    navigator.clipboard.writeText(jtNote).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    });
+// Map basement type — derived from foundation type selection
+function normalizeBasementType(foundVal) {
+  var map = {
+    'fullbasement':              'Full Basement',
+    'fullbasementfoundation':    'Full Basement',
+    'walkoutbasement':           'Walk-Out Basement',
+    'walkoutbasementfoundation': 'Walk-Out Basement',
+    'daylightbasement':          'Daylight Basement',
+    'daylightbasementfoundation':'Daylight Basement',
+    'crawlspace':                'Crawl Space with Basement Area',
+    'stemwallwcrawlspace':       'Crawl Space with Basement Area',
   };
+  if (!foundVal) return null;
+  var key = foundVal.toLowerCase().replace(/[\s\-\/]/g, '');
+  return map[key] || null;
+}
 
-  const handlePushToJT = async () => {
-    if (!jtJob.trim()) return;
-    if (jtState === 'loading') return;
-    setJtState('loading');
-    setJtErr('');
-    setJtResult(null);
-    try {
-      const res = await fetch('/api/jobtread', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          operation: 'updateJobSiteVisit',
-          params: {
-            jobNumber:  jtJob.trim(),
-            noteBlock:  jtNote,
-            nextDate:   nextDate || '',
-            // Location fields
-            foundType:  foundType,
-            entryCode:  entryCode,
-            siteAccess: siteAccess,
-            lotSize:    lotSize,
-            utilities:  utilities,
-            staging:    staging,
-            hoaName:    hoa === 'yes' ? (hoaName || 'Yes') : '',
-            scopeDesc:  scopeDesc,
-          },
-        }),
+// ─── Core Pave helper ─────────────────────────────────────────────────────────
+
+async function pave(grantKey, queryObj) {
+  var res = await fetch('https://api.jobtread.com/pave', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: Object.assign({ $: { grantKey } }, queryObj) }),
+  });
+  var text = await res.text();
+  if (!res.ok) throw new Error('Pave ' + res.status + ': ' + text.slice(0, 300));
+  var data;
+  try { data = JSON.parse(text); } catch (e) { throw new Error('Pave non-JSON: ' + text.slice(0, 200)); }
+  if (data && data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+  return data;
+}
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
+async function getOrgInfo(grantKey) {
+  var grantData = await pave(grantKey, {
+    currentGrant: {
+      id: {},
+      organization: { id: {}, name: {} },
+    },
+  });
+  var org = (grantData && grantData.query && grantData.query.currentGrant && grantData.query.currentGrant.organization)
+         || (grantData && grantData.currentGrant && grantData.currentGrant.organization);
+  if (!org || !org.id) throw new Error('Could not get org from currentGrant.');
+  return org;
+}
+
+// ─── Hardcoded field IDs from OVB JT account (sourced via discoverLocationFields 2026-03-25) ───
+
+// Job-level custom field IDs
+var JF = {
+  jobStatus: '22P93aBUAE5W',
+};
+
+// Location-level custom field IDs
+var LF = {
+  foundationType:  '22PC8EYPHWPT',
+  basementType:    '22PDgc8VnatZ',
+  entryCode:       '22PCKKNmNkkQ',
+  notes:           '22PC8EYhkE3E',
+  siteAccessNotes: '22PDgcBpz8ng',
+  lotSize:         '22PDgcDmaB2R',
+  utilityStatus:   '22PDgcVExe9m',
+  permitNumber:    '22PDgcXqRe8v',
+  subdivisionHOA:  '22PDgcZLYaLb',
+  stagingArea:     '22PDgcadTyVp',
+};
+
+// No longer needed — IDs are hardcoded above
+// async function getOrgCustomFields() {}
+
+
+// Find a job by its display number (e.g. 747) — returns full job node or null
+async function getJobByNumber(grantKey, orgId, jobNumber) {
+  var data = await pave(grantKey, {
+    organization: {
+      $: { id: orgId },
+      jobs: {
+        $: { number: parseInt(jobNumber, 10) },
+        nodes: {
+          id: {},
+          number: {},
+          name: {},
+          location: { id: {}, name: {} },
+        },
+      },
+    },
+  });
+  var nodes = (data && data.query && data.query.organization && data.query.organization.jobs && data.query.organization.jobs.nodes)
+           || (data && data.organization && data.organization.jobs && data.organization.jobs.nodes)
+           || [];
+  return nodes[0] || null;
+}
+
+// ─── Operations ───────────────────────────────────────────────────────────────
+
+// Debug helper — returns org info and hardcoded field ID map
+async function discoverFields(grantKey) {
+  var org = await getOrgInfo(grantKey);
+  return { org: org, hardcodedJobFields: JF, hardcodedLocationFields: LF };
+}
+
+// Fetch a job's custom field values to discover job-level field IDs
+async function discoverJobFields(grantKey, params) {
+  var org = await getOrgInfo(grantKey);
+  var job = await getJobByNumber(grantKey, org.id, params.jobNumber);
+  if (!job) throw new Error('Job #' + params.jobNumber + ' not found.');
+
+  var data = await pave(grantKey, {
+    job: {
+      $: { id: job.id },
+      id: {},
+      name: {},
+      number: {},
+      customFieldValues: {
+        nodes: {
+          id: {},
+          value: {},
+          customField: { id: {}, name: {} },
+        },
+      },
+    },
+  });
+
+  var j = (data && data.query && data.query.job) || (data && data.job);
+  return {
+    jobName: job.name,
+    jobId: job.id,
+    customFields: j && j.customFieldValues && j.customFieldValues.nodes
+      ? j.customFieldValues.nodes.map(function(n) {
+          return { fieldName: n.customField && n.customField.name, fieldId: n.customField && n.customField.id, currentValue: n.value };
+        })
+      : [],
+  };
+}
+
+// Fetch a location's custom field values directly to discover location field IDs
+async function discoverLocationFields(grantKey, params) {
+  var org = await getOrgInfo(grantKey);
+  var job = await getJobByNumber(grantKey, org.id, params.jobNumber);
+  if (!job) throw new Error('Job #' + params.jobNumber + ' not found.');
+  if (!job.location || !job.location.id) throw new Error('Job has no location attached.');
+
+  var data = await pave(grantKey, {
+    location: {
+      $: { id: job.location.id },
+      id: {},
+      name: {},
+      customFieldValues: {
+        nodes: {
+          id: {},
+          value: {},
+          customField: { id: {}, name: {} },
+        },
+      },
+    },
+  });
+
+  var loc = (data && data.query && data.query.location) || (data && data.location);
+  return {
+    jobName: job.name,
+    locationId: job.location.id,
+    locationName: job.location.name,
+    customFields: loc && loc.customFieldValues && loc.customFieldValues.nodes
+      ? loc.customFieldValues.nodes.map(function(n) {
+          return { fieldName: n.customField && n.customField.name, fieldId: n.customField && n.customField.id, currentValue: n.value };
+        })
+      : [],
+    rawLocation: loc,
+  };
+}
+
+// Push site visit data into an existing JT job
+async function updateJobSiteVisit(grantKey, params) {
+  var results = { steps: {} };
+
+  // 1. Org
+  var org = await getOrgInfo(grantKey);
+  var orgId = org.id;
+
+  // 2. Find the job by number
+  if (!params.jobNumber) throw new Error('jobNumber is required.');
+  var job = await getJobByNumber(grantKey, orgId, params.jobNumber);
+  if (!job) throw new Error('Job #' + params.jobNumber + ' not found. Check the number and try again.');
+  var jobId = job.id;
+  results.jobId   = jobId;
+  results.jobName = job.name;
+  results.url     = 'https://app.jobtread.com/jobs/' + jobId;
+  results.steps.jobFound = true;
+
+  // 3. Update job-level fields
+  var jobFieldValues = {};
+  jobFieldValues[JF.jobStatus] = 'Estimating';
+  if (params.noteBlock) jobFieldValues['22PC8F6Jsqf8'] = params.noteBlock; // Job Notes field (same as customer notes)
+
+  await pave(grantKey, {
+    updateJob: { $: { id: jobId, customFieldValues: jobFieldValues } },
+  }).then(function() {
+    results.steps.jobFieldsUpdated = true;
+  }).catch(function(err) {
+    console.warn('[jobtread proxy] updateJob fields:', err.message);
+    results.steps.jobFieldsError = err.message;
+  });
+
+  // 4. Update location fields
+  var location = job.location;
+  if (location && location.id) {
+    var locFieldValues = {};
+
+    if (params.foundType)  locFieldValues[LF.foundationType]  = normalizeFoundationType(params.foundType);
+    if (params.entryCode)  locFieldValues[LF.entryCode]       = params.entryCode;
+    if (params.siteAccess) locFieldValues[LF.siteAccessNotes] = params.siteAccess;
+    if (params.lotSize)    locFieldValues[LF.lotSize]         = params.lotSize;
+    if (params.utilities)  locFieldValues[LF.utilityStatus]   = normalizeUtilityStatus(params.utilities);
+    if (params.staging)    locFieldValues[LF.stagingArea]     = params.staging;
+    if (params.hoaName)    locFieldValues[LF.subdivisionHOA]  = params.hoaName;
+    if (params.scopeDesc)  locFieldValues[LF.notes]           = params.scopeDesc;
+
+    // Basement Type — derived from foundation type using exact JT picklist values
+    var basementVal = normalizeBasementType(params.foundType);
+    if (basementVal) locFieldValues[LF.basementType] = basementVal;
+
+    if (Object.keys(locFieldValues).length > 0) {
+      await pave(grantKey, {
+        updateLocation: { $: { id: location.id, customFieldValues: locFieldValues } },
+      }).then(function() {
+        results.steps.locationFieldsUpdated = true;
+      }).catch(function(err) {
+        console.warn('[jobtread proxy] updateLocation fields:', err.message);
+        results.steps.locationFieldsError = err.message;
       });
-      if (!res.ok) {
-        const e = await res.json().catch(() => ({}));
-        throw new Error(e.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
-      setJtResult(data);
-      setJtState('done');
-    } catch (err) {
-      setJtErr(err.message);
-      setJtState('fail');
     }
-  };
+  } else {
+    results.steps.locationSkipped = 'No location found on this job — location fields not updated.';
+  }
 
-  const doReset = () => {
-    if (!confirm('Reset all fields?')) return;
-    setClient(''); setAddress(''); setJtJob(''); setVisitDate(''); setProjType(''); setPlansStatus('');
-    setFoundType(''); setFoundCond(''); setUtilities(''); setLotSize(''); setHoa(''); setHoaName('');
-    setSiteAccess(''); setStaging(''); setEntryCode('');
-    setYearBuilt(''); setRoofCond(''); setRoofAge(''); setExterior(''); setWindows(''); setPanelAmps('');
-    setPanelCond(''); setPanelNotes(''); setHvacType(''); setHvacAge(''); setPlumbing(''); setIssues([]);
-    setScopeDesc(''); setDemo(''); setDemoNotes(''); setStructural(''); setStructNotes('');
-    setOccupied(''); setExteriorWork(''); setMatchFinish(''); setMatchNotes('');
-    setSubs(initSubs);
-    setClStatus({});
-    setNextAction(''); setNextDate(''); setFinalNotes('');
-    setJtState('idle'); setJtResult(null); setJtErr('');
-  };
-
-  const checklist = getChecklist(projType);
-  const subCount = Object.values(subs).filter(v => v.on).length;
-
-  /* ── SECTION NUMBERS: 3 shifts if new build (no Existing Structure) ── */
-  const n = (base) => isNewBuild && base >= 3 ? base - 1 : base;
-
-  return (
-    <div>
-      {/* PAGE HEADER */}
-      <div className="page-header no-print">
-        <div className="page-header-left">
-          <div>
-            <div className="page-header-eyebrow">Ogden Valley Builders</div>
-            <div className="page-header-title">Site Visit Worksheet</div>
-          </div>
-        </div>
-        <div className="page-header-badge">Pre-Estimate</div>
-      </div>
-
-      <div className="layout">
-        {/* ─── MAIN ─── */}
-        <div className="main-content">
-
-          {/* § 1 PROJECT INFO */}
-          <Section num="1" title="Project Info">
-            <div className="col-2">
-              <div>
-                <Lbl>Client Name</Lbl>
-                <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Last, First" />
-              </div>
-              <div>
-                <Lbl>JT Job # — required to push</Lbl>
-                <input type="text" value={jtJob} onChange={e => setJtJob(e.target.value)} placeholder="e.g. 747" />
-              </div>
-            </div>
-            <div className="field-row">
-              <Lbl>Job Address</Lbl>
-              <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="Full street address" />
-            </div>
-            <div className="col-2">
-              <div>
-                <Lbl>Visit Date</Lbl>
-                <input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} />
-              </div>
-              <div>
-                <Lbl>Plans Status</Lbl>
-                <Pills
-                  options={['No Plans', 'Sketch Only', 'Arch Drawings', 'Permitted Plans']}
-                  value={plansStatus}
-                  onChange={setPlansStatus}
-                />
-              </div>
-            </div>
-            <div className="field-row">
-              <Lbl>Project Type</Lbl>
-              <Pills
-                options={['Addition', 'Remodel', 'New Build', 'Basement Finish', 'ADU', 'Other']}
-                value={projType}
-                onChange={setProjType}
-              />
-            </div>
-          </Section>
-
-          {/* § 2 SITE CONDITIONS */}
-          <Section num="2" title="Site Conditions" sub="→ JT Location Fields">
-            <div className="field-row">
-              <Lbl>Foundation Type</Lbl>
-              <Pills
-                options={['Slab', 'Crawl Space', 'Full Basement', 'Walkout Basement', 'Stem Wall', 'Unknown']}
-                value={foundType}
-                onChange={setFoundType}
-              />
-            </div>
-            <div className="field-row">
-              <Lbl>Foundation Condition</Lbl>
-              <Pills
-                options={['Good', 'Fair', 'Issues Noted', 'Not Visible']}
-                value={foundCond}
-                onChange={setFoundCond}
-              />
-            </div>
-            <div className="col-2">
-              <div>
-                <Lbl>Utility Status</Lbl>
-                <Pills
-                  options={['All Connected', 'Partial', 'None', 'Unknown']}
-                  value={utilities}
-                  onChange={setUtilities}
-                />
-              </div>
-              <div>
-                <Lbl>Lot Size / Acreage</Lbl>
-                <input type="text" value={lotSize} onChange={e => setLotSize(e.target.value)} placeholder="e.g. 0.25 ac or 10,890 sf" />
-              </div>
-            </div>
-            <div className="field-row">
-              <Lbl>HOA / Subdivision</Lbl>
-              <YN value={hoa} onChange={setHoa} includeUnknown />
-              {hoa === 'yes' && (
-                <div className="cond-box" style={{marginTop:'8px'}}>
-                  <Lbl>HOA Name</Lbl>
-                  <input type="text" value={hoaName} onChange={e => setHoaName(e.target.value)} placeholder="HOA or subdivision name" />
-                </div>
-              )}
-            </div>
-            <div className="field-row">
-              <Lbl>Site Access Notes</Lbl>
-              <textarea value={siteAccess} onChange={e => setSiteAccess(e.target.value)} placeholder="Gate codes, road width, overhead clearance, neighbor setbacks, grade challenges..." />
-            </div>
-            <div className="col-2">
-              <div>
-                <Lbl>Staging Area</Lbl>
-                <input type="text" value={staging} onChange={e => setStaging(e.target.value)} placeholder="Where materials / dumpster go" />
-              </div>
-              <div>
-                <Lbl>Entry Code</Lbl>
-                <input type="text" value={entryCode} onChange={e => setEntryCode(e.target.value)} placeholder="Door / gate / lockbox" />
-              </div>
-            </div>
-          </Section>
-
-          {/* § 3 EXISTING STRUCTURE — hidden for New Build */}
-          {!isNewBuild && (
-            <Section num="3" title="Existing Structure">
-              <div className="col-3">
-                <div>
-                  <Lbl>Year Built (approx)</Lbl>
-                  <input type="text" value={yearBuilt} onChange={e => setYearBuilt(e.target.value)} placeholder="e.g. 1998" />
-                </div>
-                <div>
-                  <Lbl>Roof Condition</Lbl>
-                  <Pills options={['Good', 'Fair', 'Needs Work', 'Unknown']} value={roofCond} onChange={setRoofCond} />
-                </div>
-                <div>
-                  <Lbl>Roof Age (yrs)</Lbl>
-                  <input type="text" value={roofAge} onChange={e => setRoofAge(e.target.value)} placeholder="e.g. 8" />
-                </div>
-              </div>
-              <div className="col-2">
-                <div>
-                  <Lbl>Exterior Finish</Lbl>
-                  <Pills options={['LP / Hardboard', 'Vinyl', 'Brick', 'Stucco', 'Stone', 'Cedar', 'Mixed']} value={exterior} onChange={setExterior} />
-                </div>
-                <div>
-                  <Lbl>Windows</Lbl>
-                  <Pills options={['Single Pane', 'Double Pane', 'Mixed', 'Unknown']} value={windows} onChange={setWindows} />
-                </div>
-              </div>
-              <div className="div" />
-              <div className="field-row">
-                <Lbl>Electrical Panel</Lbl>
-                <div style={{display:'flex', gap:'14px', flexWrap:'wrap', alignItems:'flex-start'}}>
-                  <div>
-                    <div style={{fontFamily:'DM Mono', fontSize:'9px', color:'#aaa', marginBottom:'5px', letterSpacing:'0.1em', textTransform:'uppercase'}}>Amps</div>
-                    <Pills options={['100A', '150A', '200A', '400A', 'Unknown']} value={panelAmps} onChange={setPanelAmps} />
-                  </div>
-                  <div>
-                    <div style={{fontFamily:'DM Mono', fontSize:'9px', color:'#aaa', marginBottom:'5px', letterSpacing:'0.1em', textTransform:'uppercase'}}>Condition</div>
-                    <Pills options={['Good', 'Dated', 'Issues', 'Unknown']} value={panelCond} onChange={setPanelCond} />
-                  </div>
-                </div>
-                <div style={{marginTop:'8px'}}>
-                  <input type="text" value={panelNotes} onChange={e => setPanelNotes(e.target.value)} placeholder="Location, brand, breaker space remaining..." />
-                </div>
-              </div>
-              <div className="col-2">
-                <div>
-                  <Lbl>HVAC Type</Lbl>
-                  <Pills options={['Forced Air', 'Heat Pump', 'Boiler', 'Mini-Split', 'Radiant', 'Unknown']} value={hvacType} onChange={setHvacType} />
-                </div>
-                <div>
-                  <Lbl>HVAC Age (yrs)</Lbl>
-                  <input type="text" value={hvacAge} onChange={e => setHvacAge(e.target.value)} placeholder="e.g. 10" />
-                </div>
-              </div>
-              <div className="field-row">
-                <Lbl>Plumbing Type</Lbl>
-                <Pills options={['Copper', 'PEX', 'Galvanized', 'CPVC', 'PVC', 'Mixed', 'Unknown']} value={plumbing} onChange={setPlumbing} />
-              </div>
-              <div className="div" />
-              <div className="field-row">
-                <Lbl>Known Issues — check all that apply</Lbl>
-                <div className="chk-grid">
-                  {[
-                    { l: 'Asbestos Risk', w: true },
-                    { l: 'Lead Paint Risk', w: false },
-                    { l: 'Knob & Tube Wiring', w: true },
-                    { l: 'Active Mold / Moisture', w: true },
-                    { l: 'Structural Movement', w: false },
-                    { l: 'Previous Unpermitted Work', w: false },
-                    { l: 'Pest / Termite Damage', w: false },
-                    { l: 'Failing Windows', w: false },
-                  ].map(({ l, w }) => (
-                    <Chk key={l} label={l} warn={w}
-                      checked={issues.includes(l)}
-                      onChange={() => setIssues(p => p.includes(l) ? p.filter(i => i !== l) : [...p, l])}
-                    />
-                  ))}
-                </div>
-              </div>
-            </Section>
-          )}
-
-          {/* § 3 or 4 SCOPE WALK */}
-          <Section num={n(4)} title="Scope Walk">
-            <div className="field-row">
-              <Lbl>Scope Description</Lbl>
-              <textarea value={scopeDesc} onChange={e => setScopeDesc(e.target.value)}
-                placeholder="What the client wants — as you understand it from the walk. Include square footage, rooms, key features." style={{minHeight:'90px'}} />
-            </div>
-            <div className="field-row">
-              <Lbl>Demo Required?</Lbl>
-              <YN value={demo} onChange={setDemo} includeUnknown />
-              {demo === 'yes' && (
-                <div className="cond-box" style={{marginTop:'8px'}}>
-                  <Lbl>Demo Scope</Lbl>
-                  <textarea value={demoNotes} onChange={e => setDemoNotes(e.target.value)}
-                    placeholder="What's coming out? Load-bearing walls? Slab? Plumbing? Scope it here." style={{minHeight:'52px'}} />
-                </div>
-              )}
-            </div>
-            <div className="field-row">
-              <Lbl>Structural Concerns?</Lbl>
-              <YN value={structural} onChange={setStructural} />
-              {structural === 'yes' && (
-                <div className="cond-box warn" style={{marginTop:'8px'}}>
-                  <Lbl>Describe Concern</Lbl>
-                  <textarea value={structNotes} onChange={e => setStructNotes(e.target.value)}
-                    placeholder="What did you observe? What specifically needs engineer review?" style={{minHeight:'52px'}} />
-                </div>
-              )}
-            </div>
-            <div className="col-2">
-              <div>
-                <Lbl>Work in Occupied Home?</Lbl>
-                <YN value={occupied} onChange={setOccupied} />
-              </div>
-              <div>
-                <Lbl>Exterior Work Involved?</Lbl>
-                <YN value={exteriorWork} onChange={setExteriorWork} />
-              </div>
-            </div>
-            <div className="field-row">
-              <Lbl>Existing Finishes to Match?</Lbl>
-              <YN value={matchFinish} onChange={setMatchFinish} />
-              {matchFinish === 'yes' && (
-                <div className="cond-box" style={{marginTop:'8px'}}>
-                  <Lbl>What Needs to Match</Lbl>
-                  <input type="text" value={matchNotes} onChange={e => setMatchNotes(e.target.value)}
-                    placeholder="Siding color/profile, roofing, brick, interior flooring, trim..." />
-                </div>
-              )}
-            </div>
-          </Section>
-
-          {/* § 4 or 5 SUB VISITS */}
-          <Section num={n(5)} title="Sub Visit Requirements"
-            sub={subCount > 0 ? `${subCount} needed` : 'none flagged'}>
-            <div className="hint" style={{marginBottom:'12px'}}>
-              Check any trade that must visit the site before the estimate can be locked.
-            </div>
-            {Object.entries(SUB_LABELS).map(([key, label]) => (
-              <div key={key} className="sub-item">
-                <div className={`sub-header ${subs[key].on ? 'on' : ''}`}
-                  onClick={() => setSub(key, 'on', !subs[key].on)}>
-                  <div className="sub-check">
-                    {subs[key].on && <span style={{fontSize:'9px', color:'#1E1C1A'}}>✓</span>}
-                  </div>
-                  <span className="sub-lbl">{label}</span>
-                </div>
-                {subs[key].on && (
-                  <div className="sub-notes">
-                    <input type="text" value={subs[key].notes}
-                      onChange={e => setSub(key, 'notes', e.target.value)}
-                      placeholder={`Notes for ${label.toLowerCase()}...`} />
-                  </div>
-                )}
-              </div>
-            ))}
-          </Section>
-
-          {/* § 5 or 6 ESTIMATING CHECKLIST — only shown when a type with a list is selected */}
-          {checklist.length > 0 && (
-            <Section num={n(6)} title={`Estimating Checklist — ${projType}`}
-              sub="commonly missed items">
-              <div className="hint" style={{marginBottom:'12px'}}>
-                Mark each item as confirmed in scope, TBD, or N/A before you start estimating.
-              </div>
-              {checklist.map(item => {
-                const s = clStatus[item] || '';
-                return (
-                  <div key={item} className={`cl-item ${s === 'in' ? 's-in' : s === 'na' ? 's-na' : ''}`}>
-                    <span className="cl-txt">{item}</span>
-                    <div className="cl-btns">
-                      <div className={`cl-btn ${s === 'in' ? 'b-in' : ''}`} onClick={() => setStatus(item, 'in')}>✓ In</div>
-                      <div className={`cl-btn ${s === 'tbd' ? 'b-tbd' : ''}`} onClick={() => setStatus(item, 'tbd')}>TBD</div>
-                      <div className={`cl-btn ${s === 'na' ? 'b-na' : ''}`} onClick={() => setStatus(item, 'na')}>N/A</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </Section>
-          )}
-
-          {/* LAST SECTION — NEXT STEPS */}
-          <Section num={checklist.length > 0 ? n(7) : n(6)} title="Next Steps">
-            <div className="field-row">
-              <Lbl>Next Action</Lbl>
-              <Pills
-                options={['Begin Estimate', 'Schedule Sub Visits', 'Request Plans', 'Follow Up with Client', 'No-Go']}
-                value={nextAction}
-                onChange={setNextAction}
-              />
-            </div>
-            <div className="col-2">
-              <div>
-                <Lbl>Next Action Date</Lbl>
-                <input type="date" value={nextDate} onChange={e => setNextDate(e.target.value)} />
-              </div>
-              <div />
-            </div>
-            <div className="field-row">
-              <Lbl>Additional Visit Notes</Lbl>
-              <textarea value={finalNotes} onChange={e => setFinalNotes(e.target.value)}
-                placeholder="Anything else worth capturing from the site walk..." />
-            </div>
-          </Section>
-
-        </div>
-
-        {/* ─── SIDEBAR ─── */}
-        <div className="sidebar no-print">
-
-          {/* FLAGS */}
-          <div className="s-card">
-            <div className="s-card-hdr">
-              <span className="s-card-ttl">Flags</span>
-              {flags.length === 0
-                ? <span className="badge badge-green">Clear</span>
-                : <span className="badge badge-red">{flags.length}</span>
-              }
-            </div>
-            <div className="s-card-body">
-              {flags.length === 0 && <div className="empty-msg">No flags fired yet.</div>}
-              {flags.map((f, i) => (
-                <div key={i} className={`s-flag ${f.lv === 'stop' ? 'f-stop' : 'f-warn'}`}>
-                  <div className="s-flag-ttl">{f.lv === 'stop' ? '🔴 ' : '⚠️ '}{f.t}</div>
-                  <div className="s-flag-body">{f.b}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* SUB VISITS SUMMARY */}
-          {subCount > 0 && (
-            <div className="s-card">
-              <div className="s-card-hdr">
-                <span className="s-card-ttl">Sub Visits Needed</span>
-                <span className="badge badge-tan">{subCount}</span>
-              </div>
-              <div className="s-card-body">
-                {Object.entries(subs).filter(([,v]) => v.on).map(([k, v]) => (
-                  <div key={k} style={{marginBottom:'6px'}}>
-                    <div style={{fontFamily:'DM Mono', fontSize:'10px', color:'#C7AA8B', marginBottom:'2px'}}>{SUB_LABELS[k]}</div>
-                    {v.notes && <div style={{fontSize:'11px', color:'rgba(247,247,247,0.6)'}}>{v.notes}</div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* JT PUSH RESULT */}
-          {jtState === 'done' && jtResult && (
-            <div className="s-card">
-              <div className="s-card-hdr">
-                <span className="s-card-ttl">Pushed to JobTread</span>
-                <span className="badge badge-green">✓ Done</span>
-              </div>
-              <div className="s-card-body">
-                <div style={{fontFamily:'DM Mono', fontSize:'10px', color:'rgba(247,247,247,0.7)', lineHeight:'1.7'}}>
-                  {jtResult.jobName && <div>Job: {jtResult.jobName}</div>}
-                  {jtResult.steps && jtResult.steps.jobFieldsUpdated && <div>✓ Job status → Estimating</div>}
-                  {jtResult.steps && jtResult.steps.jobFieldsUpdated && <div>✓ Note block written</div>}
-                  {jtResult.steps && jtResult.steps.locationFieldsUpdated && <div>✓ Location fields updated</div>}
-                  {jtResult.steps && jtResult.steps.locationFieldsError && <div style={{color:'#D4714A'}}>✗ Location error: {jtResult.steps.locationFieldsError}</div>}
-                  {jtResult.steps && jtResult.steps.locationSkipped && <div style={{color:'#C7AA8B'}}>⚠ {jtResult.steps.locationSkipped}</div>}
-                </div>
-                {jtResult.url && (
-                  <a href={jtResult.url} target="_blank" rel="noopener noreferrer"
-                    style={{display:'block', marginTop:'10px', textAlign:'center', fontFamily:'DM Mono', fontSize:'10px',
-                      color:'#C7AA8B', border:'1px solid rgba(199,170,139,0.4)', borderRadius:'4px', padding:'7px',
-                      textDecoration:'none', letterSpacing:'0.06em'}}>
-                    View Job in JobTread ↗
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-          {jtState === 'fail' && (
-            <div className="s-card">
-              <div className="s-card-hdr">
-                <span className="s-card-ttl">Push Failed</span>
-                <span className="badge badge-red">Error</span>
-              </div>
-              <div className="s-card-body">
-                <div style={{fontFamily:'DM Mono', fontSize:'10px', color:'#D4714A', lineHeight:'1.6'}}>{jtErr}</div>
-                <div style={{fontFamily:'DM Mono', fontSize:'9px', color:'rgba(247,247,247,0.35)', marginTop:'8px'}}>
-                  Check Job # and try again. If the job has no location, location fields will be skipped.
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* JT NOTE BLOCK */}
-          <div className="s-card">
-            <div className="s-card-hdr">
-              <span className="s-card-ttl">JT Note Block</span>
-            </div>
-            <div className="s-card-body">
-              <div className="jt-pre">{jtNote}</div>
-              <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={doCopy}>
-                {copied ? '✓ Copied to Clipboard' : 'Copy to Clipboard'}
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* BOTTOM BAR */}
-      <div className="bottom-bar no-print">
-        <div className="bb-info">
-          {client && address ? `${client} — ${address}` : 'Site Visit Worksheet'}
-          {projType ? ` · ${projType}` : ''}
-          {flags.length > 0 ? ` · ${flags.length} flag${flags.length > 1 ? 's' : ''}` : ''}
-        </div>
-        <button className="btn btn-ghost" onClick={doReset}>Reset</button>
-        <button className="btn btn-dark" onClick={() => window.print()}>Print / Save PDF</button>
-        <button
-          className={`btn btn-jt${jtState === 'loading' ? ' jt-loading' : ''}${jtState === 'done' ? ' jt-done' : ''}${jtState === 'fail' ? ' jt-fail' : ''}`}
-          onClick={jtState === 'done' ? undefined : handlePushToJT}
-          disabled={!jtJob.trim() || jtState === 'loading'}
-          title={!jtJob.trim() ? 'Enter JT Job # to enable push' : ''}
-        >
-          {jtState === 'idle'    && '↑ Push to JobTread'}
-          {jtState === 'loading' && 'Pushing…'}
-          {jtState === 'done'    && '✓ Pushed to JobTread'}
-          {jtState === 'fail'    && '↺ Retry Push'}
-        </button>
-      </div>
-    </div>
-  );
+  return results;
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-</script>
-</body>
-</html>
+// ─── Existing operations (unchanged) ─────────────────────────────────────────
+
+async function createCustomer(grantKey, params) {
+  var results = { steps: {} };
+
+  var org = await getOrgInfo(grantKey);
+  var orgId = org.id;
+  if (!orgId) throw new Error('Could not retrieve org ID.');
+
+  var createData = await pave(grantKey, {
+    createAccount: {
+      $: {
+        name: params.name,
+        type: 'customer',
+        organizationId: orgId,
+      },
+      createdAccount: { id: {}, name: {} },
+    },
+  });
+
+  var account = (createData && createData.query && createData.query.createAccount && createData.query.createAccount.createdAccount)
+             || (createData && createData.createAccount && createData.createAccount.createdAccount);
+  if (!account || !account.id) throw new Error('Account created but no ID returned.');
+
+  var accountId = account.id;
+  results.accountId   = accountId;
+  results.accountName = account.name;
+  results.url         = 'https://app.jobtread.com/customers/' + accountId;
+  results.steps.accountCreated = true;
+
+  var customFieldValues = {};
+  customFieldValues[F.status]             = '1. New Lead';
+  if (params.customerType)   customFieldValues[F.customerType]    = params.customerType;
+  if (params.budgetRange)    customFieldValues[F.budgetRange]     = normalizeBudget(params.budgetRange);
+  if (params.leadSource)     customFieldValues[F.leadSource]      = params.leadSource;
+  if (params.referredBy)     customFieldValues[F.referredBy]      = params.referredBy;
+  if (params.contactMethod)  customFieldValues[F.preferredContact]= params.contactMethod;
+  if (params.notes)          customFieldValues[F.notes]           = params.notes;
+  if (params.financing)      customFieldValues[F.financingType]   = normalizeFinancing(params.financing);
+  if (params.decisionMakers) customFieldValues[F.decisionMakers]  = normalizeDM(params.decisionMakers);
+  if (params.competingBids)  customFieldValues[F.competingBids]   = params.competingBids;
+  if (params.timeline)       customFieldValues[F.timeline]        = normalizeTimeline(params.timeline);
+  if (params.county)         customFieldValues[F.projectLocation] = params.county + ' County';
+  if (params.dqFlag) {
+    var dqMap = {'yes':'Budget','no':'None','none':'None','budget':'Budget','location':'Location','scope':'Scope','timeline':'Timeline'};
+    var dqKey = params.dqFlag.toLowerCase();
+    customFieldValues[F.dqFlag] = dqMap[dqKey] || params.dqFlag;
+  }
+  if (params.qualificationScore) customFieldValues[F.qualificationScore] = normalizeQualScore(params.qualificationScore);
+  if (params.apptDate)       customFieldValues[F.apptDateTime]    = params.apptDate;
+
+  results.steps.fieldsToSet = Object.keys(customFieldValues).length;
+
+  await pave(grantKey, {
+    updateAccount: {
+      $: { id: accountId, customFieldValues: customFieldValues },
+    },
+  }).then(function() {
+    results.steps.customFieldsSet = true;
+  }).catch(function(err) {
+    console.warn('[jobtread proxy] Custom fields:', err.message);
+    results.steps.customFieldsError = err.message;
+  });
+
+  try {
+    var contactData = await pave(grantKey, {
+      createContact: {
+        $: { accountId: accountId, name: params.name },
+        createdContact: { id: {}, name: {} },
+      },
+    });
+    var contactId = (contactData && contactData.query && contactData.query.createContact && contactData.query.createContact.createdContact && contactData.query.createContact.createdContact.id)
+                 || (contactData && contactData.createContact && contactData.createContact.createdContact && contactData.createContact.createdContact.id);
+    results.steps.contactCreated = true;
+
+    if (contactId && (params.phone || params.email)) {
+      var contactFieldValues = {};
+      if (params.phone) {
+        var digits = params.phone.replace(/[^0-9]/g, '');
+        contactFieldValues[CF.phone] = (digits.length === 10 ? '+1' : '+') + digits;
+      }
+      if (params.email) {
+        contactFieldValues[CF.email] = params.email;
+      }
+      await pave(grantKey, {
+        updateContact: {
+          $: { id: contactId, customFieldValues: contactFieldValues },
+        },
+      });
+      results.steps.contactUpdated = true;
+    }
+  } catch(err) {
+    console.warn('[jobtread proxy] Contact:', err.message);
+    results.steps.contactError = err.message;
+  }
+
+  if (params.address) {
+    var parts = params.address.split(',').map(function(s) { return s.trim(); });
+    var street = parts[0] || params.address;
+    var city   = parts[1] || '';
+
+    await pave(grantKey, {
+      createLocation: {
+        $: Object.assign(
+          { accountId: accountId, name: params.address, address1: street, state: 'UT' },
+          city ? { city: city } : {}
+        ),
+        createdLocation: { id: {}, name: {} },
+      },
+    }).then(function() {
+      results.steps.locationCreated = true;
+    }).catch(function(err) {
+      console.warn('[jobtread proxy] Location:', err.message);
+      results.steps.locationError = err.message;
+    });
+  }
+
+  return results;
+}
+
+async function getContact(grantKey, params) {
+  return await pave(grantKey, {
+    account: {
+      $: { id: params.accountId },
+      contacts: {
+        nodes: {
+          id: {},
+          name: {},
+          customFieldValues: {
+            nodes: {
+              id: {},
+              value: {},
+              customField: { id: {}, name: {}, type: {} },
+            }
+          },
+        }
+      },
+    },
+  });
+}
