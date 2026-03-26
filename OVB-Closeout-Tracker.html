@@ -12,9 +12,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -320,19 +320,7 @@
   </style>
 </head>
 <body>
-<div id="root"><div style="padding:30px;font-family:monospace;font-size:13px;color:#555">Starting OVB Closeout Tracker...</div></div>
-<script>
-window.onerror = function(msg, src, line, col, err) {
-  document.getElementById('root').innerHTML =
-    '<div style="padding:24px;background:#FFF0F0;border:2px solid #D4714A;font-family:monospace;font-size:12px;border-radius:4px;margin:20px">'
-    + '<strong style="font-size:14px">JS Error — copy this and send to Claude:</strong><br><br>'
-    + 'Message: ' + msg + '<br>'
-    + 'Line: ' + line + ', Col: ' + col + '<br>'
-    + (err ? 'Stack: ' + (err.stack || err.toString()) : '')
-    + '</div>';
-  return false;
-};
-</script>
+<div id="root"></div>
 <script type="text/babel">
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -423,7 +411,7 @@ function makeMailto(item, proj) {
     'Ogden Valley Builders | GC #14219939-5501',
     '(385) 288-7921 | info@ogdenvalleybuilders.com',
   ].filter(function(l){ return l !== null; }).join('\n');
-  return 'mailto:info@ogdenvalleybuilders.com?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(lines);
+  return 'mailto:warranty@ogdenvalleybuilders.com?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(lines);
 }
 
 // ── Bear Loading ──────────────────────────────────────────────────────────────
@@ -1162,15 +1150,7 @@ function App() {
   );
 }
 
-try {
-  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
-} catch(e) {
-  document.getElementById('root').innerHTML =
-    '<div style="padding:24px;background:#FFF0F0;border:2px solid #D4714A;font-family:monospace;font-size:12px;border-radius:4px;margin:20px">'
-    + '<strong style="font-size:14px">Mount Error — copy this and send to Claude:</strong><br><br>'
-    + (e && e.stack ? e.stack : String(e))
-    + '</div>';
-}
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 </script>
 </body>
 </html>
