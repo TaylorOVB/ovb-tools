@@ -320,7 +320,19 @@
   </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root"><div style="padding:30px;font-family:monospace;font-size:13px;color:#555">Starting OVB Closeout Tracker...</div></div>
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  document.getElementById('root').innerHTML =
+    '<div style="padding:24px;background:#FFF0F0;border:2px solid #D4714A;font-family:monospace;font-size:12px;border-radius:4px;margin:20px">'
+    + '<strong style="font-size:14px">JS Error — copy this and send to Claude:</strong><br><br>'
+    + 'Message: ' + msg + '<br>'
+    + 'Line: ' + line + ', Col: ' + col + '<br>'
+    + (err ? 'Stack: ' + (err.stack || err.toString()) : '')
+    + '</div>';
+  return false;
+};
+</script>
 <script type="text/babel">
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1150,7 +1162,15 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+try {
+  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+} catch(e) {
+  document.getElementById('root').innerHTML =
+    '<div style="padding:24px;background:#FFF0F0;border:2px solid #D4714A;font-family:monospace;font-size:12px;border-radius:4px;margin:20px">'
+    + '<strong style="font-size:14px">Mount Error — copy this and send to Claude:</strong><br><br>'
+    + (e && e.stack ? e.stack : String(e))
+    + '</div>';
+}
 </script>
 </body>
 </html>
