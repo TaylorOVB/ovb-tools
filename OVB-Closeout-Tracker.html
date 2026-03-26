@@ -279,7 +279,7 @@ function staClass(s) { return s === 'In Progress' ? 'b-ip' : s === 'Scheduled' ?
 function makeTmpId() { return 'tmp_' + Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 function blankProj() {
-  return { client: '', address: '', projectType: 'Full Remodel', closeDate: '', pm: 'Taylor Whitesides' };
+  return { client: '', address: '', projectType: 'Full Remodel', closeDate: '', pm: 'Taylor Whitesides', warrantyMonths: '36', warrantyNote: '' };
 }
 
 function blankItem(sec) {
@@ -663,8 +663,10 @@ function App() {
     setTimeout(function() { window.print(); setTimeout(function() { document.body.removeAttribute('data-print'); }, 500); }, 60);
   }
 
-  var closeDateVal = proj && proj.closeDate ? proj.closeDate : '';
-  var wExpiry  = useMemo(function() { return safeAddMonths(closeDateVal, 36); }, [closeDateVal]);
+  var closeDateVal   = proj && proj.closeDate ? proj.closeDate : '';
+  var warrantyMonths = proj && proj.warrantyMonths ? parseInt(proj.warrantyMonths, 10) : 36;
+  if (isNaN(warrantyMonths) || warrantyMonths < 1) warrantyMonths = 36;
+  var wExpiry  = useMemo(function() { return safeAddMonths(closeDateVal, warrantyMonths); }, [closeDateVal, warrantyMonths]);
   var wActive  = wExpiry && !isExpired(wExpiry);
   var wExpired = wExpiry && isExpired(wExpiry);
 
@@ -724,10 +726,26 @@ function App() {
             <div className="ig"><span className="ig-l">PM</span><input className="ig-i" value={proj.pm || ''} onChange={function(e) { upProjField('pm', e.target.value); }} /></div>
           </div>
         )}
+        {proj && (
+          <div style={{ display: 'flex', gap: 7, marginTop: 7, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span className="ig-l">Warranty Period</span>
+              <select className="ig-i" style={{ width: 'auto', minWidth: 140 }} value={proj.warrantyMonths || '36'} onChange={function(e) { upProjField('warrantyMonths', e.target.value); }}>
+                <option value="36">36 months (standard)</option>
+                <option value="24">24 months</option>
+                <option value="12">12 months (legacy)</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minWidth: 200 }}>
+              <span className="ig-l">Internal Warranty Note</span>
+              <input className="ig-i" value={proj.warrantyNote || ''} onChange={function(e) { upProjField('warrantyNote', e.target.value); }} placeholder="e.g. Pre-policy project — 12-month period only" />
+            </div>
+          </div>
+        )}
         {wExpiry && (
           <div className={'wb ' + (wExpired ? 'wb-off' : 'wb-on')}>
             <div className={'wb-dot ' + (wExpired ? 'wd-off' : 'wd-on')}></div>
-            <span style={{ fontWeight: 500 }}>OVB 36-Month Warranty — {wExpired ? 'EXPIRED' : 'Active'}</span>
+            <span style={{ fontWeight: 500 }}>OVB {warrantyMonths}-Month Warranty — {wExpired ? 'EXPIRED' : 'Active'}</span>
             <span style={{ opacity: .72 }}>
               {fmtDate(closeDateVal)} {'→'} {fmtDate(wExpiry)}
               {wActive  && (' · ' + Math.ceil((new Date(wExpiry + 'T12:00:00') - new Date()) / 864e5) + ' days remaining')}
@@ -747,7 +765,8 @@ function App() {
         <div style={{ textAlign: 'right', fontSize: 11, color: 'rgba(255,255,255,.6)', lineHeight: 1.65 }}>
           {proj && <div style={{ fontWeight: 600, color: '#fff' }}>{proj.projectType}</div>}
           {proj && proj.closeDate && <div>Closed: {fmtDate(proj.closeDate)}</div>}
-          {wExpiry && <div style={{ color: wExpired ? '#F4A0A0' : '#6FCF97' }}>Warranty {wExpired ? 'Expired' : 'Until'}: {fmtDate(wExpiry)}</div>}
+          {wExpiry && <div style={{ color: wExpired ? '#F4A0A0' : '#6FCF97' }}>{warrantyMonths}-Mo Warranty {wExpired ? 'Expired' : 'Until'}: {fmtDate(wExpiry)}</div>}
+          {proj && proj.warrantyNote && <div style={{ color: '#F4D03F', fontSize: 10 }}>{proj.warrantyNote}</div>}
           {proj && <div>PM: {proj.pm}</div>}
           <div style={{ marginTop: 4, fontSize: 9 }}>GC #14219939-5501</div>
         </div>
