@@ -260,7 +260,7 @@ async function getJobByNumber(grantKey, orgId, jobNumber) {
     organization: {
       $: { id: orgId },
       jobs: {
-        $: { number: parseInt(jobNumber, 10) },
+        $: { first: 1000 },
         nodes: {
           id: {},
           number: {},
@@ -273,7 +273,7 @@ async function getJobByNumber(grantKey, orgId, jobNumber) {
   var nodes = (data && data.query && data.query.organization && data.query.organization.jobs && data.query.organization.jobs.nodes)
            || (data && data.organization && data.organization.jobs && data.organization.jobs.nodes)
            || [];
-  return nodes[0] || null;
+  return nodes.find(function(j) { return String(j.number) === String(jobNumber); }) || null;
 }
 
 // ─── Operations ───────────────────────────────────────────────────────────────
