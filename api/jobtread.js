@@ -23,8 +23,9 @@ module.exports = async function handler(req, res) {
       case 'createCustomer':      result = await createCustomer(grantKey, params);      break;
       case 'getOrgInfo':          result = await getOrgInfo(grantKey);                   break;
       case 'getContact':          result = await getContact(grantKey, params);           break;
-      case 'updateJobSiteVisit':  result = await updateJobSiteVisit(grantKey, params);  break;
-      case 'discoverFields':      result = await discoverFields(grantKey);               break;
+      case 'updateJobSiteVisit':      result = await updateJobSiteVisit(grantKey, params);      break;
+      case 'discoverFields':          result = await discoverFields(grantKey);                   break;
+      case 'discoverLocationFields':  result = await discoverLocationFields(grantKey, params);  break;
       default: return res.status(400).json({ error: 'Unknown operation: ' + operation });
     }
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -224,7 +225,7 @@ async function getJobByNumber(grantKey, orgId, jobNumber) {
           id: {},
           number: {},
           name: {},
-          locations: { nodes: { id: {}, name: {} } },
+          location: { id: {}, name: {} },
         },
       },
     },
@@ -237,11 +238,47 @@ async function getJobByNumber(grantKey, orgId, jobNumber) {
 
 // ─── Operations ───────────────────────────────────────────────────────────────
 
-// Debug helper — call once via Postman or fetch to see all field IDs in account
+// Debug helper — call once via browser console to see all field IDs in account
 async function discoverFields(grantKey) {
   var org = await getOrgInfo(grantKey);
   var fields = await getOrgCustomFields(grantKey, org.id);
   return { org: org, fields: fields };
+}
+
+// Fetch a location's custom field values directly to discover location field IDs
+async function discoverLocationFields(grantKey, params) {
+  var org = await getOrgInfo(grantKey);
+  var job = await getJobByNumber(grantKey, org.id, params.jobNumber);
+  if (!job) throw new Error('Job #' + params.jobNumber + ' not found.');
+  if (!job.location || !job.location.id) throw new Error('Job has no location attached.');
+
+  var data = await pave(grantKey, {
+    location: {
+      $: { id: job.location.id },
+      id: {},
+      name: {},
+      customFieldValues: {
+        nodes: {
+          id: {},
+          value: {},
+          customField: { id: {}, name: {} },
+        },
+      },
+    },
+  });
+
+  var loc = (data && data.query && data.query.location) || (data && data.location);
+  return {
+    jobName: job.name,
+    locationId: job.location.id,
+    locationName: job.location.name,
+    customFields: loc && loc.customFieldValues && loc.customFieldValues.nodes
+      ? loc.customFieldValues.nodes.map(function(n) {
+          return { fieldName: n.customField && n.customField.name, fieldId: n.customField && n.customField.id, currentValue: n.value };
+        })
+      : [],
+    rawLocation: loc,
+  };
 }
 
 // Push site visit data into an existing JT job
@@ -297,7 +334,7 @@ async function updateJobSiteVisit(grantKey, params) {
   }
 
   // 5. Update location fields
-  var location = job.locations && job.locations.nodes && job.locations.nodes[0];
+  var location = job.location;
   if (location && location.id) {
     var locFieldValues = {};
 
