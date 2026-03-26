@@ -1,5 +1,4 @@
 // api/jobtread.js — OVB Tools · JobTread Proxy
-// api/jobtread.js — OVB Tools · JobTread Proxy
 // Deploy at /api/jobtread.js in repo root.
 // Set JOBTREAD_GRANT_KEY in Vercel -> Settings -> Environment Variables.
 
@@ -218,18 +217,20 @@ async function getOrgCustomFields(grantKey, orgId) {
 // Find a job by its display number (e.g. 747) — returns full job node or null
 async function getJobByNumber(grantKey, orgId, jobNumber) {
   var data = await pave(grantKey, {
-    jobs: {
-      $: { organizationId: orgId },
-      nodes: {
-        id: {},
-        number: {},
-        name: {},
-        locations: { nodes: { id: {}, name: {} } },
+    organization: {
+      $: { id: orgId },
+      jobs: {
+        nodes: {
+          id: {},
+          number: {},
+          name: {},
+          locations: { nodes: { id: {}, name: {} } },
+        },
       },
     },
   });
-  var nodes = (data && data.query && data.query.jobs && data.query.jobs.nodes)
-           || (data && data.jobs && data.jobs.nodes)
+  var nodes = (data && data.query && data.query.organization && data.query.organization.jobs && data.query.organization.jobs.nodes)
+           || (data && data.organization && data.organization.jobs && data.organization.jobs.nodes)
            || [];
   return nodes.find(function(j) { return String(j.number) === String(jobNumber); }) || null;
 }
