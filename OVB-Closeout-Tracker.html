@@ -289,7 +289,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG — replace after Apps Script deployment
 // ─────────────────────────────────────────────────────────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBLf5Lsj_cCsy85cwakrNgDI6sR-XfDNtCEnZbErawxjr69eSfCMPmyVjh8oTTTcco/exec';
+const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
@@ -323,7 +323,8 @@ const blankProj = () => ({ client:'', address:'', projectType:'Full Remodel', cl
 const blankItem = sec => {
   const base = { description:'', trade:'Other', priority:'Standard', status:'Open', assignedTo:'', internalNotes:'', completedDate:'' };
   if (sec==='weOwes')   return { ...base, cost:'', dueDate:'' };
-  if (sec==='warranty') return { ...base, requestDate:todayISO(), responseDate:'', resolutionDate:'', responsibleParty:'OVB', subName:'', recoveryStatus:'Not Pursued', recoveryAmount:'' };
+  if (sec==='warranty')  return { ...base, requestDate:todayISO(), responseDate:'', resolutionDate:'', responsibleParty:'OVB', subName:'', recoveryStatus:'Not Pursued', recoveryAmount:'' };
+  if (sec==='punchlist') return { ...base, dueDate:'', responsibleParty:'OVB', subName:'', recoveryStatus:'Not Pursued', recoveryAmount:'' };
   return { ...base, dueDate:'' };
 };
 
@@ -372,8 +373,9 @@ function makeMailto(item, proj) {
 function ItemForm({ sec, init, onSave, onCancel }) {
   const [d, setD] = useState({...init});
   const up = (k,v) => setD(p=>({...p,[k]:v}));
-  const showSub = sec==='warranty' && (d.responsibleParty==='Sub-Contractor'||d.responsibleParty==='Shared');
-  const showRec = sec==='warranty' && (d.recoveryStatus==='In Progress'||d.recoveryStatus==='Recovered');
+  const hasSub  = sec==='warranty' || sec==='punchlist';
+  const showSub = hasSub && (d.responsibleParty==='Sub-Contractor'||d.responsibleParty==='Shared');
+  const showRec = hasSub && (d.recoveryStatus==='In Progress'||d.recoveryStatus==='Recovered');
 
   return (
     <div className="fg">
@@ -430,6 +432,8 @@ function ItemForm({ sec, init, onSave, onCancel }) {
           <span className="fl">Resolution Date</span>
           <input type="date" className="fi" value={d.resolutionDate} onChange={e=>up('resolutionDate',e.target.value)}/>
         </div>
+      </>}
+      {hasSub && <>
         <div className="ff internal-only">
           <span className="fl">Responsible Party</span>
           <select className="fi" value={d.responsibleParty} onChange={e=>up('responsibleParty',e.target.value)}>
@@ -914,7 +918,7 @@ function App() {
                         )}
 
                         {/* Sub-liability — internal only */}
-                        {s.key==='warranty' && item.responsibleParty && (
+                        {(s.key==='warranty'||s.key==='punchlist') && item.responsibleParty && item.responsibleParty!=='OVB' && (
                           <div className="meta-row internal-only">
                             <span className="mb">
                               <span className="ml">Responsible</span>
