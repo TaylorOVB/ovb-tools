@@ -788,6 +788,10 @@ function App() {
             jobNumber:  jtJob.trim(),
             noteBlock:  jtNote,
             nextDate:   nextDate || '',
+            visitDate:  visitDate || '',
+            plansStatus: plansStatus || '',
+            occupied:   occupied === 'yes' ? 'Yes' : occupied === 'no' ? 'No' : occupied === 'unknown' ? 'Unknown' : '',
+            structural: structural === 'yes' ? 'Yes - Engineer Required' : structural === 'no' ? 'None Observed' : '',
             // Location fields
             foundType:  foundType,
             entryCode:  entryCode,
@@ -896,7 +900,7 @@ function App() {
             <div className="field-row">
               <Lbl>Foundation Type</Lbl>
               <Pills
-                options={['Slab', 'Crawl Space', 'Full Basement', 'Walkout Basement', 'Stem Wall', 'Unknown']}
+                options={['Slab on Grade', 'Crawlspace', 'Stem Wall w/ CrawlSpace', 'Full Basement Foundation', 'Walk-Out Basement Foundation', 'Daylight Basement Foundation', 'Pier & Beam', 'Post-Tension Slab']}
                 value={foundType}
                 onChange={setFoundType}
               />
@@ -1211,7 +1215,9 @@ function App() {
                   {jtResult.jobName && <div>Job: {jtResult.jobName}</div>}
                   {jtResult.steps && jtResult.steps.jobFieldsUpdated && <div>✓ Job status → Estimating</div>}
                   {jtResult.steps && jtResult.steps.jobFieldsUpdated && <div>✓ Note block written</div>}
+                  {jtResult.steps && jtResult.steps.jobFieldsUpdated && visitDate && <div>✓ Site visit date recorded</div>}
                   {jtResult.steps && jtResult.steps.locationFieldsUpdated && <div>✓ Location fields updated</div>}
+                  {jtResult.steps && jtResult.steps.locationFieldsError && <div style={{color:'#D4714A'}}>✗ Location error: {jtResult.steps.locationFieldsError}</div>}
                   {jtResult.steps && jtResult.steps.locationSkipped && <div style={{color:'#C7AA8B'}}>⚠ {jtResult.steps.locationSkipped}</div>}
                 </div>
                 {jtResult.url && (
