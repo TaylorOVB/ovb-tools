@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="OVB Tools" />
   <meta name="theme-color" content="#1A1F2E" />
   <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
-  <title>Precon Proposal — OVB Tools</title>
+  <title>Precon Sales Tool — OVB Tools</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
@@ -17,143 +17,178 @@
     body { font-family: 'DM Sans', sans-serif; background: #1E1C1A; color: #F7F7F7; height: 100vh; overflow: hidden; }
     #root { height: 100vh; display: flex; flex-direction: column; }
 
-    /* Header */
+    /* ── Header ── */
     .tool-header { background: #141210; border-bottom: 1px solid rgba(199,170,139,0.12); padding: 11px 24px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-    .tool-header-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #C7AA8B; }
-    .tool-header-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 8px; border-radius: 4px; background: rgba(199,170,139,0.1); border: 1px solid rgba(199,170,139,0.2); color: rgba(199,170,139,0.7); letter-spacing: 0.08em; }
-    .tool-header-sub { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(247,247,247,0.2); }
+    .th-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #C7AA8B; }
+    .th-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 8px; border-radius: 4px; background: rgba(199,170,139,0.1); border: 1px solid rgba(199,170,139,0.2); color: rgba(199,170,139,0.7); letter-spacing: 0.08em; }
+    .th-internal { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 10px; border-radius: 4px; background: rgba(212,113,74,0.1); border: 1px solid rgba(212,113,74,0.25); color: #D4714A; letter-spacing: 0.08em; }
+    .th-sub { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(247,247,247,0.18); }
 
     .tool-layout { display: flex; flex: 1; overflow: hidden; }
 
-    /* Form panel */
-    .form-panel { width: 360px; min-width: 360px; background: #1E1C1A; overflow-y: auto; padding: 20px 20px 0; border-right: 1px solid rgba(199,170,139,0.1); }
-    .section-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #C7AA8B; margin-bottom: 10px; margin-top: 22px; }
-    .section-label:first-child { margin-top: 0; }
-    label { display: block; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,247,247,0.38); margin-bottom: 4px; margin-top: 12px; }
-    input[type="text"], input[type="email"], input[type="tel"], input[type="number"], select, textarea { width: 100%; background: rgba(199,170,139,0.06); border: 1px solid rgba(199,170,139,0.15); border-radius: 4px; color: #F7F7F7; font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 8px 11px; outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
-    input:focus, select:focus, textarea:focus { border-color: rgba(199,170,139,0.45); }
+    /* ── Left Panel (internal) ── */
+    .left-panel { width: 340px; min-width: 340px; background: #1A1816; overflow-y: auto; padding: 18px 18px 0; border-right: 1px solid rgba(199,170,139,0.1); }
+
+    .sec-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #C7AA8B; margin-bottom: 8px; margin-top: 20px; }
+    .sec-label:first-child { margin-top: 0; }
+
+    label { display: block; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,247,247,0.35); margin-bottom: 4px; margin-top: 11px; }
+
+    input[type="text"], input[type="email"], input[type="tel"], input[type="number"], select, textarea {
+      width: 100%; background: rgba(199,170,139,0.05); border: 1px solid rgba(199,170,139,0.13);
+      border-radius: 4px; color: #F7F7F7; font-family: 'DM Sans', sans-serif; font-size: 13px;
+      padding: 7px 10px; outline: none; transition: border-color 0.15s; -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: rgba(199,170,139,0.4); }
     select option { background: #2A2826; }
-    input::placeholder, textarea::placeholder { color: rgba(247,247,247,0.2); }
-    textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
-    .money-wrap { position: relative; }
-    .money-wrap .sym { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: rgba(247,247,247,0.3); font-family: 'DM Mono', monospace; font-size: 13px; pointer-events: none; }
-    .money-wrap input { padding-left: 20px; }
+    input::placeholder, textarea::placeholder { color: rgba(247,247,247,0.18); }
+    textarea { resize: vertical; min-height: 52px; line-height: 1.5; }
+
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .row-2 label { margin-top: 0; }
-    .fee-hint { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(199,170,139,0.45); margin-top: 5px; letter-spacing: 0.06em; }
-    .toggle-group { display: flex; gap: 6px; }
-    .toggle-btn { flex: 1; padding: 8px 10px; border-radius: 4px; border: 1px solid rgba(199,170,139,0.18); background: transparent; color: rgba(247,247,247,0.4); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
-    .toggle-btn.active { background: #C7AA8B; border-color: #C7AA8B; color: #141210; font-weight: 600; }
-    .info-note { background: rgba(199,170,139,0.06); border: 1px solid rgba(199,170,139,0.13); border-radius: 4px; padding: 8px 11px; font-size: 10px; color: rgba(247,247,247,0.4); font-family: 'DM Mono', monospace; line-height: 1.6; margin-top: 8px; }
-    .demo-flag { background: rgba(212,113,74,0.08); border: 1px solid rgba(212,113,74,0.25); border-radius: 4px; padding: 9px 12px; font-size: 10px; color: #D4714A; font-family: 'DM Mono', monospace; line-height: 1.6; margin-top: 10px; }
-    .demo-flag strong { font-weight: 600; display: block; margin-bottom: 2px; font-size: 10px; }
-    .divider { border: none; border-top: 1px solid rgba(199,170,139,0.08); margin: 18px 0 0; }
 
-    /* Bottom bar */
-    .bottom-bar { background: #141210; border-top: 1px solid rgba(199,170,139,0.1); padding: 12px 20px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .btn-primary { background: #C7AA8B; color: #141210; border: none; border-radius: 4px; padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
-    .btn-primary:hover { opacity: 0.85; }
-    .btn-outline { background: transparent; color: #C7AA8B; border: 1px solid rgba(199,170,139,0.5); border-radius: 4px; padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-    .btn-outline:hover { background: rgba(199,170,139,0.08); }
-    .btn-outline:disabled { opacity: 0.35; cursor: not-allowed; }
-    .push-status { font-family: 'DM Mono', monospace; font-size: 10px; padding: 5px 11px; border-radius: 4px; line-height: 1.5; }
-    .push-ok  { background: rgba(100,200,120,0.08); color: #6DC87A; border: 1px solid rgba(100,200,120,0.2); }
-    .push-err { background: rgba(212,113,74,0.08); color: #D4714A; border: 1px solid rgba(212,113,74,0.2); }
-    .bottom-brand { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(247,247,247,0.15); letter-spacing: 0.08em; }
+    .divider { border: none; border-top: 1px solid rgba(199,170,139,0.07); margin: 16px 0 0; }
 
-    /* Doc panel */
-    .doc-panel { flex: 1; overflow-y: auto; background: #CCC8C0; padding: 32px 28px; }
+    /* Finish selector */
+    .finish-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 2px; }
+    .finish-btn { padding: 8px 6px; border-radius: 4px; border: 1px solid rgba(199,170,139,0.15); background: transparent; color: rgba(247,247,247,0.38); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .finish-btn:hover { border-color: rgba(199,170,139,0.35); color: rgba(247,247,247,0.6); }
+    .finish-btn.active { background: rgba(199,170,139,0.12); border-color: #C7AA8B; color: #C7AA8B; font-weight: 500; }
+    .finish-hint { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(247,247,247,0.25); margin-top: 5px; line-height: 1.5; }
+
+    /* Budget alignment */
+    .align-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 2px; }
+    .align-btn { padding: 7px 4px; border-radius: 4px; border: 1px solid rgba(199,170,139,0.13); background: transparent; color: rgba(247,247,247,0.35); font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .align-btn.green.active  { background: rgba(109,200,122,0.1); border-color: #6DC87A; color: #6DC87A; }
+    .align-btn.yellow.active { background: rgba(220,180,80,0.1);  border-color: #DDB840; color: #DDB840; }
+    .align-btn.red.active    { background: rgba(212,113,74,0.1);  border-color: #D4714A; color: #D4714A; }
+
+    /* Risk flags */
+    .flag-list { display: flex; flex-direction: column; gap: 5px; margin-top: 2px; }
+    .flag-item { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 4px; border: 1px solid rgba(199,170,139,0.1); cursor: pointer; transition: all 0.15s; user-select: none; }
+    .flag-item:hover { border-color: rgba(199,170,139,0.25); }
+    .flag-item.flagged { background: rgba(212,113,74,0.07); border-color: rgba(212,113,74,0.35); }
+    .flag-dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid rgba(247,247,247,0.2); flex-shrink: 0; transition: all 0.15s; }
+    .flag-item.flagged .flag-dot { background: #D4714A; border-color: #D4714A; }
+    .flag-text { font-size: 12px; color: rgba(247,247,247,0.45); line-height: 1.3; transition: color 0.15s; }
+    .flag-item.flagged .flag-text { color: #F7F7F7; }
+    .flag-note { font-size: 10px; color: rgba(247,247,247,0.25); font-family: 'DM Mono', monospace; margin-top: 1px; }
+    .flag-item.flagged .flag-note { color: rgba(212,113,74,0.7); }
+
+    /* Copy brief */
+    .copy-btn { width: 100%; margin-top: 14px; padding: 10px; border-radius: 4px; border: 1px solid rgba(199,170,139,0.35); background: transparent; color: #C7AA8B; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; letter-spacing: 0.01em; }
+    .copy-btn:hover { background: rgba(199,170,139,0.08); }
+    .copy-btn.copied { border-color: #6DC87A; color: #6DC87A; background: rgba(109,200,122,0.06); }
+
+    /* ── Right Panel (client-facing) ── */
+    .right-panel { flex: 1; overflow-y: auto; background: #C8C3BB; padding: 28px 24px; }
 
     /* Document */
-    .doc-sheet { background: #fff; max-width: 700px; margin: 0 auto; box-shadow: 0 4px 32px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.1); font-family: 'DM Sans', sans-serif; color: #1E1C1A; overflow: hidden; }
+    .doc { background: #fff; max-width: 680px; margin: 0 auto; box-shadow: 0 4px 28px rgba(0,0,0,0.16); font-family: 'DM Sans', sans-serif; color: #1E1C1A; overflow: hidden; }
 
-    /* Doc header band */
-    .doc-header-band { background: #1E1C1A; padding: 28px 36px 24px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
-    .doc-proposal-eyebrow { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #C7AA8B; margin-bottom: 6px; }
-    .doc-proposal-title { font-size: 21px; font-weight: 700; color: #F7F7F7; line-height: 1.2; letter-spacing: -0.01em; }
-    .doc-proposal-client { font-size: 13px; color: rgba(247,247,247,0.45); margin-top: 5px; }
-    .doc-header-right { text-align: right; flex-shrink: 0; }
-    .doc-header-right img { height: 21px; opacity: 0.85; display: block; margin-left: auto; margin-bottom: 8px; }
-    .doc-header-meta { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(247,247,247,0.28); line-height: 1.9; letter-spacing: 0.04em; }
-    .doc-accent-bar { height: 4px; background: linear-gradient(90deg, #C7AA8B 0%, #A8896C 100%); }
+    /* Doc header */
+    .doc-head { background: #1E1C1A; padding: 26px 32px 22px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+    .doc-eyebrow { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #C7AA8B; margin-bottom: 5px; }
+    .doc-title { font-size: 20px; font-weight: 700; color: #F7F7F7; line-height: 1.2; letter-spacing: -0.01em; }
+    .doc-client-line { font-size: 12.5px; color: rgba(247,247,247,0.4); margin-top: 5px; }
+    .doc-logo-block { text-align: right; flex-shrink: 0; }
+    .doc-logo-block img { height: 20px; opacity: 0.85; display: block; margin-left: auto; margin-bottom: 7px; }
+    .doc-logo-meta { font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(247,247,247,0.25); line-height: 1.9; }
+    .doc-accent { height: 4px; background: linear-gradient(90deg,#C7AA8B,#A8896C); }
 
     /* Project strip */
-    .doc-project-strip { background: #F8F6F2; border-bottom: 1px solid #EAE6E0; padding: 15px 36px; display: grid; grid-template-columns: 1fr 1fr 1fr; }
-    .doc-project-cell { padding-right: 20px; }
-    .doc-project-cell + .doc-project-cell { border-left: 1px solid #E0DCD5; padding-left: 20px; }
-    .doc-cell-label { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: #aaa; margin-bottom: 3px; }
-    .doc-cell-value { font-size: 12px; font-weight: 600; color: #1E1C1A; line-height: 1.3; }
-    .doc-cell-value.empty { color: #ccc; font-weight: 400; font-style: italic; }
+    .doc-strip { background: #F7F5F1; border-bottom: 1px solid #EAE6DF; padding: 13px 32px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .strip-cell { padding-right: 16px; }
+    .strip-cell + .strip-cell { border-left: 1px solid #E0DCD5; padding-left: 16px; }
+    .strip-lbl { font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #aaa; margin-bottom: 3px; }
+    .strip-val { font-size: 11.5px; font-weight: 600; color: #1E1C1A; line-height: 1.3; }
+    .strip-val.empty { color: #ccc; font-weight: 400; font-style: italic; }
+    .strip-val.warn { color: #D4714A; }
 
     /* Body */
-    .doc-body-wrap { padding: 30px 36px 36px; }
+    .doc-body { padding: 28px 32px 32px; }
 
-    /* Demo callout */
-    .doc-demo-callout { background: #FFF5F1; border: 1.5px solid #D4714A; border-radius: 4px; padding: 12px 16px; margin-bottom: 22px; display: flex; gap: 12px; align-items: flex-start; }
-    .doc-demo-icon { font-size: 18px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
-    .doc-demo-text { font-size: 12px; line-height: 1.7; color: #1E1C1A; }
-    .doc-demo-text strong { color: #D4714A; font-weight: 700; display: block; margin-bottom: 2px; }
-
-    /* Intro */
-    .doc-intro { font-size: 13px; line-height: 1.8; color: #3A3835; margin-bottom: 26px; }
+    /* Why precon section */
+    .fear-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 22px; }
+    .fear-card { background: #FFF5F1; border: 1px solid #F2DDD5; border-radius: 4px; padding: 12px 14px; }
+    .fear-card-head { font-size: 11px; font-weight: 700; color: #D4714A; margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
+    .fear-card-body { font-size: 11.5px; color: #3A3835; line-height: 1.65; }
+    .value-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 22px; }
+    .value-card { background: #F0F7F2; border: 1px solid #C8E6CE; border-radius: 4px; padding: 12px 14px; }
+    .value-card-head { font-size: 11px; font-weight: 700; color: #3A8F52; margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
+    .value-card-body { font-size: 11.5px; color: #3A3835; line-height: 1.65; }
 
     /* Sections */
-    .doc-section { margin-bottom: 24px; }
-    .doc-section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1.5px solid #ECEAE6; }
-    .doc-section-num { background: #1E1C1A; color: #C7AA8B; font-family: 'DM Mono', monospace; font-size: 9px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 500; }
-    .doc-section-title { font-size: 11px; font-weight: 700; color: #1E1C1A; text-transform: uppercase; letter-spacing: 0.1em; }
+    .doc-section { margin-bottom: 22px; }
+    .doc-sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; padding-bottom: 7px; border-bottom: 1.5px solid #ECEAE6; }
+    .doc-sec-num { background: #1E1C1A; color: #C7AA8B; font-family: 'DM Mono', monospace; font-size: 9px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 500; }
+    .doc-sec-title { font-size: 10.5px; font-weight: 700; color: #1E1C1A; text-transform: uppercase; letter-spacing: 0.1em; }
 
-    /* Scope */
-    .scope-grid { display: flex; flex-direction: column; gap: 7px; }
-    .scope-item { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.6; color: #3A3835; }
-    .scope-check { width: 16px; height: 16px; min-width: 16px; background: #C7AA8B; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: 3px; flex-shrink: 0; }
-    .scope-check::after { content: ''; width: 5px; height: 3px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translate(0.5px, -0.5px); display: block; }
+    /* Scope list */
+    .scope-list { display: flex; flex-direction: column; gap: 6px; }
+    .scope-item { display: flex; gap: 9px; align-items: flex-start; font-size: 12px; line-height: 1.6; color: #3A3835; }
+    .scope-check { width: 15px; height: 15px; min-width: 15px; background: #C7AA8B; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: 3px; flex-shrink: 0; }
+    .scope-check::after { content:''; width:4px; height:2.5px; border-left:1.5px solid #fff; border-bottom:1.5px solid #fff; transform:rotate(-45deg) translate(0.5px,-0.5px); display:block; }
+
+    /* Risk items on client side */
+    .resolve-list { display: flex; flex-direction: column; gap: 5px; }
+    .resolve-item { display: flex; gap: 9px; align-items: center; padding: 8px 12px; background: #FFF9F5; border: 1px solid #F2DDD5; border-radius: 4px; font-size: 12px; color: #1E1C1A; }
+    .resolve-dot { width: 6px; height: 6px; border-radius: 50%; background: #C7AA8B; flex-shrink: 0; }
+    .no-flags { font-size: 12px; color: #aaa; font-style: italic; }
 
     /* Investment */
-    .investment-card { background: #F8F6F2; border: 1px solid #EAE6E0; border-radius: 4px; overflow: hidden; }
-    .inv-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 16px; border-bottom: 1px solid #EAE6E0; font-size: 12.5px; color: #3A3835; gap: 16px; }
+    .inv-card { background: #F8F6F2; border: 1px solid #EAE6DF; border-radius: 4px; overflow: hidden; }
+    .inv-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 16px; border-bottom: 1px solid #EAE6DF; font-size: 12px; color: #3A3835; gap: 12px; }
     .inv-row:last-child { border-bottom: none; }
     .inv-row.total { background: #1E1C1A; color: #F7F7F7; font-weight: 700; font-size: 13px; }
-    .inv-amount { font-family: 'DM Mono', monospace; font-weight: 600; color: #1E1C1A; font-size: 13px; white-space: nowrap; }
-    .inv-row.total .inv-amount { color: #C7AA8B; font-size: 15px; }
-    .inv-sub { font-size: 10.5px; color: #999; margin-top: 2px; }
-    .credit-callout { background: #F0F7F2; border: 1.5px solid #7DBF8E; border-radius: 4px; padding: 12px 16px; margin-top: 11px; font-size: 12px; line-height: 1.75; color: #1E1C1A; }
-    .credit-callout strong { color: #3A8F52; }
+    .inv-amt { font-family: 'DM Mono', monospace; font-weight: 600; color: #1E1C1A; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+    .inv-row.total .inv-amt { color: #C7AA8B; font-size: 15px; }
+    .inv-sub { font-size: 10px; color: #999; margin-top: 2px; }
 
-    /* Timeline */
-    .timeline { display: flex; flex-direction: column; }
-    .tl-item { display: flex; gap: 14px; align-items: flex-start; padding-bottom: 13px; }
-    .tl-item:last-child { padding-bottom: 0; }
-    .tl-left { display: flex; flex-direction: column; align-items: center; }
-    .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: #C7AA8B; flex-shrink: 0; margin-top: 4px; }
-    .tl-line { width: 1px; background: #E0DCD5; flex: 1; min-height: 16px; margin-top: 4px; }
-    .tl-item:last-child .tl-line { display: none; }
-    .tl-step { font-size: 12.5px; font-weight: 600; color: #1E1C1A; margin-bottom: 2px; }
-    .tl-desc { font-size: 11.5px; color: #888; line-height: 1.5; }
+    /* Credit callout */
+    .credit-box { background: #F0F7F2; border: 1.5px solid #7DBF8E; border-radius: 4px; padding: 13px 16px; margin-top: 10px; display: flex; gap: 12px; align-items: flex-start; }
+    .credit-icon { font-size: 20px; flex-shrink: 0; line-height: 1; margin-top: 1px; }
+    .credit-body { font-size: 12.5px; line-height: 1.7; color: #1E1C1A; }
+    .credit-body strong { color: #3A8F52; font-size: 13px; display: block; margin-bottom: 3px; }
 
     /* Why OVB */
-    .why-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-    .why-item { background: #F8F6F2; border: 1px solid #EAE6E0; border-radius: 4px; padding: 12px 14px; }
-    .why-stat { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: #C7AA8B; margin-bottom: 3px; }
-    .why-label { font-size: 11px; color: #3A3835; line-height: 1.4; }
+    .why-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .why-card { background: #F8F6F2; border: 1px solid #EAE6DF; border-radius: 4px; padding: 13px 14px; }
+    .why-stat { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: #C7AA8B; margin-bottom: 3px; }
+    .why-lbl { font-size: 11px; color: #3A3835; line-height: 1.45; }
 
     /* CTA */
-    .cta-block { background: #1E1C1A; border-radius: 4px; padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 26px; }
-    .cta-headline { font-size: 14px; font-weight: 700; color: #F7F7F7; margin-bottom: 4px; }
-    .cta-sub { font-size: 11.5px; color: rgba(247,247,247,0.45); line-height: 1.55; }
-    .cta-pill { background: #C7AA8B; color: #141210; border-radius: 4px; padding: 10px 20px; font-weight: 700; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+    .cta { background: #1E1C1A; border-radius: 4px; padding: 20px 22px; display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-top: 24px; }
+    .cta-hl { font-size: 14px; font-weight: 700; color: #F7F7F7; margin-bottom: 4px; }
+    .cta-sub { font-size: 11.5px; color: rgba(247,247,247,0.4); line-height: 1.55; }
+    .cta-pill { background: #C7AA8B; color: #141210; border-radius: 4px; padding: 10px 18px; font-weight: 700; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
 
-    /* Footer */
-    .doc-footer { border-top: 1px solid #EAE6E0; margin-top: 24px; padding-top: 14px; text-align: center; font-family: 'DM Mono', monospace; font-size: 8.5px; color: #bbb; line-height: 1.8; letter-spacing: 0.06em; }
+    /* Finish badge on doc */
+    .finish-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid; margin-top: 4px; }
+    .fb-budget  { background: rgba(109,200,122,0.08); color: #6DC87A; border-color: rgba(109,200,122,0.25); }
+    .fb-mid     { background: rgba(199,170,139,0.1);  color: #C7AA8B; border-color: rgba(199,170,139,0.3); }
+    .fb-high    { background: rgba(180,140,210,0.08); color: #B48CD2; border-color: rgba(180,140,210,0.25); }
+    .fb-luxury  { background: rgba(212,175,55,0.08);  color: #D4AF37; border-color: rgba(212,175,55,0.25); }
 
-    /* Print */
+    /* Doc footer */
+    .doc-footer { border-top: 1px solid #EAE6DF; margin-top: 22px; padding-top: 13px; text-align: center; font-family: 'DM Mono', monospace; font-size: 8px; color: #bbb; line-height: 1.9; letter-spacing: 0.06em; }
+
+    /* Bottom bar */
+    .bottom-bar { background: #141210; border-top: 1px solid rgba(199,170,139,0.1); padding: 11px 20px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .btn-primary { background: #C7AA8B; color: #141210; border: none; border-radius: 4px; padding: 8px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
+    .btn-primary:hover { opacity: 0.85; }
+    .flag-count { font-family: 'DM Mono', monospace; font-size: 10px; padding: 4px 10px; border-radius: 4px; background: rgba(212,113,74,0.1); border: 1px solid rgba(212,113,74,0.25); color: #D4714A; }
+    .flag-count.none { background: rgba(109,200,122,0.08); border-color: rgba(109,200,122,0.2); color: #6DC87A; }
+    .bottom-brand { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(247,247,247,0.15); }
+
+    /* Print — right panel only */
     @media print {
       body { background: white !important; overflow: visible !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       #root { height: auto !important; }
       .tool-layout { display: block !important; }
-      .form-panel, .tool-header, .bottom-bar { display: none !important; }
-      .doc-panel { padding: 0 !important; background: white !important; overflow: visible !important; }
-      .doc-sheet { box-shadow: none !important; max-width: 100% !important; }
+      .left-panel, .tool-header, .bottom-bar { display: none !important; }
+      .right-panel { padding: 0 !important; background: white !important; overflow: visible !important; }
+      .doc { box-shadow: none !important; max-width: 100% !important; }
     }
   </style>
 </head>
@@ -164,295 +199,284 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script type="text/babel">
 
-  const OVB_ORG_ID = "YOUR_ORG_ID";
-  const JT_PROXY   = "/api/jobtread.js";
-  const FIELD = {
-    JOB_STATUS:    "22P93aBUAE5W",
-    NOTES:         "22PCKJxczTan",
-    CONTACT_PHONE: "22P93aBeTXDg",
-    CONTACT_EMAIL: "22P93aBU4cbB",
-  };
-
+  // ── Stage definitions ─────────────────────────────────────────────────────
   const STAGES = {
-    demo_plans: {
-      label: "Demo + New Build — Plans in Hand",
-      isDemo: true,
-      feeHint: "Typical: $4,500 – $7,500",
-      intro: (c, a) => `This proposal outlines OVB's preconstruction services for ${c||'your project'} — demolition of the existing structure and construction of a new home${a?` at ${a}`:''}.  With stamped plans already in hand, our focus is getting the project permitted, accurately budgeted, and into construction with the right subcontractors in place.`,
-      scope: ["Demolition coordination — hazmat assessment referral, utility disconnect sequencing, demo permit","Constructability review of stamped plans with written feedback","Full line-item project budget developed against approved documents","Permit application preparation and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations","Value engineering recommendations where applicable"],
-      timeline: [
-        {step:"Precon Agreement Executed",desc:"50% deposit received — work begins"},
-        {step:"Site Visit & Demo Assessment",desc:"Existing conditions, hazmat flag if needed, utility coordination"},
-        {step:"Constructability Review",desc:"Plans reviewed, written feedback delivered"},
-        {step:"Budget Development",desc:"Full line-item estimate built to approved documents"},
-        {step:"Permit Submittal",desc:"Application prepared and submitted to jurisdiction"},
-        {step:"Subcontractor Bids",desc:"Trades solicited, bids leveled, recommendations delivered"},
-        {step:"Precon Complete",desc:"Balance invoiced — ready to execute construction contract"},
-      ],
-    },
-    demo_noplans: {
-      label: "Demo + New Build — No Plans Yet",
-      isDemo: true,
-      feeHint: "Typical: $7,500 – $15,000",
-      intro: (c, a) => `This proposal outlines OVB's design-build preconstruction services for ${c||'your project'} — including demolition of the existing structure and full design and construction of a new home${a?` at ${a}`:''}.  We manage the design team, coordinate permitting, and deliver a construction-ready project.`,
-      scope: ["Demolition coordination — hazmat assessment referral, utility disconnect sequencing, demo permit","Assembly and management of the design team (architect, structural engineer, required consultants)","Design phase management from schematic design through permit-ready construction documents","Full project budget developed in parallel with design","Permit application preparation and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations","Value engineering throughout design development"],
-      timeline: [
-        {step:"Precon Agreement Executed",desc:"50% deposit received — work begins"},
-        {step:"Site Visit & Demo Assessment",desc:"Existing conditions, hazmat flag if needed, utility coordination"},
-        {step:"Design Team Assembly",desc:"Architect and engineer engaged, design kickoff"},
-        {step:"Schematic Design",desc:"Concept plans developed with client review and approval"},
-        {step:"Construction Documents",desc:"Full permit-ready drawing set produced"},
-        {step:"Budget & Permit",desc:"Line-item estimate finalized, permit application submitted"},
-        {step:"Subcontractor Bids",desc:"Trades solicited, bids leveled, recommendations delivered"},
-        {step:"Precon Complete",desc:"Balance invoiced — ready to execute construction contract"},
-      ],
-    },
-    new_plans: {
-      label: "New Build — Plans in Hand",
-      isDemo: false,
-      feeHint: "Typical: $3,500 – $5,000",
-      intro: (c, a) => `This proposal outlines OVB's preconstruction services for ${c||'your project'} — a new home construction${a?` at ${a}`:''} with approved plans in hand.  Our focus is an accurate budget, a clean permit, and the right subcontractors lined up before we break ground.`,
-      scope: ["Constructability review of stamped plans with written feedback","Full line-item project budget developed against approved documents","Permit application preparation and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations","Value engineering recommendations where applicable"],
-      timeline: [
-        {step:"Precon Agreement Executed",desc:"50% deposit received — work begins"},
-        {step:"Site Visit",desc:"Site conditions, access, and utility locations documented"},
-        {step:"Constructability Review",desc:"Plans reviewed, written feedback delivered"},
-        {step:"Budget Development",desc:"Full line-item estimate built to approved documents"},
-        {step:"Permit Submittal",desc:"Application prepared and submitted to jurisdiction"},
-        {step:"Subcontractor Bids",desc:"Trades solicited, bids leveled, recommendations delivered"},
-        {step:"Precon Complete",desc:"Balance invoiced — ready to execute construction contract"},
-      ],
-    },
-    new_noplans: {
-      label: "New Build — No Plans Yet",
-      isDemo: false,
-      feeHint: "Typical: $7,500 – $15,000",
-      intro: (c, a) => `This proposal outlines OVB's design-build preconstruction services for ${c||'your project'} — a new home construction${a?` at ${a}`:''}.  We will manage your design team from concept through construction documents, coordinate permitting, and deliver a fully bid and budgeted project ready for construction.`,
-      scope: ["Assembly and management of the design team (architect, structural engineer, required consultants)","Design phase management from schematic design through permit-ready construction documents","Full project budget developed in parallel with design","Permit application preparation and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations","Value engineering throughout design development"],
-      timeline: [
-        {step:"Precon Agreement Executed",desc:"50% deposit received — work begins"},
-        {step:"Site Visit",desc:"Site conditions, access, and utility locations documented"},
-        {step:"Design Team Assembly",desc:"Architect and engineer engaged, design kickoff"},
-        {step:"Schematic Design",desc:"Concept plans developed with client review and approval"},
-        {step:"Construction Documents",desc:"Full permit-ready drawing set produced"},
-        {step:"Budget & Permit",desc:"Line-item estimate finalized, permit application submitted"},
-        {step:"Subcontractor Bids",desc:"Trades solicited, bids leveled, recommendations delivered"},
-        {step:"Precon Complete",desc:"Balance invoiced — ready to execute construction contract"},
-      ],
-    },
-    addition_plans: {
-      label: "Addition or Remodel — Plans in Hand",
-      isDemo: false,
-      feeHint: "Typical: $2,500 – $4,500",
-      intro: (c, a) => `This proposal outlines OVB's preconstruction services for ${c||'your project'} — a home addition or remodel${a?` at ${a}`:''} with stamped plans already in hand.  We'll get the project accurately budgeted, permitted, and subcontractor-ready before work begins.`,
-      scope: ["Site visit and existing conditions documentation","Constructability review of stamped plans with written feedback","Full line-item project budget developed against approved documents","Permit application preparation and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations"],
-      timeline: [
-        {step:"Precon Agreement Executed",desc:"50% deposit received — work begins"},
-        {step:"Site Visit",desc:"Existing conditions, structure, and utility documentation"},
-        {step:"Constructability Review",desc:"Plans reviewed, written feedback delivered"},
-        {step:"Budget Development",desc:"Full line-item estimate built to approved documents"},
-        {step:"Permit Submittal",desc:"Application prepared and submitted to jurisdiction"},
-        {step:"Subcontractor Bids",desc:"Trades solicited, bids leveled, recommendations delivered"},
-        {step:"Precon Complete",desc:"Balance invoiced — ready to execute construction contract"},
-      ],
-    },
-    addition_noplans: {
-      label: "Addition or Remodel — No Plans Yet",
-      isDemo: false,
-      feeHint: "Typical: $5,000 – $10,000",
-      intro: (c, a) => `This proposal outlines OVB's preconstruction services for ${c||'your project'} — a home addition or remodel${a?` at ${a}`:''}.  We'll coordinate your design team, manage the permitting process, and deliver a fully budgeted and bid project ready for construction.`,
-      scope: ["Site visit and existing conditions documentation","Coordination of the design team (architect, structural engineer as needed)","Design phase management through permit-ready construction documents","Full project budget developed in parallel with design","Permit application preparation and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations"],
-      timeline: [
-        {step:"Precon Agreement Executed",desc:"50% deposit received — work begins"},
-        {step:"Site Visit",desc:"Existing conditions, structure, and utility documentation"},
-        {step:"Design Development",desc:"Plans developed with client review through permit-ready set"},
-        {step:"Budget & Permit",desc:"Line-item estimate finalized, permit application submitted"},
-        {step:"Subcontractor Bids",desc:"Trades solicited, bids leveled, recommendations delivered"},
-        {step:"Precon Complete",desc:"Balance invoiced — ready to execute construction contract"},
-      ],
-    },
-    feasibility: {
-      label: "Feasibility / Budget Check Only",
-      isDemo: false,
-      feeHint: "Typical: $500 – $1,500",
-      intro: (c, a) => `This proposal outlines OVB's feasibility services for ${c||'your project'}${a?` at ${a}`:''}.  We'll assess the site, build a rough order-of-magnitude budget, and give you a clear go/no-go recommendation before you commit to design or construction costs.`,
-      scope: ["Site visit and existing conditions documentation","Rough order-of-magnitude (ROM) budget development","Identification of material risks, code considerations, and project unknowns","Written feasibility summary with go/no-go recommendation"],
-      timeline: [
-        {step:"Agreement Executed",desc:"Fee paid in full — work begins"},
-        {step:"Site Visit",desc:"Conditions assessment, measurements, photo documentation"},
-        {step:"ROM Budget",desc:"Order-of-magnitude estimate developed"},
-        {step:"Feasibility Summary",desc:"Written report and go/no-go recommendation delivered"},
-      ],
-    },
+    demo_plans:       { label: "Demo + New Build — Plans in Hand",    short: "Demo / New Build",     scope: ["Demolition coordination — hazmat referral, utility disconnects, demo permit","Constructability review of stamped plans","Full line-item project budget","Permit application and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations","Value engineering recommendations"] },
+    demo_noplans:     { label: "Demo + New Build — No Plans Yet",      short: "Demo / Design-Build",  scope: ["Demolition coordination — hazmat referral, utility disconnects, demo permit","Design team assembly and management (architect, engineer, consultants)","Design phase management through permit-ready construction documents","Full project budget in parallel with design","Permit application and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations","Value engineering throughout design"] },
+    new_plans:        { label: "New Build — Plans in Hand",            short: "New Construction",     scope: ["Constructability review of stamped plans","Full line-item project budget","Permit application and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations","Value engineering recommendations"] },
+    new_noplans:      { label: "New Build — No Plans Yet",             short: "New Design-Build",     scope: ["Design team assembly and management (architect, engineer, consultants)","Design phase management through permit-ready construction documents","Full project budget in parallel with design","Permit application and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations","Value engineering throughout design"] },
+    addition_plans:   { label: "Addition or Remodel — Plans in Hand",  short: "Addition / Remodel",   scope: ["Site visit and existing conditions documentation","Constructability review of stamped plans","Full line-item project budget","Permit application and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations"] },
+    addition_noplans: { label: "Addition or Remodel — No Plans Yet",   short: "Addition / Remodel",   scope: ["Site visit and existing conditions documentation","Design coordination through permit-ready documents","Full project budget in parallel with design","Permit application and submittal coordination","Subcontractor solicitation, bid leveling, and award recommendations"] },
+    feasibility:      { label: "Feasibility / Budget Check Only",       short: "Feasibility",          scope: ["Site visit and existing conditions documentation","Rough order-of-magnitude (ROM) budget","Material risk and code considerations review","Written feasibility summary with go/no-go recommendation"] },
   };
 
-  function fmtMoney(n) { if (!n||n===''||isNaN(Number(n))) return '—'; return '$'+Number(n).toLocaleString('en-US'); }
-  function halfOf(n)    { if (!n||n===''||isNaN(Number(n))) return '—'; return '$'+(Number(n)/2).toLocaleString('en-US'); }
-  function safe(s)      { return (s||'').replace(/"/g,"'").replace(/\n/g,'\\n'); }
-  function today()      { return new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
+  const FINISH_LEVELS = [
+    { key: 'budget',  label: 'Builder Grade',  cls: 'fb-budget',  hint: 'Stock cabinets, LVP floors, builder fixtures throughout' },
+    { key: 'mid',     label: 'Mid Grade',       cls: 'fb-mid',     hint: 'Semi-custom cabinets, hardwood, upgraded fixtures' },
+    { key: 'high',    label: 'High End',        cls: 'fb-high',    hint: 'Custom cabinets, stone, designer fixtures, smart home' },
+    { key: 'luxury',  label: 'Luxury / Custom', cls: 'fb-luxury',  hint: 'Full custom, imported materials, premium everything' },
+  ];
 
+  const RISK_FLAGS = [
+    { key: 'hazmat',      label: 'Pre-1978 structure',           note: 'Hazmat assessment required before demo' },
+    { key: 'occupied',    label: 'Occupied during construction',  note: 'Schedule, sequencing, and dust/noise management' },
+    { key: 'septic',      label: 'Septic or well (not municipal)',note: 'Engineering and perc test may be required' },
+    { key: 'hoa',         label: 'HOA involvement',               note: 'Approval process, design review, restrictions' },
+    { key: 'slope',       label: 'Slope, drainage, or access',    note: 'Site work costs and engineering implications' },
+    { key: 'structural',  label: 'Structural unknowns',           note: 'Foundation, framing, or load path concerns' },
+    { key: 'plans',       label: 'Plans incomplete or unresolved',note: 'Design gaps that will affect budget accuracy' },
+    { key: 'decisions',   label: 'Multiple decision makers',      note: 'Approval chain may slow precon process' },
+    { key: 'financing',   label: 'Financing not secured',         note: 'Construction loan or cash position unconfirmed' },
+    { key: 'budget',      label: 'Budget misalignment',           note: 'Client expectation vs. realistic cost gap' },
+    { key: 'timeline',    label: 'Unrealistic timeline',          note: 'Permit, design, or lead times may conflict' },
+  ];
+
+  // Client-facing label for flagged items (professional, not scary)
+  const FLAG_RESOLVE = {
+    hazmat:     'Pre-demo hazmat assessment — coordination and referral included',
+    occupied:   'Occupied construction plan — sequencing and phasing strategy',
+    septic:     'Septic / well coordination — engineering requirements identified early',
+    hoa:        'HOA approval process — submission and review timeline mapped',
+    slope:      'Site work planning — drainage and access engineering coordinated',
+    structural: 'Structural review — load path and foundation confirmation',
+    plans:      'Design gap resolution — document completeness before bidding',
+    decisions:  'Stakeholder alignment — decision process mapped before precon begins',
+    financing:  'Financing coordination — timeline aligned to loan or cash position',
+    budget:     'Budget reality check — scope and expectations aligned early',
+    timeline:   'Schedule validation — permit, design, and lead time reality check',
+  };
+
+  function today() { return new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
+  function fmtM(n) { if(!n||isNaN(Number(n))) return '—'; return '$'+Number(n).toLocaleString('en-US'); }
+  function halfM(n){ if(!n||isNaN(Number(n))) return '—'; return '$'+(Number(n)/2).toLocaleString('en-US'); }
+
+  // ── App ───────────────────────────────────────────────────────────────────
   function App() {
-    const [mode,       setMode]    = React.useState('new');
-    const [pushing,    setPushing] = React.useState(false);
-    const [pushMsg,    setPushMsg] = React.useState(null);
     const [form, setForm] = React.useState({
-      clientName:'', clientPhone:'', clientEmail:'', existingRef:'',
-      projectAddress:'', stage:'demo_plans',
-      estimatedBudget:'', preconFee:'', includedHours:'', tmRate:'',
-      duration:'', proposalDate:today(), notes:'',
+      clientName: '', projectAddress: '', stage: 'demo_plans',
+      finish: '', budgetAlign: '', estBudget: '', preconFee: '',
+      duration: '', propDate: today(),
+      siteNotes: '', scopeNotes: '', internalNotes: '',
     });
-    const set = (k,v) => setForm(f=>({...f,[k]:v}));
-    const stage       = STAGES[form.stage];
-    const isFeasib    = form.stage === 'feasibility';
+    const [flags,   setFlags]   = React.useState({});
+    const [copied,  setCopied]  = React.useState(false);
 
-    async function handlePush() {
-      if (!form.clientName) return;
-      setPushing(true); setPushMsg(null);
-      try {
-        let contactId = null;
-        if (mode === 'new') {
-          const r = await fetch(JT_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:`mutation{createContact(input:{organizationId:"${OVB_ORG_ID}"name:"${safe(form.clientName)}"customFieldValues:[{customFieldId:"${FIELD.CONTACT_PHONE}"value:"${safe(form.clientPhone)}"}{customFieldId:"${FIELD.CONTACT_EMAIL}"value:"${safe(form.clientEmail)}"}]}){id}}`})});
-          const d = await r.json();
-          contactId = d?.data?.createContact?.id;
-          if (!contactId) throw new Error('Contact creation failed');
-        }
-        const noteLines = [`PRECON PROPOSAL — ${form.proposalDate}`,`Stage: ${stage.label}`,`Precon Fee: ${fmtMoney(form.preconFee)} (50/50 payment schedule)`,form.estimatedBudget?`Est. Budget: ${fmtMoney(form.estimatedBudget)}`:'',form.duration?`Duration: ${form.duration}`:'',form.includedHours?`Included Hrs: ${form.includedHours} · T&M: ${fmtMoney(form.tmRate)}/hr`:'',form.notes?`Notes: ${form.notes}`:'',mode==='existing'?`Existing ref: ${form.existingRef}`:''].filter(Boolean).join('\\n');
-        const jobName = `${form.clientName} — Precon — ${form.projectAddress||'TBD'}`;
-        const jr = await fetch(JT_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:`mutation{createJob(input:{organizationId:"${OVB_ORG_ID}"name:"${safe(jobName)}"${contactId?`contactId:"${contactId}"`:''}customFieldValues:[{customFieldId:"${FIELD.JOB_STATUS}"value:"Estimating"}{customFieldId:"${FIELD.NOTES}"value:"${noteLines}"}]}){id}}`})});
-        const jd = await jr.json();
-        if (!jd?.data?.createJob?.id) throw new Error('Job creation failed');
-        setPushMsg({ok:true,text:'Job created in JT. Set Project Phase → Pre-Construction manually.'});
-      } catch(e) { setPushMsg({ok:false,text:e.message||'Push failed'}); }
-      finally { setPushing(false); }
+    const set = (k,v) => setForm(f=>({...f,[k]:v}));
+    const toggleFlag = k => setFlags(f=>({...f,[k]:!f[k]}));
+
+    const stage        = STAGES[form.stage];
+    const activeFlags  = RISK_FLAGS.filter(f => flags[f.key]);
+    const flagCount    = activeFlags.length;
+    const finishObj    = FINISH_LEVELS.find(f=>f.key===form.finish);
+    const isFeasib     = form.stage === 'feasibility';
+
+    function buildBrief() {
+      const lines = [
+        `OVB PRECON PROJECT BRIEF — ${form.propDate}`,
+        `Client: ${form.clientName||'—'}`,
+        `Address: ${form.projectAddress||'—'}`,
+        `Stage: ${stage.label}`,
+        `Finish Level: ${finishObj?.label||'Not selected'}`,
+        `Budget Alignment: ${form.budgetAlign||'Not assessed'}`,
+        `Est. Construction Budget: ${fmtM(form.estBudget)}`,
+        `Precon Fee: ${fmtM(form.preconFee)}`,
+        `Est. Duration: ${form.duration||'—'}`,
+        '',
+        `RISK FLAGS (${flagCount}):`,
+        ...activeFlags.map(f=>`  ⚠ ${f.label} — ${f.note}`),
+        flagCount===0 ? '  None flagged' : '',
+        '',
+        form.siteNotes    ? `SITE & CONDITIONS:\n${form.siteNotes}` : '',
+        form.scopeNotes   ? `SCOPE OBSERVATIONS:\n${form.scopeNotes}` : '',
+        form.internalNotes? `INTERNAL NOTES:\n${form.internalNotes}` : '',
+      ].filter(l=>l!==undefined).join('\n').trim();
+      return lines;
     }
 
-    const clientDisplay  = form.clientName      || 'Client Name';
-    const addressDisplay = form.projectAddress   || 'Project Address';
+    function handleCopy() {
+      navigator.clipboard.writeText(buildBrief()).then(()=>{
+        setCopied(true);
+        setTimeout(()=>setCopied(false), 2200);
+      });
+    }
 
+    // ── Render ──────────────────────────────────────────────────────────────
     return (
       <div style={{display:'flex',flexDirection:'column',height:'100vh'}}>
 
+        {/* Header */}
         <div className="tool-header">
-          <div className="tool-header-title">Precon Proposal</div>
-          <div className="tool-header-badge">Sales · PDF · JT Push</div>
-          <div className="tool-header-sub">OVB Tools · GC #14219939-5501</div>
+          <div className="th-title">Precon Sales</div>
+          <div className="th-badge">Client-Facing</div>
+          <div className="th-internal">● Internal Capture</div>
+          <div className="th-sub">OVB Tools · GC #14219939-5501</div>
         </div>
 
         <div className="tool-layout">
 
-          {/* ═══ FORM ═══ */}
-          <div className="form-panel">
-            <div className="section-label">01 · Client</div>
-            <div className="toggle-group">
-              <button className={`toggle-btn ${mode==='new'?'active':''}`} onClick={()=>setMode('new')}>New Customer</button>
-              <button className={`toggle-btn ${mode==='existing'?'active':''}`} onClick={()=>setMode('existing')}>Existing</button>
-            </div>
-            {mode==='new'?(<>
-              <label>Client Name</label>
-              <input type="text" value={form.clientName} onChange={e=>set('clientName',e.target.value)} placeholder="Full name" />
-              <div className="row-2" style={{marginTop:11}}>
-                <div><label>Phone</label><input type="tel" value={form.clientPhone} onChange={e=>set('clientPhone',e.target.value)} placeholder="(385) 000-0000" /></div>
-                <div><label>Email</label><input type="email" value={form.clientEmail} onChange={e=>set('clientEmail',e.target.value)} placeholder="email@domain.com" /></div>
-              </div>
-            </>):(<>
-              <label>Client Name</label>
-              <input type="text" value={form.clientName} onChange={e=>set('clientName',e.target.value)} placeholder="Full name (for document)" />
-              <label>Existing JT Ref</label>
-              <input type="text" value={form.existingRef} onChange={e=>set('existingRef',e.target.value)} placeholder="Customer name or JT job #" />
-              <div className="info-note">Job will be created — link existing customer in JT after push.</div>
-            </>)}
+          {/* ═══════════════════════════════ */}
+          {/*       LEFT — INTERNAL          */}
+          {/* ═══════════════════════════════ */}
+          <div className="left-panel">
 
-            <hr className="divider" />
-            <div className="section-label">02 · Project</div>
+            <div className="sec-label">01 · Client & Project</div>
+            <label>Client Name</label>
+            <input type="text" value={form.clientName} onChange={e=>set('clientName',e.target.value)} placeholder="Full name" />
             <label>Project Address</label>
             <input type="text" value={form.projectAddress} onChange={e=>set('projectAddress',e.target.value)} placeholder="Street address or city" />
             <label>Where are we starting?</label>
             <select value={form.stage} onChange={e=>set('stage',e.target.value)}>
               {Object.entries(STAGES).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
             </select>
-            {stage.isDemo && (
-              <div className="demo-flag">
-                <strong>⚠ Demo flag active</strong>
-                Pre-1978 structure — hazmat assessment required before demo. Utility disconnects and demo permit included in scope.
+            <div className="row-2" style={{marginTop:11}}>
+              <div><label>Proposal Date</label><input type="text" value={form.propDate} onChange={e=>set('propDate',e.target.value)} /></div>
+              <div><label>Est. Duration</label><input type="text" value={form.duration} onChange={e=>set('duration',e.target.value)} placeholder="6–8 wks" /></div>
+            </div>
+
+            <hr className="divider" />
+            <div className="sec-label">02 · Finish Level</div>
+            <div className="finish-grid">
+              {FINISH_LEVELS.map(f=>(
+                <button key={f.key} className={`finish-btn ${form.finish===f.key?'active':''}`} onClick={()=>set('finish',f.key)}>{f.label}</button>
+              ))}
+            </div>
+            {finishObj && <div className="finish-hint">{finishObj.hint}</div>}
+
+            <hr className="divider" />
+            <div className="sec-label">03 · Budget Reality</div>
+            <div className="row-2" style={{marginTop:2}}>
+              <div>
+                <label>Est. Construction Budget</label>
+                <div style={{position:'relative'}}>
+                  <span style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'rgba(247,247,247,0.3)',fontFamily:"'DM Mono',monospace",fontSize:13,pointerEvents:'none'}}>$</span>
+                  <input type="number" value={form.estBudget} onChange={e=>set('estBudget',e.target.value)} placeholder="0" style={{paddingLeft:20}} />
+                </div>
               </div>
-            )}
+              <div>
+                <label>Precon Fee</label>
+                <div style={{position:'relative'}}>
+                  <span style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'rgba(247,247,247,0.3)',fontFamily:"'DM Mono',monospace",fontSize:13,pointerEvents:'none'}}>$</span>
+                  <input type="number" value={form.preconFee} onChange={e=>set('preconFee',e.target.value)} placeholder="0" style={{paddingLeft:20}} />
+                </div>
+              </div>
+            </div>
+            <label>Budget Alignment</label>
+            <div className="align-grid">
+              {[{k:'Aligned',c:'green'},{k:'Soft',c:'yellow'},{k:'Misaligned',c:'red'}].map(({k,c})=>(
+                <button key={k} className={`align-btn ${c} ${form.budgetAlign===k?'active':''}`} onClick={()=>set('budgetAlign',k)}>{k}</button>
+              ))}
+            </div>
 
             <hr className="divider" />
-            <div className="section-label">03 · Fees</div>
-            <label>Est. Construction Budget</label>
-            <div className="money-wrap"><span className="sym">$</span><input type="number" value={form.estimatedBudget} onChange={e=>set('estimatedBudget',e.target.value)} placeholder="For reference only" /></div>
-            <label>Precon Fee</label>
-            <div className="money-wrap"><span className="sym">$</span><input type="number" value={form.preconFee} onChange={e=>set('preconFee',e.target.value)} placeholder="0" /></div>
-            <div className="fee-hint">{stage.feeHint}</div>
-            {!isFeasib&&(<div className="row-2" style={{marginTop:11}}>
-              <div><label>Included Hours</label><input type="number" value={form.includedHours} onChange={e=>set('includedHours',e.target.value)} placeholder="e.g. 20" /></div>
-              <div><label>T&amp;M Rate $/hr</label><div className="money-wrap"><span className="sym">$</span><input type="number" value={form.tmRate} onChange={e=>set('tmRate',e.target.value)} placeholder="0" /></div></div>
-            </div>)}
+            <div className="sec-label">04 · Risk Flags</div>
+            <div className="flag-list">
+              {RISK_FLAGS.map(f=>(
+                <div key={f.key} className={`flag-item ${flags[f.key]?'flagged':''}`} onClick={()=>toggleFlag(f.key)}>
+                  <div className="flag-dot"></div>
+                  <div>
+                    <div className="flag-text">{f.label}</div>
+                    <div className="flag-note">{f.note}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             <hr className="divider" />
-            <div className="section-label">04 · Details</div>
-            <label>Proposal Date</label>
-            <input type="text" value={form.proposalDate} onChange={e=>set('proposalDate',e.target.value)} />
-            <label>Estimated Duration</label>
-            <input type="text" value={form.duration} onChange={e=>set('duration',e.target.value)} placeholder="e.g. 6–8 weeks" />
-            <label>Internal Notes (JT push only)</label>
-            <textarea value={form.notes} onChange={e=>set('notes',e.target.value)} placeholder="Anything to capture in JT..." />
-            <div style={{height:80}} />
+            <div className="sec-label">05 · Field Notes</div>
+            <label>Site & Conditions</label>
+            <textarea value={form.siteNotes} onChange={e=>set('siteNotes',e.target.value)} placeholder="Access, topography, utilities, existing structure observations..." />
+            <label>Scope Observations</label>
+            <textarea value={form.scopeNotes} onChange={e=>set('scopeNotes',e.target.value)} placeholder="Client wish list, scope drivers, items to watch..." />
+            <label>Internal Notes</label>
+            <textarea value={form.internalNotes} onChange={e=>set('internalNotes',e.target.value)} placeholder="Anything else for the file..." />
+
+            <button className={`copy-btn ${copied?'copied':''}`} onClick={handleCopy}>
+              {copied ? '✓ Brief Copied — Paste into JT' : 'Copy Project Brief → JT'}
+            </button>
+
+            <div style={{height:24}} />
           </div>
 
-          {/* ═══ DOCUMENT ═══ */}
-          <div className="doc-panel">
-            <div className="doc-sheet">
+          {/* ═══════════════════════════════ */}
+          {/*    RIGHT — CLIENT FACING        */}
+          {/* ═══════════════════════════════ */}
+          <div className="right-panel">
+            <div className="doc">
 
-              <div className="doc-header-band">
+              {/* Header */}
+              <div className="doc-head">
                 <div>
-                  <div className="doc-proposal-eyebrow">Preconstruction Proposal</div>
-                  <div className="doc-proposal-title">{addressDisplay}</div>
-                  <div className="doc-proposal-client">Prepared for {clientDisplay} · {form.proposalDate}</div>
+                  <div className="doc-eyebrow">Preconstruction Services</div>
+                  <div className="doc-title">{form.projectAddress||'Your Project'}</div>
+                  <div className="doc-client-line">
+                    Prepared for {form.clientName||'Client'} · {form.propDate}
+                    {finishObj && <span className={`finish-badge ${finishObj.cls}`} style={{marginLeft:10}}>{finishObj.label}</span>}
+                  </div>
                 </div>
-                <div className="doc-header-right">
+                <div className="doc-logo-block">
                   <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png" alt="OVB" />
-                  <div className="doc-header-meta">GC #14219939-5501<br />(385) 288-7921<br />Weber &amp; Morgan County, UT</div>
+                  <div className="doc-logo-meta">GC #14219939-5501<br />(385) 288-7921<br />Weber & Morgan County</div>
                 </div>
               </div>
-              <div className="doc-accent-bar"></div>
+              <div className="doc-accent"></div>
 
-              <div className="doc-project-strip">
-                <div className="doc-project-cell">
-                  <div className="doc-cell-label">Client</div>
-                  <div className={`doc-cell-value ${!form.clientName?'empty':''}`}>{clientDisplay}</div>
+              {/* Project strip */}
+              <div className="doc-strip">
+                <div className="strip-cell">
+                  <div className="strip-lbl">Client</div>
+                  <div className={`strip-val ${!form.clientName?'empty':''}`}>{form.clientName||'—'}</div>
                 </div>
-                <div className="doc-project-cell">
-                  <div className="doc-cell-label">Engagement</div>
-                  <div className="doc-cell-value">{stage.label}</div>
+                <div className="strip-cell">
+                  <div className="strip-lbl">Project Type</div>
+                  <div className="strip-val">{stage.short}</div>
                 </div>
-                <div className="doc-project-cell">
-                  <div className="doc-cell-label">Est. Duration</div>
-                  <div className={`doc-cell-value ${!form.duration?'empty':''}`}>{form.duration||'—'}</div>
+                <div className="strip-cell">
+                  <div className="strip-lbl">Est. Duration</div>
+                  <div className={`strip-val ${!form.duration?'empty':''}`}>{form.duration||'—'}</div>
+                </div>
+                <div className="strip-cell">
+                  <div className="strip-lbl">Items to Resolve</div>
+                  <div className={`strip-val ${flagCount>0?'warn':''}`}>{flagCount > 0 ? `${flagCount} flagged` : 'None flagged'}</div>
                 </div>
               </div>
 
-              <div className="doc-body-wrap">
+              <div className="doc-body">
 
-                {stage.isDemo&&(
-                  <div className="doc-demo-callout">
-                    <div className="doc-demo-icon">⚠️</div>
-                    <div className="doc-demo-text">
-                      <strong>Pre-Demolition Notice</strong>
-                      Structures built prior to 1978 may contain asbestos and/or lead-based materials. A licensed hazmat assessment is required before demolition can commence. OVB will coordinate assessment referral as part of preconstruction. Utility disconnects and demolition permitting are included in scope.
+                {/* Without precon vs. with */}
+                <div className="doc-section">
+                  <div className="doc-sec-head">
+                    <div className="doc-sec-num">1</div>
+                    <div className="doc-sec-title">Why Preconstruction?</div>
+                  </div>
+                  <div className="fear-grid">
+                    <div className="fear-card">
+                      <div className="fear-card-head">⚠ Without Precon</div>
+                      <div className="fear-card-body">You don't know your real number until you're already committed. Budget surprises, permit delays, and the wrong subs land mid-build — when changing course is expensive.</div>
+                    </div>
+                    <div className="fear-card">
+                      <div className="fear-card-head">⚠ The Real Risk</div>
+                      <div className="fear-card-body">Most cost overruns trace back to decisions that weren't made — or numbers that weren't built — before ground broke. Precon is where those decisions get made on paper, not in concrete.</div>
                     </div>
                   </div>
-                )}
-
-                <p className="doc-intro">{stage.intro(form.clientName, form.projectAddress)}</p>
-
-                {/* 1 — What's Included */}
-                <div className="doc-section">
-                  <div className="doc-section-head">
-                    <div className="doc-section-num">1</div>
-                    <div className="doc-section-title">What's Included</div>
+                  <div className="value-grid">
+                    <div className="value-card">
+                      <div className="value-card-head">✓ Know Your Number</div>
+                      <div className="value-card-body">A full line-item budget built against your actual plans before you commit to construction. No assumptions, no guesses.</div>
+                    </div>
+                    <div className="value-card">
+                      <div className="value-card-head">✓ Right Subs, Ready to Go</div>
+                      <div className="value-card-body">Trades solicited, bids leveled, and award recommendations in hand before you break ground. No scrambling mid-project.</div>
+                    </div>
                   </div>
-                  <div className="scope-grid">
+                </div>
+
+                {/* What's included */}
+                <div className="doc-section">
+                  <div className="doc-sec-head">
+                    <div className="doc-sec-num">2</div>
+                    <div className="doc-sec-title">What's Included — {stage.short}</div>
+                  </div>
+                  <div className="scope-list">
                     {stage.scope.map((s,i)=>(
                       <div key={i} className="scope-item">
                         <div className="scope-check"></div>
@@ -462,101 +486,97 @@
                   </div>
                 </div>
 
-                {/* 2 — Investment */}
+                {/* Items to resolve */}
                 <div className="doc-section">
-                  <div className="doc-section-head">
-                    <div className="doc-section-num">2</div>
-                    <div className="doc-section-title">Your Investment</div>
+                  <div className="doc-sec-head">
+                    <div className="doc-sec-num">3</div>
+                    <div className="doc-sec-title">Items We'll Resolve Before Ground Breaks</div>
                   </div>
-                  <div className="investment-card">
-                    {isFeasib?(
-                      <>
-                        <div className="inv-row"><div>Feasibility fee — paid in full to begin</div><div className="inv-amount">{fmtMoney(form.preconFee)}</div></div>
-                        <div className="inv-row total"><div>Total Preconstruction Fee</div><div className="inv-amount">{fmtMoney(form.preconFee)}</div></div>
-                      </>
-                    ):(
-                      <>
-                        <div className="inv-row">
-                          <div><div>50% deposit — due upon signing</div><div className="inv-sub">Work begins upon receipt</div></div>
-                          <div className="inv-amount">{halfOf(form.preconFee)}</div>
+                  {flagCount === 0 ? (
+                    <div className="no-flags">No project-specific items flagged at this time.</div>
+                  ) : (
+                    <div className="resolve-list">
+                      {activeFlags.map(f=>(
+                        <div key={f.key} className="resolve-item">
+                          <div className="resolve-dot"></div>
+                          <span>{FLAG_RESOLVE[f.key]}</span>
                         </div>
-                        <div className="inv-row">
-                          <div><div>50% balance — due at precon completion</div><div className="inv-sub">Invoiced when deliverables are complete</div></div>
-                          <div className="inv-amount">{halfOf(form.preconFee)}</div>
-                        </div>
-                        {form.includedHours&&form.tmRate&&(
-                          <div className="inv-row">
-                            <div><div>Time &amp; materials — if applicable</div><div className="inv-sub">{form.includedHours} hrs included · {fmtMoney(form.tmRate)}/hr after · written notice before overage</div></div>
-                            <div className="inv-amount" style={{color:'#bbb',fontSize:11}}>As incurred</div>
-                          </div>
-                        )}
-                        <div className="inv-row total"><div>Total Preconstruction Fee</div><div className="inv-amount">{fmtMoney(form.preconFee)}</div></div>
-                      </>
-                    )}
-                  </div>
-                  <div className="credit-callout">
-                    <strong>✓ 100% credited toward construction</strong> — If you move forward with OVB as your general contractor, the full preconstruction fee is credited toward our fee on the construction contract. You don't pay twice.
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* 3 — How It Works */}
+                {/* Investment */}
                 <div className="doc-section">
-                  <div className="doc-section-head">
-                    <div className="doc-section-num">3</div>
-                    <div className="doc-section-title">How It Works</div>
+                  <div className="doc-sec-head">
+                    <div className="doc-sec-num">4</div>
+                    <div className="doc-sec-title">Your Investment</div>
                   </div>
-                  <div className="timeline">
-                    {stage.timeline.map((t,i)=>(
-                      <div key={i} className="tl-item">
-                        <div className="tl-left"><div className="tl-dot"></div><div className="tl-line"></div></div>
-                        <div className="tl-content">
-                          <div className="tl-step">{t.step}</div>
-                          <div className="tl-desc">{t.desc}</div>
-                        </div>
+                  <div className="inv-card">
+                    {isFeasib ? (<>
+                      <div className="inv-row"><div>Feasibility fee — paid in full to begin</div><div className="inv-amt">{fmtM(form.preconFee)}</div></div>
+                      <div className="inv-row total"><div>Total Preconstruction Fee</div><div className="inv-amt">{fmtM(form.preconFee)}</div></div>
+                    </>) : (<>
+                      <div className="inv-row">
+                        <div><div>50% deposit — due upon signing</div><div className="inv-sub">Work begins upon receipt</div></div>
+                        <div className="inv-amt">{halfM(form.preconFee)}</div>
                       </div>
-                    ))}
+                      <div className="inv-row">
+                        <div><div>50% balance — due at precon completion</div><div className="inv-sub">Invoiced when deliverables are complete</div></div>
+                        <div className="inv-amt">{halfM(form.preconFee)}</div>
+                      </div>
+                      <div className="inv-row total"><div>Total Preconstruction Fee</div><div className="inv-amt">{fmtM(form.preconFee)}</div></div>
+                    </>)}
+                  </div>
+                  <div className="credit-box">
+                    <div className="credit-icon">💰</div>
+                    <div className="credit-body">
+                      <strong>100% credited toward your construction contract</strong>
+                      If you move forward with OVB, every dollar of the precon fee comes off our fee on the construction contract. You're not paying for precon on top of construction — you're paying ahead.
+                    </div>
                   </div>
                 </div>
 
-                {/* 4 — Why OVB */}
+                {/* Why OVB */}
                 <div className="doc-section">
-                  <div className="doc-section-head">
-                    <div className="doc-section-num">4</div>
-                    <div className="doc-section-title">Why Ogden Valley Builders</div>
+                  <div className="doc-sec-head">
+                    <div className="doc-sec-num">5</div>
+                    <div className="doc-sec-title">Why Ogden Valley Builders</div>
                   </div>
                   <div className="why-grid">
-                    <div className="why-item"><div className="why-stat">36mo</div><div className="why-label">Warranty standard — 3× the Utah requirement</div></div>
-                    <div className="why-item"><div className="why-stat">Open</div><div className="why-label">Cost-plus open-book — you see every dollar</div></div>
-                    <div className="why-item"><div className="why-stat">Local</div><div className="why-label">Weber &amp; Morgan County — we know your jurisdiction</div></div>
+                    <div className="why-card"><div className="why-stat">36mo</div><div className="why-lbl">Warranty standard — 3× the Utah requirement</div></div>
+                    <div className="why-card"><div className="why-stat">Open</div><div className="why-lbl">Cost-plus open-book — you see every dollar</div></div>
+                    <div className="why-card"><div className="why-stat">Local</div><div className="why-lbl">Weber & Morgan County — we know your jurisdiction</div></div>
                   </div>
                 </div>
 
                 {/* CTA */}
-                <div className="cta-block">
+                <div className="cta">
                   <div>
-                    <div className="cta-headline">Ready to get started?</div>
-                    <div className="cta-sub">Sign and return with a 50% deposit of {halfOf(form.preconFee)} to begin.{isFeasib?' Full fee due to begin.':''} A formal construction agreement follows once precon is complete.</div>
+                    <div className="cta-hl">Ready to know your real number?</div>
+                    <div className="cta-sub">Preconstruction starts with a signed agreement and {isFeasib?'payment in full':(`deposit of ${halfM(form.preconFee)}`)}. A formal construction agreement follows once precon is complete.</div>
                   </div>
                   <div className="cta-pill">Let's Build →</div>
                 </div>
 
                 <div className="doc-footer">
                   Ogden Valley Builders, LLC · GC License #14219939-5501 · (385) 288-7921 · info@ogdenvalleybuilders.com<br />
-                  Weber &amp; Morgan County, Utah · 36-Month Warranty · Cost-Plus Open-Book Pricing
+                  Weber & Morgan County, Utah · 36-Month Warranty Standard · Cost-Plus Open-Book Pricing
                 </div>
 
               </div>
             </div>
           </div>
+
         </div>
 
+        {/* Bottom bar */}
         <div className="bottom-bar">
-          <button className="btn-primary" onClick={()=>window.print()}>Print PDF</button>
-          <button className="btn-outline" onClick={handlePush} disabled={pushing||!form.clientName}>
-            {pushing?'Pushing...':'Push to JobTread'}
-          </button>
-          {pushMsg&&<div className={`push-status ${pushMsg.ok?'push-ok':'push-err'}`}>{pushMsg.text}</div>}
-          <div className="bottom-brand">OVB Tools · Precon Proposal</div>
+          <button className="btn-primary" onClick={()=>window.print()}>Print / Save PDF</button>
+          <div className={`flag-count ${flagCount===0?'none':''}`}>
+            {flagCount===0 ? '✓ No flags' : `⚠ ${flagCount} flag${flagCount>1?'s':''} active`}
+          </div>
+          <div className="bottom-brand">OVB Tools · Precon Sales</div>
         </div>
 
       </div>
