@@ -489,96 +489,106 @@
         font-size: 6.5pt; color: #AAA;
       }
     }
-    /* ── COST GUIDE PANEL ── */
-    .cost-guide-overlay {
-      position: absolute; inset: 0;
-      background: var(--bg);
-      z-index: 100;
-      display: flex; flex-direction: column;
-      animation: slideInRight 0.16s ease-out;
-    }
-    @keyframes slideInRight {
-      from { transform: translateX(40px); opacity: 0; }
-      to   { transform: translateX(0);    opacity: 1; }
-    }
-    .cg-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 20px;
-      background: var(--bg-deep);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0; gap: 12px;
-    }
-    .cg-title { font-size: 15px; font-weight: 600; color: var(--smoke); }
-    .cg-subtitle { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--tan); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1px; }
-    .cg-close {
-      background: none; border: 1px solid var(--border-mid);
-      border-radius: var(--r); color: var(--muted);
-      font-family: 'DM Mono', monospace; font-size: 10px;
-      padding: 6px 14px; cursor: pointer; white-space: nowrap;
-      transition: background 0.12s, color 0.12s;
-    }
-    .cg-close:hover { background: var(--tan-dim); color: var(--smoke); }
-    .cg-nav {
-      display: flex; gap: 4px; flex-wrap: wrap;
-      padding: 9px 16px;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0; background: var(--bg-deep);
-    }
-    .cg-nav-pill {
-      background: none; border: 1px solid var(--border);
-      border-radius: 20px; padding: 3px 10px;
-      font-family: 'DM Mono', monospace; font-size: 8px;
-      letter-spacing: 0.05em; text-transform: uppercase;
-      color: var(--muted); cursor: pointer;
-      transition: background 0.1s, color 0.1s, border-color 0.1s;
-      white-space: nowrap;
-    }
-    .cg-nav-pill:hover  { background: var(--tan-dim); color: var(--smoke); border-color: var(--border-mid); }
-    .cg-nav-pill.active { background: var(--tan-dim); color: var(--tan);   border-color: var(--tan); }
-    .cg-body { flex: 1; overflow-y: auto; padding: 18px 20px 80px; }
-    .cg-body::-webkit-scrollbar { width: 3px; }
-    .cg-body::-webkit-scrollbar-thumb { background: var(--border-mid); }
-    .cg-section { margin-bottom: 28px; }
-    .cg-section-title {
-      font-family: 'DM Mono', monospace; font-size: 9px;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--tan); margin-bottom: 12px;
-      padding-bottom: 7px; border-bottom: 1px solid var(--border);
-    }
-    .cg-item { margin-bottom: 16px; }
-    .cg-item-name { font-size: 13px; font-weight: 600; color: var(--smoke); margin-bottom: 1px; }
-    .cg-item-unit { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--muted); margin-bottom: 8px; }
-    .cg-tiers { display: flex; flex-direction: column; gap: 3px; }
-    .cg-tier {
-      display: grid; grid-template-columns: 78px 140px 1fr;
-      align-items: start; gap: 12px;
-      padding: 7px 11px; border-radius: var(--r);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.025);
-    }
-    .cg-tier-label { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; padding-top: 1px; }
-    .cg-tier-range { font-size: 12.5px; font-weight: 700; color: var(--smoke); }
-    .cg-tier-note { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
-    .tier-Builder  { border-color: rgba(242,239,232,0.07); }
-    .tier-Builder  .cg-tier-label { color: rgba(242,239,232,0.35); }
-    .tier-Mid      { border-color: rgba(199,170,139,0.18); }
-    .tier-Mid      .cg-tier-label { color: var(--tan); }
-    .tier-Premium  { border-color: rgba(111,168,220,0.2); }
-    .tier-Premium  .cg-tier-label { color: #6FA8DC; }
-    .tier-Luxury   { border-color: rgba(212,175,55,0.24); background: rgba(212,175,55,0.04); }
-    .tier-Luxury   .cg-tier-label { color: #D4AF37; }
 
-    /* ── INFO BUTTON (per row) ── */
-    .info-btn {
-      flex-shrink: 0; width: 24px; height: 24px;
-      border-radius: 50%; border: 1px solid var(--border-mid);
-      background: none; color: rgba(199,170,139,0.4);
-      font-size: 11px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      font-family: inherit; line-height: 1;
+    /* ── PROJECT SWITCHER ── */
+    .proj-select {
+      background: var(--bg-input);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      color: var(--smoke);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 500;
+      padding: 5px 28px 5px 10px;
+      outline: none; cursor: pointer;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23C7AA8B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      max-width: 230px;
     }
-    .info-btn:hover { background: var(--tan-dim); color: var(--tan); border-color: var(--tan); }
+    .proj-select option { background: #2A2826; }
+    .proj-select:focus { border-color: var(--tan-mid); }
+
+    .new-proj-btn {
+      background: none;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      color: var(--tan);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 500;
+      padding: 5px 12px;
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .new-proj-btn:hover { background: var(--tan-dim); border-color: var(--tan); }
+
+    /* ── SAVE BADGE ── */
+    .save-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.04em;
+      padding: 3px 8px; border-radius: 20px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .save-saving { color: var(--muted); background: rgba(199,170,139,0.08); }
+    .save-saved  { color: #6ABF6A; background: rgba(106,191,106,0.12); }
+    .save-error  { color: var(--red); background: rgba(212,113,74,0.12); }
+
+    /* ── LOADING OVERLAY ── */
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: rgba(20,18,16,0.82);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500; backdrop-filter: blur(2px);
+    }
+    .loading-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      padding: 28px 40px; text-align: center;
+    }
+    .loading-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.08em;
+      color: var(--muted); text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    /* ── NEW PROJECT MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(14,12,10,0.78);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 400; backdrop-filter: blur(2px);
+    }
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      padding: 28px 28px 24px;
+      width: 440px; max-width: calc(100vw - 32px);
+    }
+    .modal-title { font-size: 16px; font-weight: 600; color: var(--smoke); margin-bottom: 6px; }
+    .modal-sub   { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 18px; }
+    .modal-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      color: var(--smoke);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; padding: 9px 12px;
+      outline: none; margin-bottom: 18px;
+      transition: border-color 0.15s;
+    }
+    .modal-input:focus { border-color: var(--tan-mid); }
+    .modal-input::placeholder { color: rgba(247,247,247,0.28); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    @media print {
+      .loading-overlay, .modal-overlay { display: none !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -587,10 +597,16 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     const BEAR = "https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png";
     const WORDMARK = "https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png";
+
+    // ─── GOOGLE SHEETS BACKEND ───────────────────────────────────────────────
+    // Paste your Apps Script Web App URL here after deploying.
+    // Leave empty to run the tool without a backend (local state only).
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyT2IwgmqKrc4xHa6ZZgl9SFK2CJWSjhAozqNp36V4pUX10tMavi5ZEG8T98LrjcQU3Kw/exec';
+    // ─────────────────────────────────────────────────────────────────────────
 
     const STATUSES = ['TBD', 'Selected', 'Allowance'];
     const SS = {
@@ -608,227 +624,22 @@
 
     const m = (id, label, trade, options = []) => ({ id, label, trade, options });
 
-    /* ── COST GUIDE DATA ── */
-    const COST_DATA = {
-      'Flooring': [
-        { label: 'Carpet', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$2–$4/sf', note: 'Loop pile, basic color palette, standard pad' },
-          { tier: 'Mid', range: '$4–$7/sf', note: 'Cut pile, broader color options, upgraded cushion pad' },
-          { tier: 'Premium', range: '$7–$12/sf', note: 'Wool blend, plush pile, memory foam pad' },
-          { tier: 'Luxury', range: '$12–$22+/sf', note: 'Pure wool, custom or patterned carpet, bespoke install' },
-        ]},
-        { label: 'LVP / Vinyl Plank', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$3–$5/sf', note: '6–8 mil wear layer, basic wood looks, thin profile' },
-          { tier: 'Mid', range: '$5–$8/sf', note: '12–20 mil wear layer, realistic texture, waterproof core' },
-          { tier: 'Premium', range: '$8–$13/sf', note: '20+ mil, wide plank, premium brands (COREtec, Shaw)' },
-        ]},
-        { label: 'Hardwood', unit: 'per sf installed', tiers: [
-          { tier: 'Mid', range: '$8–$12/sf', note: 'Prefinished oak, standard 2¼"–3¼" widths' },
-          { tier: 'Premium', range: '$12–$20/sf', note: 'Wide plank 5"+, site-finished, exotic species' },
-          { tier: 'Luxury', range: '$20–$40+/sf', note: 'Custom stain, hand-scraped, reclaimed or rare species' },
-        ]},
-        { label: 'Engineered Hardwood', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$5–$8/sf', note: 'Thin veneer, standard widths, limited finish options' },
-          { tier: 'Mid', range: '$8–$14/sf', note: 'Thicker veneer, wide plank, more species/finishes' },
-          { tier: 'Premium', range: '$14–$24/sf', note: 'Thick sawn veneer, wire-brushed, premium brands' },
-        ]},
-        { label: 'Tile (Floor)', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$6–$10/sf', note: 'Ceramic 12x12, straight lay, standard grout' },
-          { tier: 'Mid', range: '$10–$18/sf', note: 'Porcelain, larger format, basic pattern layout' },
-          { tier: 'Premium', range: '$18–$35/sf', note: 'Large format 24x24+, stone look, patterned layout' },
-          { tier: 'Luxury', range: '$35–$80+/sf', note: 'Natural stone (marble, travertine), custom mosaic' },
-        ]},
-        { label: 'Epoxy (Garage)', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$2–$4/sf', note: 'Basic epoxy coat, single color' },
-          { tier: 'Mid', range: '$4–$7/sf', note: 'Polyaspartic topcoat, vinyl chip broadcast' },
-          { tier: 'Premium', range: '$7–$12/sf', note: 'Full flake broadcast, multiple coats, UV stable top coat' },
-        ]},
-      ],
-      'Tile & Stone': [
-        { label: 'Shower / Wall Tile', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$8–$14/sf', note: 'Ceramic subway or standard field tile' },
-          { tier: 'Mid', range: '$14–$25/sf', note: 'Porcelain, larger format, niche included' },
-          { tier: 'Premium', range: '$25–$50/sf', note: 'Natural stone look, mosaic accents, custom layout' },
-          { tier: 'Luxury', range: '$50–$120+/sf', note: 'Marble, Zellige, book-matched stone, full custom design' },
-        ]},
-        { label: 'Backsplash', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$8–$14/sf', note: 'Ceramic subway, basic white or neutral' },
-          { tier: 'Mid', range: '$14–$28/sf', note: 'Porcelain, glass tile, simple pattern layouts' },
-          { tier: 'Premium', range: '$28–$60/sf', note: 'Natural stone, Zellige, handmade tile, custom mosaic' },
-          { tier: 'Luxury', range: '$60–$150+/sf', note: 'Slab stone backsplash, rare artisan tile, book-matched' },
-        ]},
-      ],
-      'Countertops': [
-        { label: 'Countertops', unit: 'per sf installed (material + fab + install)', tiers: [
-          { tier: 'Builder', range: '$20–$40/sf', note: 'Laminate — durable, many patterns, limited edge profiles' },
-          { tier: 'Mid', range: '$55–$95/sf', note: 'Entry quartz (MSI, Silestone) or mid-grade granite' },
-          { tier: 'Premium', range: '$95–$145/sf', note: 'Premium quartz (Cambria), quartzite, high-end granite' },
-          { tier: 'Luxury', range: '$145–$300+/sf', note: 'Marble, book-matched stone, waterfall edge, custom fab' },
-        ]},
-        { label: 'Butcher Block', unit: 'per lf installed', tiers: [
-          { tier: 'Builder', range: '$50–$80/lf', note: 'Maple or birch, standard thickness, oil finish' },
-          { tier: 'Mid', range: '$80–$130/lf', note: 'Walnut, end-grain option, thicker profile' },
-          { tier: 'Premium', range: '$130–$250+/lf', note: 'Custom end-grain, exotic species, integrated sink cutout' },
-        ]},
-      ],
-      'Cabinets & Millwork': [
-        { label: 'Kitchen Cabinets', unit: 'per lf of base cabinet installed', tiers: [
-          { tier: 'Builder', range: '$150–$275/lf', note: 'Stock (box store), limited sizes/finishes, particleboard box' },
-          { tier: 'Mid', range: '$275–$475/lf', note: 'Semi-custom, plywood box, soft-close, more finish options' },
-          { tier: 'Premium', range: '$475–$900/lf', note: 'Custom, dovetail drawers, painted inset or full-overlay' },
-          { tier: 'Luxury', range: '$900–$2,000+/lf', note: 'Fully custom, furniture-grade, inset, specialty finishes' },
-        ]},
-        { label: 'Bathroom Vanity', unit: 'per vanity (cabinet only)', tiers: [
-          { tier: 'Builder', range: '$400–$900', note: 'Pre-fab box store, limited sizes, standard finish' },
-          { tier: 'Mid', range: '$900–$2,500', note: 'Semi-custom shaker, soft-close, painted or stained' },
-          { tier: 'Premium', range: '$2,500–$6,000', note: 'Custom built, inset doors, specialty finish, integrated lighting' },
-          { tier: 'Luxury', range: '$6,000–$18,000+', note: 'Fully custom furniture-grade, bespoke design' },
-        ]},
-        { label: 'Trim & Millwork', unit: 'per lf installed (baseboard + casing)', tiers: [
-          { tier: 'Builder', range: '$3–$5/lf', note: 'Finger-joint pine, ranch or colonial profile, painted' },
-          { tier: 'Mid', range: '$5–$9/lf', note: 'MDF or clear pine, craftsman profile, painted' },
-          { tier: 'Premium', range: '$9–$18/lf', note: 'Solid wood, custom profile, layered built-up molding' },
-          { tier: 'Luxury', range: '$18–$40+/lf', note: 'Custom milled hardwood, wainscoting, coffered ceilings' },
-        ]},
-      ],
-      'Plumbing Fixtures': [
-        { label: 'Shower System', unit: 'fixtures only (not labor)', tiers: [
-          { tier: 'Builder', range: '$200–$500', note: 'Standard pressure-balance valve + basic showerhead' },
-          { tier: 'Mid', range: '$500–$1,500', note: 'Rain head + hand-held, Kohler/Delta/Moen' },
-          { tier: 'Premium', range: '$1,500–$4,000', note: 'Thermostatic valve, rain + hand-held, Hansgrohe/Brizo' },
-          { tier: 'Luxury', range: '$4,000–$15,000+', note: 'Full body spray system, digital control, Waterworks/Dornbracht' },
-        ]},
-        { label: 'Soaking / Freestanding Tub', unit: 'fixture only', tiers: [
-          { tier: 'Builder', range: '$400–$900', note: 'Acrylic alcove or basic freestanding, white' },
-          { tier: 'Mid', range: '$900–$2,500', note: 'Freestanding acrylic, clean modern lines' },
-          { tier: 'Premium', range: '$2,500–$6,000', note: 'Cast iron freestanding, stone resin, air tub' },
-          { tier: 'Luxury', range: '$6,000–$25,000+', note: 'Stone, copper, custom sculptural tub' },
-        ]},
-        { label: 'Full Bathroom Fixtures', unit: 'faucet + shower + toilet combined', tiers: [
-          { tier: 'Builder', range: '$800–$1,800', note: 'Moen/Delta standard, basic shower valve, round toilet' },
-          { tier: 'Mid', range: '$1,800–$4,000', note: 'Kohler, comfort height toilet, Delta Trinsic, hand-held' },
-          { tier: 'Premium', range: '$4,000–$9,000', note: 'Brizo, Hansgrohe, wall-hung toilet, thermostatic valve' },
-          { tier: 'Luxury', range: '$9,000–$30,000+', note: 'Waterworks, THG, Toto Neorest bidet, full custom system' },
-        ]},
-        { label: 'Kitchen Faucet', unit: 'fixture only', tiers: [
-          { tier: 'Builder', range: '$80–$200', note: 'Moen/Delta single handle pull-down, standard finish' },
-          { tier: 'Mid', range: '$200–$500', note: 'Kohler, Delta Trinsic, touchless option' },
-          { tier: 'Premium', range: '$500–$1,200', note: 'Brizo, Newport Brass, commercial bridge style' },
-          { tier: 'Luxury', range: '$1,200–$3,500+', note: 'Waterworks, Dornbracht, Kallista — designer statement' },
-        ]},
-      ],
-      'Appliances': [
-        { label: 'Kitchen Suite', unit: 'range + hood + fridge + dishwasher', tiers: [
-          { tier: 'Builder', range: '$3,500–$6,000', note: 'Samsung/LG/Whirlpool standard — functional, basic features' },
-          { tier: 'Mid', range: '$6,000–$14,000', note: 'Bosch, KitchenAid, Café — quieter, better build quality' },
-          { tier: 'Premium', range: '$14,000–$30,000', note: 'Thermador, Wolf range, Sub-Zero refrigerator' },
-          { tier: 'Luxury', range: '$30,000–$100,000+', note: 'Full Sub-Zero/Wolf/Cove suite, built-in column fridge, pro range' },
-        ]},
-        { label: 'Range / Cooktop', unit: 'unit only', tiers: [
-          { tier: 'Builder', range: '$700–$1,500', note: 'Standard 30" slide-in, basic burners' },
-          { tier: 'Mid', range: '$1,500–$4,000', note: 'KitchenAid/Samsung, dual fuel, convection' },
-          { tier: 'Premium', range: '$4,000–$10,000', note: 'Thermador/Bosch 36"+ dual fuel or induction' },
-          { tier: 'Luxury', range: '$10,000–$30,000+', note: 'Wolf 48" dual fuel, BlueStar, La Cornue' },
-        ]},
-        { label: 'Refrigerator', unit: 'unit only', tiers: [
-          { tier: 'Builder', range: '$800–$1,800', note: 'French door, 25–28 cu ft, standard depth' },
-          { tier: 'Mid', range: '$1,800–$4,500', note: 'Counter-depth French door, better finish and features' },
-          { tier: 'Premium', range: '$4,500–$12,000', note: 'Sub-Zero integrated, column refrigerator, panel-ready' },
-          { tier: 'Luxury', range: '$12,000–$30,000+', note: 'Full Sub-Zero column pair, custom panels, integrated design' },
-        ]},
-      ],
-      'Doors & Hardware': [
-        { label: 'Front Entry Door', unit: 'door + hardware + installation', tiers: [
-          { tier: 'Builder', range: '$800–$1,600', note: 'Steel prehung, standard sizes, basic hardware' },
-          { tier: 'Mid', range: '$1,600–$3,500', note: 'Fiberglass with glass lites, upgraded hardware, painted' },
-          { tier: 'Premium', range: '$3,500–$8,000', note: 'Solid wood or pivot, fiberglass with sidelites/transom' },
-          { tier: 'Luxury', range: '$8,000–$25,000+', note: 'Custom pivot, oversized steel, solid wood + custom hardware' },
-        ]},
-        { label: 'Interior Door Hardware', unit: 'per door (knob/lever + hinges)', tiers: [
-          { tier: 'Builder', range: '$30–$80/door', note: 'Basic passage set, standard finishes' },
-          { tier: 'Mid', range: '$80–$200/door', note: 'Schlage/Emtek, consistent finish throughout' },
-          { tier: 'Premium', range: '$200–$500/door', note: 'Emtek, Rocky Mountain, designer levers' },
-          { tier: 'Luxury', range: '$500–$1,500+/door', note: 'Custom hardware, unlacquered brass, specialty finish' },
-        ]},
-      ],
-      'Windows': [
-        { label: 'Windows', unit: 'per window installed (avg. 3×4)', tiers: [
-          { tier: 'Builder', range: '$350–$600/window', note: 'JELD-WEN, Simonton — basic double-pane, vinyl frame' },
-          { tier: 'Mid', range: '$600–$1,100/window', note: 'Milgard, mid-Pella/Andersen, better glass, more sizes' },
-          { tier: 'Premium', range: '$1,100–$2,200/window', note: 'Andersen A-Series, Pella Architect, fiberglass or clad' },
-          { tier: 'Luxury', range: '$2,200–$6,000+/window', note: 'Marvin Signature, Loewen, custom sizes, clad wood interior' },
-        ]},
-      ],
-      'HVAC': [
-        { label: 'HVAC System', unit: 'whole-home installed', tiers: [
-          { tier: 'Builder', range: '$8,000–$14,000', note: 'Gas forced air, 80% AFUE, single zone, standard brand' },
-          { tier: 'Mid', range: '$14,000–$22,000', note: '95%+ AFUE, 2-stage, zoning, smart thermostat' },
-          { tier: 'Premium', range: '$22,000–$38,000', note: 'Dual fuel/heat pump, variable speed, multi-zone smart' },
-          { tier: 'Luxury', range: '$38,000–$90,000+', note: 'Radiant hydronic + AC, geothermal, whole-home dehumidification' },
-        ]},
-        { label: 'Water Heater', unit: 'unit + installation', tiers: [
-          { tier: 'Builder', range: '$1,200–$2,000', note: '40–50 gal tank gas, standard install' },
-          { tier: 'Mid', range: '$2,000–$3,500', note: 'Heat pump WH or mid-range tankless gas (Rheem, A.O. Smith)' },
-          { tier: 'Premium', range: '$3,500–$5,500', note: 'High-efficiency tankless (Navien, Rinnai), recirculation pump' },
-          { tier: 'Luxury', range: '$5,500–$14,000+', note: 'Dual tankless, on-demand recirculation, per-zone units' },
-        ]},
-        { label: 'Radiant Floor Heat', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$8–$12/sf', note: 'Electric mat in mortar bed, basic thermostat' },
-          { tier: 'Mid', range: '$12–$18/sf', note: 'Electric cable system, smart thermostat, select rooms' },
-          { tier: 'Premium', range: '$18–$28/sf', note: 'Hydronic (boiler), multi-zone, whole floor coverage' },
-          { tier: 'Luxury', range: '$28–$45+/sf', note: 'Full hydronic slab, high-efficiency boiler, smart zoning' },
-        ]},
-      ],
-      'Roofing & Exterior': [
-        { label: 'Roofing', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$4–$6/sf', note: 'Architectural asphalt shingle (30-yr), standard colors' },
-          { tier: 'Mid', range: '$6–$9/sf', note: 'Premium asphalt (50-yr), designer colors, synthetic underlayment' },
-          { tier: 'Premium', range: '$9–$18/sf', note: 'Metal exposed fastener or stone-coated steel' },
-          { tier: 'Luxury', range: '$18–$40+/sf', note: 'Metal standing seam, synthetic slate, cedar shake' },
-        ]},
-        { label: 'Siding', unit: 'per sf installed', tiers: [
-          { tier: 'Builder', range: '$4–$7/sf', note: 'Vinyl siding, basic profile and color selection' },
-          { tier: 'Mid', range: '$7–$14/sf', note: 'LP SmartSide or HardiePlank, painted, standard profiles' },
-          { tier: 'Premium', range: '$14–$22/sf', note: 'Premium Hardie, cedar, board & batten, mixed materials' },
-          { tier: 'Luxury', range: '$22–$45+/sf', note: 'Natural wood, brick, full stone, custom detailing' },
-        ]},
-      ],
-      'Specialty': [
-        { label: 'Fireplace', unit: 'unit + basic surround installed', tiers: [
-          { tier: 'Builder', range: '$1,500–$3,500', note: 'Electric insert, drywall surround, basic mantle' },
-          { tier: 'Mid', range: '$4,500–$9,000', note: 'Gas traditional, tile surround, wood mantle' },
-          { tier: 'Premium', range: '$9,000–$20,000', note: 'Gas linear, stone surround, custom built-in' },
-          { tier: 'Luxury', range: '$20,000–$60,000+', note: 'Two-sided, custom masonry, imported stone, designer surround' },
-        ]},
-        { label: 'Window Coverings', unit: 'per window installed', tiers: [
-          { tier: 'Builder', range: '$80–$200/window', note: 'Basic blinds or roller shades, manual cord' },
-          { tier: 'Mid', range: '$200–$500/window', note: 'Cellular/honeycomb shades, quality roller, manual' },
-          { tier: 'Premium', range: '$500–$1,200/window', note: 'Motorized battery, Hunter Douglas, Roman shades' },
-          { tier: 'Luxury', range: '$1,200–$4,000+/window', note: 'Hardwired motorized, Lutron Serena, custom drapery' },
-        ]},
-        { label: 'Landscaping & Irrigation', unit: 'rough whole-yard estimate', tiers: [
-          { tier: 'Builder', range: '$8,000–$18,000', note: 'Sod front/back, basic irrigation, minimal plantings' },
-          { tier: 'Mid', range: '$18,000–$40,000', note: 'Sod + plantings, smart irrigation, paver walkway' },
-          { tier: 'Premium', range: '$40,000–$90,000', note: 'Full landscape design, custom hardscape, outdoor lighting' },
-          { tier: 'Luxury', range: '$90,000–$300,000+', note: 'Master landscape plan, water features, full outdoor living' },
-        ]},
-      ],
-    };
-
     /* ── ROOM TEMPLATES ── */
     const ROOM_TPL = {
       'Bedroom': [
         m('flooring','Flooring','Flooring',['Carpet','LVP / Vinyl Plank','Hardwood','Engineered Hardwood','Tile','Concrete Stain','Other']),
         m('wall_paint','Wall Paint Color','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Wallpaper','Shiplap','Board & Batten','Wainscoting','Other']),
         m('ceiling','Ceiling Style','Specialty',["Standard 9'","Standard 10'",'Tray Ceiling','Coffered','Vaulted','Cathedral','Other']),
+        m('trim','Baseboard / Trim Style','Cabinets & Millwork',['Simple 3.5"','Craftsman 5.5"','Tall 7"','Picture Frame','Other']),
         m('closet','Closet System','Cabinets & Millwork',['Wire Shelving','Built-in System','Custom Built-ins','Walk-in — Standard','Walk-in — Custom','None']),
+        m('door','Interior Door Style','Doors & Hardware',['2-Panel','5-Panel','Flat / Shaker','French Doors','Barn Door','Other']),
+        m('door_hw','Door Hardware Finish','Doors & Hardware',['Brushed Nickel','Matte Black','Satin Brass','Oil Rubbed Bronze','Polished Chrome','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed Only','Ceiling Fan','Ceiling Fan + Recessed','Pendant','Surface Mount','Other']),
-        m('win_treat','Window Treatments','Specialty',['See Global — Window Coverings','Blinds — Allowance','Roller Shades — Allowance','Curtain Rods Only','Client Supplied','Other']),
+        m('win_treat','Window Treatments','Specialty',['None','Blinds — Allowance','Roller Shades — Allowance','Curtain Rods Only','Client Supplied','Other']),
       ],
       'Bathroom': [
-        m('floor_tile','Flooring','Flooring',['Tile — Porcelain','Tile — Ceramic','Tile — Natural Stone','Tile — Mosaic','Tile — Large Format (24x24+)','LVP / Vinyl Plank','Sheet Vinyl','Hardwood','Engineered Hardwood','Other']),
-        m('floor_size','Tile Size (if tile)','Tile & Stone',['N/A','12x12','12x24','18x18','24x24','4x4 Mosaic','2x2 Mosaic','Custom / Other']),
+        m('floor_tile','Floor Tile Material','Tile & Stone',['Porcelain','Ceramic','Natural Stone','Mosaic','Large Format (24x24+)','LVT','Other']),
+        m('floor_size','Floor Tile Size','Tile & Stone',['12x12','12x24','18x18','24x24','4x4 Mosaic','2x2 Mosaic','Custom / Other']),
         m('shower_tile','Shower / Tub Surround Tile','Tile & Stone',['Porcelain','Ceramic','Natural Stone','Subway','Large Format','Mosaic','Same as Floor','Other']),
         m('tile_pattern','Tile Layout / Pattern','Tile & Stone',['Straight Stack','Running Bond / Offset','Herringbone','Chevron','Vertical Stack','Other']),
         m('niche','Shower Niche','Tile & Stone',['None','Single Niche','Double Niche','Full Shelf','Bench + Niche','Other']),
@@ -844,7 +655,6 @@
         m('vanity_lt','Vanity Lighting','Lighting & Electrical',['Bar Light','Sconces x2','Sconces x3','Recessed + Bar','Backlit Mirror','Other']),
         m('exhaust','Exhaust Fan','Lighting & Electrical',['Standard','Humidity Sensing','Light + Fan Combo','Fan Only — Quiet','Other']),
         m('wall_paint','Wall Paint (non-tile areas)','Paint & Finishes'),
-        m('accent_wall','Accent Wall / Feature','Paint & Finishes',['None','Tile Feature Wall','Shiplap','Wallpaper','Paint Accent','Other']),
       ],
       'Kitchen': [
         m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Engineered Hardwood','Tile','Concrete Stain','Other']),
@@ -868,27 +678,24 @@
         m('recessed','Recessed Lighting','Lighting & Electrical',['Standard 6"','Slim 4"','Adjustable / Directional','Mixed 4" + 6"','Other']),
         m('undercab','Under-Cabinet Lighting','Lighting & Electrical',['None','LED Strip — Hardwired','LED Strip — Plug-in','Puck Lights','Other']),
         m('wall_paint','Wall Paint Color','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Wallpaper','Tile / Stone','Board & Batten','Other']),
       ],
       'Living Room': [
         m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Engineered Hardwood','Tile','Carpet','Concrete Stain','Other']),
         m('wall_paint','Wall Paint Color','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Board & Batten','Wainscoting','Wallpaper','Stone / Tile','Other']),
         m('ceiling','Ceiling Style','Specialty',["Standard 9'","Standard 10'",'Vaulted','Cathedral','Tray','Coffered','T&G / Exposed Beam','Other']),
         m('fireplace','Fireplace','Specialty',['None','Gas — Linear','Gas — Traditional','Gas — Two-Sided','Wood Burning','Electric','Other']),
         m('fp_surround','Fireplace Surround Material','Tile & Stone',['N/A','Tile','Natural Stone / Ledge','Brick','Drywall','Shiplap / Wood','Other']),
         m('fp_mantle','Fireplace Mantle','Cabinets & Millwork',['N/A','Simple Wood Shelf','Built-up Mantle','Stone Mantle','Custom Built-in Surround','Other']),
         m('built_ins','Built-ins','Cabinets & Millwork',['None','Entertainment Center','Bookshelves','Built-ins + Fireplace Surround','Window Seats','Other']),
-        m('accent_treat','Accent Treatment / Millwork','Cabinets & Millwork',['None','Wainscoting','Board & Batten','Picture Frame Molding','Shiplap','Crown Molding','Other']),
+        m('trim','Baseboard / Trim / Accent','Cabinets & Millwork',['Standard Baseboard','Craftsman','Wainscoting','Board & Batten','Crown Molding','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed Only','Recessed + Sconces','Ceiling Fan + Recessed','Chandelier + Recessed','Other']),
       ],
       'Dining Room': [
         m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Engineered Hardwood','Tile','Carpet','Other']),
         m('wall_paint','Wall Paint Color','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Wainscoting','Board & Batten','Wallpaper','Shiplap','Other']),
         m('ceiling','Ceiling Style','Specialty',["Standard 9'","Standard 10'",'Tray','Coffered','Vaulted','Other']),
         m('lighting','Chandelier / Lighting','Lighting & Electrical',['Chandelier','Linear Pendant','Drum Shade','Recessed + Chandelier','Other']),
-        m('accent_treat','Accent Treatment / Millwork','Cabinets & Millwork',['None','Wainscoting','Board & Batten','Picture Frame Molding','Shiplap','Crown Molding','Other']),
+        m('trim','Trim / Accent','Cabinets & Millwork',['Standard Baseboard','Wainscoting','Board & Batten','Picture Frame Molding','Other']),
         m('built_ins','Built-ins / Buffet','Cabinets & Millwork',['None','Built-in Buffet','China Cabinet','Bar Built-in','Other']),
       ],
       'Laundry': [
@@ -900,14 +707,12 @@
         m('config','Washer / Dryer Configuration','Specialty',['Side-by-Side','Stacked','Stacked Unit — Single','Hidden Behind Doors','Pedestal Raised','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed','Surface Mount','Other']),
         m('wall_paint','Wall Paint','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Wallpaper','Tile','Other']),
       ],
       'Office / Study': [
         m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Carpet','Tile','Other']),
         m('wall_paint','Wall Paint Color','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Board & Batten','Wainscoting','Wallpaper','Other']),
         m('built_ins','Built-ins','Cabinets & Millwork',['None','Desk + Shelving','Full Wall Built-ins','Murphy Bed + Office','Custom','Other']),
-        m('accent_treat','Accent Treatment / Millwork','Cabinets & Millwork',['None','Wainscoting','Board & Batten','Picture Frame Molding','Shiplap','Other']),
+        m('trim','Baseboard / Trim','Cabinets & Millwork',['Standard','Craftsman','Wainscoting','Board & Batten','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed','Recessed + Sconces','Pendant','Other']),
         m('door','Door Style','Doors & Hardware',['Standard','French Doors','Barn Door','Pocket Door','Other']),
       ],
@@ -919,22 +724,18 @@
         m('hooks','Coat Hooks','Specialty',['None','Individual Hooks','Hook Rail','Built-in Hooks','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed','Pendant','Sconces','Other']),
         m('wall_paint','Wall Paint','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Board & Batten','Tile','Wallpaper','Other']),
       ],
       'Garage': [
         m('floor','Floor Finish','Flooring',['Bare Concrete — Broom Finish','Epoxy Coating','Epoxy — Full Chip Flake','Stained Concrete','Tile','Other']),
         m('walls','Wall Finish','Paint & Finishes',['Drywall — Unfinished','Drywall — Primed','Drywall — Painted','Block / Masonry — Sealed','Other']),
         m('lighting','Lighting','Lighting & Electrical',['LED Shop Lights','Recessed','Surface Mount Fluorescent','Other']),
-        m('heating','Heating','HVAC',['None','Gas Unit Heater','Mini-Split','Radiant — Hydronic','Radiant — Electric','Other']),
-        m('radiant_slab','Radiant Heat in Slab','HVAC',['None','Electric — In-floor','Hydronic — In-slab','Rough-In Only','Other']),
+        m('heating','Heating','HVAC',['None','Gas Unit Heater','Mini-Split','Radiant','Other']),
         m('storage','Cabinets / Storage','Cabinets & Millwork',['None','Wire Shelving','Metal Shelving','Cabinets — Allowance','Custom Built-ins','Other']),
         m('ev','EV Charger Outlet','Lighting & Electrical',['None','240V Outlet Only','Level 2 EVSE Installed','Conduit for Future','Other']),
       ],
       'Basement / Bonus Room': [
         m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Carpet','Tile','Polished Concrete','Other']),
-        m('radiant_floor','Radiant Heat in Floor','HVAC',['None','Electric — In-floor','Hydronic — In-slab','Under Subfloor Hydronic','Rough-In Only','Other']),
         m('wall_paint','Wall Paint','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Board & Batten','Wainscoting','Wallpaper','Other']),
         m('ceiling','Ceiling Type','Specialty',['Open Joist','Drywall Flat','Drop / Suspended','Tongue & Groove','Other']),
         m('wet_bar','Wet Bar','Cabinets & Millwork',['None','Basic Bar — Allowance','Full Bar — Custom','Other']),
         m('egress','Egress Windows','Windows',['Standard Size — Existing','Egress Wells Added','N/A — Above Grade','Other']),
@@ -947,12 +748,10 @@
         m('backsplash','Backsplash','Tile & Stone',['Match Kitchen','Contrasting Tile','None','Other']),
         m('sink','Sink','Plumbing Fixtures',['None','Undermount Bar Sink','Drop-in','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed','Under Cabinet','Pendant','Other']),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Tile','Wallpaper','Other']),
       ],
       'Gym / Fitness Room': [
         m('flooring','Flooring','Flooring',['Rubber — Tiles','Rubber — Rolled','LVP / Vinyl Plank','Carpet','Polished Concrete','Cork','Other']),
         m('wall_finish','Wall Finish','Paint & Finishes',['Drywall — Painted','Mirror Wall','Partial Mirror','Painted + Mirror Panel','Shiplap','Other']),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Mirror Wall','Shiplap','Other']),
         m('ceiling','Ceiling','Specialty',["Standard 9'","Standard 10'",'Vaulted','Open / Exposed — Industrial','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed','High Bay LED','Recessed + Track','Other']),
         m('tv_av','TV / AV','AV & Smart Home',['None','TV Mount Blocking Only','TV + Sound Bar','Full AV System','Other']),
@@ -960,7 +759,6 @@
       'Theater / Media Room': [
         m('flooring','Flooring','Flooring',['Carpet','LVP / Vinyl Plank','Other']),
         m('wall_finish','Wall Finish','Paint & Finishes',['Drywall — Dark Paint','Acoustic Panels','Fabric Wrapped Panels','Drywall + Acoustic Panels','Other']),
-        m('accent_wall','Accent Wall / Feature Wall','Paint & Finishes',['None','Single Wall — Dark Paint','Fabric Wrapped Panel','Acoustic Panel Wall','Wallpaper','Other']),
         m('ceiling','Ceiling Type','Specialty',['Drywall — Dark Paint','Acoustic Tile','Coffered — Dark','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Dimmable Recessed','Sconces','LED Step Lighting','Full Theater Lighting System','Other']),
         m('screen','Screen / Display','AV & Smart Home',['Large Format TV','Projection Screen + Projector','Retractable Projection Screen','Other']),
@@ -980,7 +778,6 @@
         m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Carpet','Tile','Other']),
         m('railing','Railing Style','Specialty',['Wood Cap + Cable','Wood Cap + Metal Balusters','Full Glass Panel','Wrought Iron','Wood Traditional','Other']),
         m('wall_paint','Wall Paint','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Board & Batten','Wallpaper','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed','Pendant','Chandelier','Other']),
       ],
       'Sunroom': [
@@ -989,7 +786,6 @@
         m('hvac','Heating / Cooling','HVAC',['Mini-Split','Extended from Main System','Space Heater — Client Supplied','None','Other']),
         m('lighting','Lighting','Lighting & Electrical',['Recessed','Ceiling Fan','Ceiling Fan + Recessed','Other']),
         m('wall_paint','Wall Paint / Trim Color','Paint & Finishes'),
-        m('accent_wall','Accent Wall','Paint & Finishes',['None','Single Wall — Paint','Shiplap','Tile','Other']),
       ],
     };
 
@@ -1040,20 +836,9 @@
         m('wall_finish','Wall Sheen','Paint & Finishes',['Flat','Eggshell','Satin','Other']),
         m('trim_finish','Trim Sheen','Paint & Finishes',['Semi-Gloss','Satin','Gloss','Other']),
       ],
-      'Trim & Millwork': [
-        m('base_profile','Baseboard Profile','Cabinets & Millwork',['Ranch / Clamshell','Colonial','Craftsman','Ogee','Beaded','Custom — See Notes','Other']),
-        m('base_height','Baseboard Height','Cabinets & Millwork',['3.5"','4.25"','5.25"','7"','Custom']),
-        m('door_cas','Door Casing Style','Cabinets & Millwork',['Match Baseboard','Craftsman Flat','Colonial','Stepped / Layered','Custom','Other']),
-        m('win_cas','Window Casing / Sill','Cabinets & Millwork',['Stool & Apron','Match Door Casing','Drywall Return','Custom','Other']),
-        m('int_door','Interior Door Style','Doors & Hardware',['2-Panel','5-Panel','Shaker / Flat','French','Barn','Pocket','Other']),
-        m('door_hw','Interior Door Hardware Finish','Doors & Hardware',['Brushed Nickel','Matte Black','Satin Brass','Oil Rubbed Bronze','Polished Chrome','Other']),
-        m('crown','Crown Molding','Cabinets & Millwork',['None','Select Rooms — See Notes','Throughout','Custom Profile','Other']),
-      ],
       'HVAC System': [
-        m('sys_type','System Type','HVAC',['Gas Forced Air','Heat Pump','Dual Fuel','Mini-Split — Multi-Zone','Radiant — Hydronic (Boiler)','Radiant — Electric In-Floor','Radiant Floor + AC','Geothermal','Other']),
+        m('sys_type','System Type','HVAC',['Gas Forced Air','Heat Pump','Dual Fuel','Mini-Split — Multi-Zone','Radiant Floor + AC','Geothermal','Other']),
         m('brand','Brand Preference','HVAC',['No Preference','Carrier','Lennox','Trane','Goodman','Mitsubishi','Daikin','Other']),
-        m('boiler','Boiler Brand / Unit (if hydronic)','HVAC',['N/A','Weil-McLain','Burnham','Peerless','Navien','Triangle Tube','Viessmann','Other']),
-        m('radiant_zones','Radiant Zones (if radiant)','HVAC',['N/A','Single Zone','Multi-Zone','Per Floor','Per Room','Other']),
         m('ac','AC Included','HVAC',['Yes — Included','Heat Only','Future Rough-In Only','N/A — Heat Pump']),
         m('zoning','Zoning','HVAC',['Single Zone','Two Zone','Multi-Zone','Zone Per Floor','Other']),
         m('thermo','Thermostat','HVAC',['Standard Programmable','Smart — Ecobee','Smart — Nest','Smart — Honeywell','Client Supplied','Other']),
@@ -1081,13 +866,6 @@
         m('security','Security System','AV & Smart Home',['None','Ring','ADT Pre-wire','SimpliSafe','Vivint','Camera Only','Other']),
         m('doorbell','Doorbell','AV & Smart Home',['Standard','Ring Video','Nest Hello','Other']),
         m('ethernet','Cat6 / Data Drops','AV & Smart Home',['None','Select Rooms — See Notes','All Rooms','Other']),
-      ],
-      'Window Coverings': [
-        m('wc_style','Style','Specialty',['Roller Shades','Cellular / Honeycomb','Roman Shades','Plantation Shutters','Drapery / Curtains','Blinds','Mixed','Other']),
-        m('wc_op','Operation','Specialty',['Manual','Motorized — Hardwired','Motorized — Battery','Smart / App-Controlled','Other']),
-        m('wc_brand','Brand / System','Specialty',['No Preference — Allowance','Lutron Serena','Hunter Douglas','Budget Blinds — Allowance','Client Supplied','Other']),
-        m('wc_light','Light Control','Specialty',['Blackout','Light Filtering','Solar Screen','Sheer','Mix by Room — See Notes','Other']),
-        m('wc_notes','Room-Specific Notes','Specialty'),
       ],
       'Insulation': [
         m('wall_ins','Wall Insulation','Specialty',['Batt — Standard','Batt — High Density','Closed-Cell Spray Foam','Open-Cell Spray Foam','Rigid Exterior','Other']),
@@ -1164,12 +942,11 @@
       );
     }
 
-    function SelectionRow({ item, onChange, onInfo }) {
+    function SelectionRow({ item, onChange }) {
       const cycle = () => {
         const i = STATUSES.indexOf(item.status);
         onChange('status', STATUSES[(i + 1) % STATUSES.length]);
       };
-      const hasCost = !!COST_DATA[item.trade];
       return (
         <div className="sel-row">
           <div className="sel-label">
@@ -1187,9 +964,6 @@
             )}
             <input type="text" className="sel-notes" value={item.notes} placeholder="Notes / spec / model #..." onChange={e => onChange('notes', e.target.value)} />
             <StatusPill status={item.status} onCycle={cycle} />
-            {hasCost && onInfo && (
-              <button className="info-btn" onClick={() => onInfo(item.trade)} title={`${item.trade} cost guide`}>$</button>
-            )}
           </div>
         </div>
       );
@@ -1308,88 +1082,140 @@
       );
     }
 
-    /* ── COST GUIDE COMPONENT ── */
-    function CostGuide({ scrollTo, onClose }) {
-      const cats = Object.keys(COST_DATA);
-      const [activeSection, setActiveSection] = useState(scrollTo || cats[0]);
-      const bodyRef = React.useRef(null);
-
-      useEffect(() => {
-        if (scrollTo) {
-          setActiveSection(scrollTo);
-          const id = 'cg-' + scrollTo.replace(/[^a-z0-9]/gi, '');
-          const el = document.getElementById(id);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, [scrollTo]);
-
-      const jumpTo = (cat) => {
-        setActiveSection(cat);
-        const id = 'cg-' + cat.replace(/[^a-z0-9]/gi, '');
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      };
-
-      return (
-        <div className="cost-guide-overlay">
-          <div className="cg-header">
-            <div>
-              <div className="cg-title">Cost Guide</div>
-              <div className="cg-subtitle">Builder · Mid · Premium · Luxury — Utah 2026 installed costs</div>
-            </div>
-            <button className="cg-close" onClick={onClose}>✕ Close</button>
-          </div>
-          <div className="cg-nav">
-            {cats.map(cat => (
-              <button key={cat}
-                className={`cg-nav-pill ${activeSection === cat ? 'active' : ''}`}
-                onClick={() => jumpTo(cat)}>
-                {cat}
-              </button>
-            ))}
-          </div>
-          <div className="cg-body" ref={bodyRef}>
-            {Object.entries(COST_DATA).map(([cat, items]) => (
-              <div key={cat} className="cg-section" id={'cg-' + cat.replace(/[^a-z0-9]/gi, '')}>
-                <div className="cg-section-title">{cat}</div>
-                {items.map((item, i) => (
-                  <div key={i} className="cg-item">
-                    <div className="cg-item-name">{item.label}</div>
-                    <div className="cg-item-unit">{item.unit}</div>
-                    <div className="cg-tiers">
-                      {item.tiers.map((t, j) => (
-                        <div key={j} className={`cg-tier tier-${t.tier}`}>
-                          <span className="cg-tier-label">{t.tier}</span>
-                          <span className="cg-tier-range">{t.range}</span>
-                          <span className="cg-tier-note">{t.note}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
     /* ── MAIN APP ── */
     function App() {
       const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+
+      // ── Core state ──
       const [project, setProject] = useState({ name:'', client:'', address:'', estStart:'', date: today, preparedBy:'Taylor Whitesides' });
       const [rooms, setRooms] = useState([]);
       const [globalItems, setGlobalItems] = useState(initGlobal);
       const [activeTab, setActiveTab] = useState('project');
       const [showRoomPicker, setShowRoomPicker] = useState(false);
       const [printMode, setPrintMode] = useState(null);
-      const [showCostGuide, setShowCostGuide] = useState(false);
-      const [costGuideSection, setCostGuideSection] = useState(null);
 
-      const openCostGuide = (trade) => {
-        setCostGuideSection(trade || null);
-        setShowCostGuide(true);
-      };
+      // ── Sheets backend state ──
+      const [activeProject, setActiveProject] = useState(null);
+      const [projects, setProjects]           = useState([]);
+      const [saveStatus, setSaveStatus]       = useState('idle');
+      const [appLoading, setAppLoading]       = useState(!!SCRIPT_URL);
+      const [newProjInput, setNewProjInput]   = useState('');
+      const [showNewProjModal, setShowNewProjModal] = useState(false);
+      const saveTimerRef = useRef(null);
+      const skipSaveRef  = useRef(true);   // true while loading/initialising
+
+      // ── On mount: fetch project list ──
+      useEffect(() => {
+        if (!SCRIPT_URL) return;
+        fetchProjects();
+      }, []);
+
+      // ── Auto-save (1.2 s debounce) ──
+      useEffect(() => {
+        if (skipSaveRef.current || !activeProject || !SCRIPT_URL) return;
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        setSaveStatus('saving');
+        // Capture values at this render so the timeout closure is correct
+        const snapProject = project;
+        const snapRooms   = rooms;
+        const snapGlobal  = globalItems;
+        const snapName    = activeProject;
+        saveTimerRef.current = setTimeout(async () => {
+          try {
+            await fetch(`${SCRIPT_URL}?action=save&project=${encodeURIComponent(snapName)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ project: snapProject, rooms: snapRooms, globalItems: snapGlobal }),
+            });
+            setSaveStatus('saved');
+            setTimeout(() => setSaveStatus('idle'), 2500);
+          } catch(e) {
+            setSaveStatus('error');
+          }
+        }, 1200);
+      }, [project, rooms, globalItems]);
+
+      // ── API helpers ──
+      async function fetchProjects() {
+        try {
+          const r = await fetch(`${SCRIPT_URL}?action=list`);
+          const j = await r.json();
+          const list = (j.ok && Array.isArray(j.data)) ? j.data : [];
+          setProjects(list);
+          if (list.length > 0) {
+            await loadProject(list[0]);
+          } else {
+            setAppLoading(false);
+            setShowNewProjModal(true);
+          }
+        } catch(e) {
+          setAppLoading(false);
+        }
+      }
+
+      async function loadProject(name) {
+        skipSaveRef.current = true;
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        setAppLoading(true);
+        setSaveStatus('idle');
+        try {
+          const r = await fetch(`${SCRIPT_URL}?action=load&project=${encodeURIComponent(name)}`);
+          const j = await r.json();
+          if (j.ok && j.data && j.data.project) {
+            setProject(j.data.project);
+            setRooms(j.data.rooms || []);
+            setGlobalItems(j.data.globalItems || initGlobal());
+          } else {
+            // New / empty project — blank slate
+            setProject({ name:'', client:'', address:'', estStart:'', date: today, preparedBy:'Taylor Whitesides' });
+            setRooms([]);
+            setGlobalItems(initGlobal());
+          }
+          setActiveProject(name);
+          setActiveTab('project');
+        } catch(e) { /* silent */ }
+        finally {
+          setAppLoading(false);
+          setTimeout(() => { skipSaveRef.current = false; }, 300);
+        }
+      }
+
+      async function createProject(name) {
+        const blank = JSON.stringify({
+          project: { name:'', client:'', address:'', estStart:'', date: today, preparedBy:'Taylor Whitesides' },
+          rooms: [],
+          globalItems: initGlobal(),
+        });
+        try {
+          await fetch(`${SCRIPT_URL}?action=save&project=${encodeURIComponent(name)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: blank,
+          });
+          setProjects(prev => [...prev, name]);
+          await loadProject(name);
+          setShowNewProjModal(false);
+          setNewProjInput('');
+        } catch(e) {
+          alert('Could not create project. Check your connection and SCRIPT_URL.');
+        }
+      }
+
+      async function switchProject(name) {
+        if (name === activeProject) return;
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        // Flush save for current project before switching
+        if (activeProject && SCRIPT_URL) {
+          try {
+            await fetch(`${SCRIPT_URL}?action=save&project=${encodeURIComponent(activeProject)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ project, rooms, globalItems }),
+            });
+          } catch(e) {}
+        }
+        await loadProject(name);
+      }
 
       const addRoom = (type) => {
         const cnt = rooms.filter(r => r.type === type).length + 1;
@@ -1499,8 +1325,7 @@
           <div className="items-list">
             {room.items.map((item, idx) => (
               <SelectionRow key={item.id + '-' + idx} item={item}
-                onChange={(field, val) => updateRoomItem(room.id, idx, field, val)}
-                onInfo={openCostGuide} />
+                onChange={(field, val) => updateRoomItem(room.id, idx, field, val)} />
             ))}
           </div>
         </div>
@@ -1517,8 +1342,7 @@
           <div className="items-list">
             {globalItems[cat].map((item, idx) => (
               <SelectionRow key={item.id + '-' + idx} item={item}
-                onChange={(field, val) => updateGlobalItem(cat, idx, field, val)}
-                onInfo={openCostGuide} />
+                onChange={(field, val) => updateGlobalItem(cat, idx, field, val)} />
             ))}
           </div>
         </div>
@@ -1542,11 +1366,33 @@
                 </div>
               </div>
               <div className="header-right">
-                {project.client && <span className="header-client">{project.client}</span>}
-                {project.client && project.name && <span className="header-sep">·</span>}
-                {project.name && <span className="header-detail">{project.name}</span>}
-                {(project.client || project.name) && project.address && <span className="header-sep">·</span>}
-                {project.address && <span className="header-detail">{project.address}</span>}
+                {SCRIPT_URL ? (
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    {projects.length > 0 && (
+                      <select
+                        className="proj-select"
+                        value={activeProject || ''}
+                        onChange={e => switchProject(e.target.value)}
+                      >
+                        {projects.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    )}
+                    <button className="new-proj-btn" onClick={() => setShowNewProjModal(true)}>+ Project</button>
+                    {saveStatus !== 'idle' && (
+                      <span className={`save-badge save-${saveStatus}`}>
+                        {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : '⚠ Error'}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    {project.client && <span className="header-client">{project.client}</span>}
+                    {project.client && project.name && <span className="header-sep">·</span>}
+                    {project.name && <span className="header-detail">{project.name}</span>}
+                    {(project.client || project.name) && project.address && <span className="header-sep">·</span>}
+                    {project.address && <span className="header-detail">{project.address}</span>}
+                  </>
+                )}
               </div>
             </header>
 
@@ -1597,16 +1443,9 @@
               </aside>
 
               {/* MAIN CONTENT */}
-              <main className="main-content" onClick={() => showRoomPicker && setShowRoomPicker(false)}
-                style={{ position: 'relative' }}>
+              <main className="main-content" onClick={() => showRoomPicker && setShowRoomPicker(false)}>
                 {renderContent()}
                 <div style={{ height: '70px' }} />
-                {showCostGuide && (
-                  <CostGuide
-                    scrollTo={costGuideSection}
-                    onClose={() => setShowCostGuide(false)}
-                  />
-                )}
               </main>
             </div>
 
@@ -1617,14 +1456,56 @@
               </div>
               <div className="bottom-actions">
                 <button className="btn-ghost" onClick={handleReset}>Reset</button>
-                <button className="btn-print" onClick={() => openCostGuide(null)}>Cost Guide</button>
                 <button className="btn-print" onClick={() => handlePrint('trade')}>Print by Trade</button>
                 <button className="btn-print-primary" onClick={() => handlePrint('room')}>Print by Room</button>
               </div>
             </div>
-          </div>
+            {/* ── NEW PROJECT MODAL ── */}
+            {showNewProjModal && (
+              <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget && projects.length > 0) setShowNewProjModal(false); }}>
+                <div className="modal-box">
+                  <div className="modal-title">New Project</div>
+                  <div className="modal-sub">
+                    Creates a dedicated tab in your Google Sheet for this project. Once created, it will appear in the project switcher above.
+                  </div>
+                  <input
+                    className="modal-input"
+                    type="text"
+                    placeholder="e.g., Smith Residence — Main Level Addition"
+                    value={newProjInput}
+                    onChange={e => setNewProjInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && newProjInput.trim()) createProject(newProjInput.trim()); }}
+                    autoFocus
+                  />
+                  <div className="modal-actions">
+                    {projects.length > 0 && (
+                      <button className="btn-ghost" onClick={() => { setShowNewProjModal(false); setNewProjInput(''); }}>Cancel</button>
+                    )}
+                    <button
+                      className="btn-print-primary"
+                      style={{ opacity: newProjInput.trim() ? 1 : 0.4, cursor: newProjInput.trim() ? 'pointer' : 'default' }}
+                      onClick={() => { if (newProjInput.trim()) createProject(newProjInput.trim()); }}
+                    >
+                      Create Project
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
-          {/* ── PRINT SECTIONS ── */}
+            {/* ── LOADING OVERLAY ── */}
+            {appLoading && (
+              <div className="loading-overlay">
+                <div className="loading-box">
+                  <div className="bear-wrap" style={{ width:42, height:42, margin:'0 auto' }}>
+                    <img src={BEAR} className="bear-img" alt="" />
+                  </div>
+                  <div className="loading-text">Loading project…</div>
+                </div>
+              </div>
+            )}
+
+          </div>  {/* end screen-only */}
           <div className="print-by-room">
             <PrintByRoom project={project} rooms={rooms} globalItems={globalItems} />
           </div>
