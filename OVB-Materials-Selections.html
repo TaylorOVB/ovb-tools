@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
+  <meta name="theme-color" content="#1E1C1A" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <title>Materials & Selections — OVB Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1E1C1A;
+      --bg-deep: #141210;
+      --bg-card: #252320;
+      --bg-input: #2A2826;
+      --tan: #C7AA8B;
+      --tan-dim: rgba(199,170,139,0.10);
+      --tan-mid: rgba(199,170,139,0.25);
+      --smoke: #F7F7F7;
+      --muted: rgba(247,247,247,0.45);
+      --border: rgba(199,170,139,0.12);
+      --border-mid: rgba(199,170,139,0.22);
+      --red: #D4714A;
+      --r: 4px;
+      --sidebar-w: 222px;
+      --header-h: 56px;
+      --bottom-h: 54px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--smoke);
+      font-size: 13px;
+      line-height: 1.4;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .app { display: flex; flex-direction: column; height: 100dvh; }
+
+    /* ── HEADER ── */
+    .app-header {
+      height: var(--header-h);
+      background: var(--bg-deep);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .bear-wrap { width: 34px; height: 34px; filter: drop-shadow(0 0 8px rgba(199,170,139,0.35)); }
+    .bear-img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
+    .header-product { font-size: 14px; font-weight: 600; color: var(--smoke); line-height: 1.1; }
+    .header-company { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--tan); text-transform: uppercase; letter-spacing: 0.08em; }
+    .header-right { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+    .header-client { font-weight: 600; color: var(--smoke); font-size: 12px; white-space: nowrap; }
+    .header-sep { color: var(--muted); font-size: 11px; }
+    .header-detail { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── MAIN LAYOUT ── */
+    .main-layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg-deep);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar::-webkit-scrollbar { width: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+
+    .sb-section { padding: 10px 0 6px; border-bottom: 1px solid var(--border); }
+    .sb-section:last-child { border-bottom: none; flex: 1; }
+    .sb-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.13em;
+      color: var(--tan);
+      text-transform: uppercase;
+      padding: 0 14px 5px;
+    }
+
+    .nav-item {
+      display: block; width: 100%; text-align: left;
+      background: none; border: none;
+      padding: 6px 14px 6px 14px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: background 0.1s, color 0.1s;
+      line-height: 1.3;
+      border-left: 2px solid transparent;
+    }
+    .nav-item:hover { background: var(--tan-dim); color: var(--smoke); }
+    .nav-item.active { background: var(--tan-dim); color: var(--tan); font-weight: 600; border-left-color: var(--tan); }
+
+    .add-room-wrap { position: relative; padding: 6px 10px 10px; }
+    .add-room-btn {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      color: var(--tan);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .add-room-btn:hover { background: var(--tan-dim); border-color: var(--tan); }
+
+    .room-picker {
+      position: absolute;
+      left: 10px; right: 10px;
+      top: calc(100% - 4px);
+      background: #2C2926;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      z-index: 200;
+      max-height: 340px;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .room-picker::-webkit-scrollbar { width: 3px; }
+    .room-picker::-webkit-scrollbar-thumb { background: var(--border-mid); }
+
+    .rp-option {
+      display: block; width: 100%; text-align: left;
+      background: none; border: none;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12.5px;
+      color: var(--smoke);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .rp-option:last-child { border-bottom: none; }
+    .rp-option:hover { background: var(--tan-dim); color: var(--tan); }
+
+    /* ── MAIN CONTENT ── */
+    .main-content { flex: 1; overflow-y: auto; }
+    .main-content::-webkit-scrollbar { width: 4px; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+
+    /* ── SECTION HEADER ── */
+    .sec-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--bg-deep);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+      gap: 12px;
+    }
+    .sec-header-left { display: flex; align-items: center; gap: 10px; }
+    .sec-type-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--tan);
+      background: rgba(199,170,139,0.1);
+      padding: 3px 8px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .room-name-edit {
+      background: none; border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--smoke);
+      outline: none;
+      border-bottom: 1px solid transparent;
+      padding: 0 2px;
+      width: auto; min-width: 100px;
+      transition: border-color 0.15s;
+    }
+    .room-name-edit:focus { border-bottom-color: var(--tan); }
+    .sec-title { font-size: 15px; font-weight: 600; color: var(--smoke); }
+    .remove-room-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+      background: none;
+      border: 1px solid rgba(212,113,74,0.3);
+      border-radius: var(--r);
+      color: var(--red);
+      padding: 4px 10px; cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .remove-room-btn:hover { background: rgba(212,113,74,0.1); }
+
+    /* ── SELECTION ROWS ── */
+    .items-list { padding: 0; }
+    .sel-row {
+      display: flex; align-items: stretch;
+      border-bottom: 1px solid var(--border);
+      min-height: 50px;
+      transition: background 0.08s;
+    }
+    .sel-row:hover { background: rgba(255,255,255,0.018); }
+
+    .sel-label {
+      width: 248px; flex-shrink: 0;
+      padding: 8px 14px 8px 20px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+    }
+    .trade-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px; letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(199,170,139,0.38);
+    }
+    .item-label { font-size: 12.5px; color: var(--smoke); line-height: 1.3; }
+
+    .sel-inputs {
+      flex: 1;
+      display: flex; align-items: center;
+      gap: 8px; padding: 6px 14px 6px 14px;
+    }
+
+    .sel-dropdown, .sel-input {
+      flex: 0 0 210px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--smoke);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .sel-dropdown {
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23C7AA8B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 9px center;
+      padding-right: 28px;
+      cursor: pointer;
+    }
+    .sel-dropdown option { background: #2A2826; }
+    .sel-dropdown:focus, .sel-input:focus { border-color: rgba(199,170,139,0.4); }
+    .sel-input::placeholder { color: rgba(247,247,247,0.28); }
+
+    .sel-notes {
+      flex: 1; min-width: 0;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--smoke);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .sel-notes::placeholder { color: rgba(247,247,247,0.22); }
+    .sel-notes:focus { border-color: rgba(199,170,139,0.4); }
+
+    .status-pill {
+      flex-shrink: 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 9.5px; letter-spacing: 0.04em;
+      padding: 4px 9px;
+      border-radius: 20px;
+      border: 1px solid;
+      cursor: pointer; font-weight: 500;
+      transition: opacity 0.12s;
+      white-space: nowrap;
+    }
+    .status-pill:hover { opacity: 0.75; }
+
+    /* ── PROJECT FORM ── */
+    .proj-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0; padding: 20px 16px;
+    }
+    .proj-field { padding: 8px 10px; }
+    .field-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--tan);
+      display: block; margin-bottom: 6px;
+    }
+    .field-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--smoke);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field-input:focus { border-color: var(--tan-mid); }
+    .field-input::placeholder { color: rgba(247,247,247,0.25); }
+    .proj-hint {
+      margin: 4px 26px 20px;
+      padding: 12px 16px;
+      background: var(--tan-dim);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* ── BOTTOM BAR ── */
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: var(--bottom-h);
+      background: var(--bg-deep);
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 50;
+    }
+    .bottom-stats {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; color: var(--muted);
+    }
+    .bottom-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.04); color: var(--smoke); }
+    .btn-print {
+      background: none;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--r);
+      color: var(--tan);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 500;
+      padding: 7px 16px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-print:hover { background: var(--tan-dim); border-color: var(--tan); }
+    .btn-print-primary {
+      background: var(--tan);
+      border: 1px solid var(--tan);
+      border-radius: var(--r);
+      color: #141210;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 600;
+      padding: 7px 16px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-print-primary:hover { opacity: 0.88; }
+
+    /* ── PRINT SECTIONS — HIDDEN ON SCREEN ── */
+    @media screen {
+      .print-by-room, .print-by-trade { display: none !important; }
+    }
+
+    /* ════════════════════════════════════════
+       PRINT STYLES
+    ════════════════════════════════════════ */
+    @media print {
+      @page { margin: 0.55in 0.6in 0.55in 0.6in; size: letter portrait; }
+
+      body {
+        background: white !important;
+        color: #1E1C1A !important;
+        overflow: visible !important;
+        height: auto !important;
+        font-size: 9pt;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .app { height: auto !important; }
+
+      /* hide screen UI */
+      .screen-only { display: none !important; }
+      .print-by-room, .print-by-trade { display: none !important; }
+
+      /* show only active print mode */
+      .printing-room .print-by-room { display: block !important; }
+      .printing-trade .print-by-trade { display: block !important; }
+
+      .print-doc { background: white; color: #1E1C1A; font-family: 'DM Sans', sans-serif; }
+
+      /* PRINT HEADER */
+      .p-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-bottom: 10pt;
+        margin-bottom: 14pt;
+        border-bottom: 2.5pt solid #C7AA8B;
+      }
+      .p-header-left {}
+      .p-wordmark { height: 22pt; display: block; margin-bottom: 5pt; filter: invert(1) brightness(0); }
+      .p-doc-title { font-size: 17pt; font-weight: 700; color: #1E1C1A; line-height: 1.1; }
+      .p-doc-subtitle {
+        font-family: 'DM Mono', monospace;
+        font-size: 7pt; text-transform: uppercase;
+        letter-spacing: 0.1em; color: #C7AA8B;
+        margin-top: 3pt;
+      }
+      .p-header-right { text-align: right; }
+      .p-proj-info { font-size: 8.5pt; line-height: 1.65; color: #444; }
+      .p-proj-info strong { font-weight: 600; color: #1E1C1A; }
+
+      /* PRINT SECTION */
+      .p-section { margin-bottom: 14pt; break-inside: avoid; }
+      .p-section-title {
+        font-family: 'DM Mono', monospace;
+        font-size: 7.5pt; font-weight: 500;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        color: white;
+        background: #1E1C1A;
+        padding: 4.5pt 8pt;
+        display: flex; align-items: center; gap: 6pt;
+      }
+      .p-global-tag {
+        font-size: 6.5pt;
+        background: rgba(199,170,139,0.3);
+        color: #C7AA8B;
+        padding: 1pt 5pt;
+        border-radius: 10pt;
+      }
+
+      /* PRINT TABLE */
+      .p-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+      .p-table thead th {
+        font-family: 'DM Mono', monospace;
+        font-size: 6.5pt; font-weight: 500;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        background: #F2EEE8;
+        color: #777;
+        padding: 4pt 7pt;
+        text-align: left;
+        border-bottom: 1pt solid #D8CFBF;
+      }
+      .p-table tbody tr { border-bottom: 0.5pt solid #EDE9E3; }
+      .p-table tbody td { padding: 4.5pt 7pt; vertical-align: top; }
+      .p-td-loc { color: #777; font-style: italic; width: 14%; white-space: nowrap; }
+      .p-td-item { font-weight: 500; color: #1E1C1A; width: 20%; }
+      .p-td-val { width: 22%; color: #222; }
+      .p-td-notes { font-family: 'DM Mono', monospace; font-size: 7.5pt; color: #555; width: 32%; }
+      .p-td-status { font-family: 'DM Mono', monospace; font-size: 7pt; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; width: 12%; }
+      .status-selected { color: #2E8B2E; }
+      .status-tbd { color: #B09070; }
+      .status-allowance { color: #3A6FAA; }
+
+      /* Empty rows */
+      .row-empty td { color: #BBB; font-style: italic; }
+      .row-empty .p-td-item { color: #AAA; font-style: italic; }
+
+      .p-footer {
+        margin-top: 16pt;
+        padding-top: 6pt;
+        border-top: 0.5pt solid #DDD;
+        display: flex; justify-content: space-between;
+        font-family: 'DM Mono', monospace;
+        font-size: 6.5pt; color: #AAA;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    const BEAR = "https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png";
+    const WORDMARK = "https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png";
+
+    const STATUSES = ['TBD', 'Selected', 'Allowance'];
+    const SS = {
+      TBD:       { color: '#C7AA8B', bg: 'rgba(199,170,139,0.12)', bd: 'rgba(199,170,139,0.4)'  },
+      Selected:  { color: '#6ABF6A', bg: 'rgba(106,191,106,0.12)', bd: 'rgba(106,191,106,0.42)' },
+      Allowance: { color: '#6FA8DC', bg: 'rgba(111,168,220,0.12)', bd: 'rgba(111,168,220,0.42)' },
+    };
+
+    const ROOM_TYPE_LIST = [
+      'Bedroom','Bathroom','Kitchen','Living Room','Dining Room',
+      'Laundry','Office / Study','Mudroom / Entry','Garage',
+      'Basement / Bonus Room',"Butler's Pantry",'Gym / Fitness Room',
+      'Theater / Media Room','Covered Patio / Outdoor Living','Loft','Sunroom'
+    ];
+
+    const m = (id, label, trade, options = []) => ({ id, label, trade, options });
+
+    /* ── ROOM TEMPLATES ── */
+    const ROOM_TPL = {
+      'Bedroom': [
+        m('flooring','Flooring','Flooring',['Carpet','LVP / Vinyl Plank','Hardwood','Engineered Hardwood','Tile','Concrete Stain','Other']),
+        m('wall_paint','Wall Paint Color','Paint & Finishes'),
+        m('ceiling','Ceiling Style','Specialty',["Standard 9'","Standard 10'",'Tray Ceiling','Coffered','Vaulted','Cathedral','Other']),
+        m('trim','Baseboard / Trim Style','Cabinets & Millwork',['Simple 3.5"','Craftsman 5.5"','Tall 7"','Picture Frame','Other']),
+        m('closet','Closet System','Cabinets & Millwork',['Wire Shelving','Built-in System','Custom Built-ins','Walk-in — Standard','Walk-in — Custom','None']),
+        m('door','Interior Door Style','Doors & Hardware',['2-Panel','5-Panel','Flat / Shaker','French Doors','Barn Door','Other']),
+        m('door_hw','Door Hardware Finish','Doors & Hardware',['Brushed Nickel','Matte Black','Satin Brass','Oil Rubbed Bronze','Polished Chrome','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed Only','Ceiling Fan','Ceiling Fan + Recessed','Pendant','Surface Mount','Other']),
+        m('win_treat','Window Treatments','Specialty',['None','Blinds — Allowance','Roller Shades — Allowance','Curtain Rods Only','Client Supplied','Other']),
+      ],
+      'Bathroom': [
+        m('floor_tile','Floor Tile Material','Tile & Stone',['Porcelain','Ceramic','Natural Stone','Mosaic','Large Format (24x24+)','LVT','Other']),
+        m('floor_size','Floor Tile Size','Tile & Stone',['12x12','12x24','18x18','24x24','4x4 Mosaic','2x2 Mosaic','Custom / Other']),
+        m('shower_tile','Shower / Tub Surround Tile','Tile & Stone',['Porcelain','Ceramic','Natural Stone','Subway','Large Format','Mosaic','Same as Floor','Other']),
+        m('tile_pattern','Tile Layout / Pattern','Tile & Stone',['Straight Stack','Running Bond / Offset','Herringbone','Chevron','Vertical Stack','Other']),
+        m('niche','Shower Niche','Tile & Stone',['None','Single Niche','Double Niche','Full Shelf','Bench + Niche','Other']),
+        m('vanity','Vanity Style & Finish','Cabinets & Millwork',['Shaker — Painted','Shaker — Stained','Flat Front','Raised Panel','Floating / Wall-Hung','Pre-fab — Allowance','Custom']),
+        m('counter','Countertop Material','Countertops',['Quartz','Granite','Marble','Quartzite','Solid Surface','Cultured Marble','Tile','Laminate','Other']),
+        m('sink','Sink Type','Plumbing Fixtures',['Undermount','Vessel','Integrated','Pedestal','Drop-in','Other']),
+        m('faucet','Faucet Style & Finish','Plumbing Fixtures',['Single Handle','Two Handle','Widespread','Wall Mount','Waterfall','Other']),
+        m('shower_sys','Shower System','Plumbing Fixtures',['Standard Showerhead','Rain Head','Rain Head + Hand Held','Rain Head + Body Sprays','Full Custom System','Other']),
+        m('tub','Tub Type','Plumbing Fixtures',['None','Standard Alcove','Freestanding Soaking','Alcove Soaking','Jetted / Whirlpool','Air Tub','Other']),
+        m('toilet','Toilet','Plumbing Fixtures',['Standard Round','Comfort Height Elongated','Wall-Hung','One-Piece','Bidet Seat','Other']),
+        m('mirror','Mirror / Medicine Cabinet','Specialty',['Frameless Mirror','Framed Mirror','Medicine Cabinet — Surface','Medicine Cabinet — Recessed','Custom Built-in','Other']),
+        m('acc_finish','Accessories Finish (Towel Bars, Etc.)','Specialty',['Brushed Nickel','Matte Black','Satin Brass','Oil Rubbed Bronze','Chrome','Match Faucet']),
+        m('vanity_lt','Vanity Lighting','Lighting & Electrical',['Bar Light','Sconces x2','Sconces x3','Recessed + Bar','Backlit Mirror','Other']),
+        m('exhaust','Exhaust Fan','Lighting & Electrical',['Standard','Humidity Sensing','Light + Fan Combo','Fan Only — Quiet','Other']),
+        m('wall_paint','Wall Paint (non-tile areas)','Paint & Finishes'),
+      ],
+      'Kitchen': [
+        m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Engineered Hardwood','Tile','Concrete Stain','Other']),
+        m('cab_style','Cabinet Style','Cabinets & Millwork',['Shaker — Painted','Shaker — Stained','Raised Panel','Flat Front / Slab','Beadboard','Semi-Custom','Custom','Stock — Allowance']),
+        m('cab_color','Cabinet Color / Finish','Cabinets & Millwork'),
+        m('cab_hw','Cabinet Hardware Style','Cabinets & Millwork',['Knob','Cup Pull','Bar Pull','No Hardware — Push to Open','Mixed','Other']),
+        m('cab_finish','Hardware Finish','Cabinets & Millwork',['Brushed Nickel','Matte Black','Satin Brass','Oil Rubbed Bronze','Chrome','Other']),
+        m('counter','Countertop Material','Countertops',['Quartz','Granite','Marble','Quartzite','Butcher Block','Concrete','Laminate','Other']),
+        m('backsplash','Backsplash','Tile & Stone',['Subway Tile','Porcelain','Natural Stone','Mosaic','Large Format','Penny Tile','Zellige','Same as Counter','Other']),
+        m('sink','Sink Type','Plumbing Fixtures',['Single Basin Undermount','Double Basin Undermount','Farmhouse / Apron Front','Drop-in','Workstation Sink','Other']),
+        m('sink_mat','Sink Material','Plumbing Fixtures',['Stainless Steel','Cast Iron','Composite Granite','Fireclay','Copper','Other']),
+        m('faucet','Faucet','Plumbing Fixtures',['Single Handle','Two Handle','Pull-Down Spray','Pull-Out Spray','Bridge Faucet','Commercial Style','Other']),
+        m('island','Island','Cabinets & Millwork',['None','Standard Island','Waterfall Edge Island','Prep Island Only','Island + Seating Overhang','Custom']),
+        m('island_ct','Island Countertop','Countertops',['Same as Perimeter','Contrasting Material','Butcher Block','Waterfall Detail','N/A']),
+        m('fridge','Refrigerator','Appliances',['Client Supplied','Allowance','French Door','Side-by-Side','Counter-Depth','Column — Panel Ready','Built-In','Other']),
+        m('range','Range / Cooktop','Appliances',['Client Supplied','Allowance','Gas Range','Electric Range','Induction Range','Gas Cooktop','Electric Cooktop','Induction Cooktop','Other']),
+        m('oven','Oven / Wall Oven','Appliances',['Range Oven Only','Single Wall Oven','Double Wall Oven','Steam Oven','Microwave + Oven Combo','N/A']),
+        m('dishwasher','Dishwasher','Appliances',['Client Supplied','Allowance','Standard','Panel Ready','Drawer Style','N/A']),
+        m('micro','Microwave / Hood','Appliances',['Over-Range Microwave','Under-Cabinet Hood','Canopy / Wall Hood','Insert Hood','Downdraft','Drawer Microwave','Other']),
+        m('pendant','Island Pendant Lighting','Lighting & Electrical',['None','2 Pendants','3 Pendants','4 Pendants','Linear Pendant','Other']),
+        m('recessed','Recessed Lighting','Lighting & Electrical',['Standard 6"','Slim 4"','Adjustable / Directional','Mixed 4" + 6"','Other']),
+        m('undercab','Under-Cabinet Lighting','Lighting & Electrical',['None','LED Strip — Hardwired','LED Strip — Plug-in','Puck Lights','Other']),
+        m('wall_paint','Wall Paint Color','Paint & Finishes'),
+      ],
+      'Living Room': [
+        m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Engineered Hardwood','Tile','Carpet','Concrete Stain','Other']),
+        m('wall_paint','Wall Paint Color','Paint & Finishes'),
+        m('ceiling','Ceiling Style','Specialty',["Standard 9'","Standard 10'",'Vaulted','Cathedral','Tray','Coffered','T&G / Exposed Beam','Other']),
+        m('fireplace','Fireplace','Specialty',['None','Gas — Linear','Gas — Traditional','Gas — Two-Sided','Wood Burning','Electric','Other']),
+        m('fp_surround','Fireplace Surround Material','Tile & Stone',['N/A','Tile','Natural Stone / Ledge','Brick','Drywall','Shiplap / Wood','Other']),
+        m('fp_mantle','Fireplace Mantle','Cabinets & Millwork',['N/A','Simple Wood Shelf','Built-up Mantle','Stone Mantle','Custom Built-in Surround','Other']),
+        m('built_ins','Built-ins','Cabinets & Millwork',['None','Entertainment Center','Bookshelves','Built-ins + Fireplace Surround','Window Seats','Other']),
+        m('trim','Baseboard / Trim / Accent','Cabinets & Millwork',['Standard Baseboard','Craftsman','Wainscoting','Board & Batten','Crown Molding','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed Only','Recessed + Sconces','Ceiling Fan + Recessed','Chandelier + Recessed','Other']),
+      ],
+      'Dining Room': [
+        m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Engineered Hardwood','Tile','Carpet','Other']),
+        m('wall_paint','Wall Paint Color','Paint & Finishes'),
+        m('ceiling','Ceiling Style','Specialty',["Standard 9'","Standard 10'",'Tray','Coffered','Vaulted','Other']),
+        m('lighting','Chandelier / Lighting','Lighting & Electrical',['Chandelier','Linear Pendant','Drum Shade','Recessed + Chandelier','Other']),
+        m('trim','Trim / Accent','Cabinets & Millwork',['Standard Baseboard','Wainscoting','Board & Batten','Picture Frame Molding','Other']),
+        m('built_ins','Built-ins / Buffet','Cabinets & Millwork',['None','Built-in Buffet','China Cabinet','Bar Built-in','Other']),
+      ],
+      'Laundry': [
+        m('flooring','Flooring','Flooring',['Tile','LVP / Vinyl Plank','Epoxy','Other']),
+        m('cabinets','Cabinets','Cabinets & Millwork',['None','Upper Cabinets Only','Upper + Base Cabinets','Full Surround','Mudroom Style']),
+        m('counter','Countertop / Folding Surface','Countertops',['None','Laminate','Quartz','Butcher Block','Other']),
+        m('sink','Utility Sink','Plumbing Fixtures',['None','Standard Utility Sink','Undermount','Farmhouse','Other']),
+        m('faucet','Faucet','Plumbing Fixtures',['N/A','Standard Utility','Pull-Down','Other']),
+        m('config','Washer / Dryer Configuration','Specialty',['Side-by-Side','Stacked','Stacked Unit — Single','Hidden Behind Doors','Pedestal Raised','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed','Surface Mount','Other']),
+        m('wall_paint','Wall Paint','Paint & Finishes'),
+      ],
+      'Office / Study': [
+        m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Carpet','Tile','Other']),
+        m('wall_paint','Wall Paint Color','Paint & Finishes'),
+        m('built_ins','Built-ins','Cabinets & Millwork',['None','Desk + Shelving','Full Wall Built-ins','Murphy Bed + Office','Custom','Other']),
+        m('trim','Baseboard / Trim','Cabinets & Millwork',['Standard','Craftsman','Wainscoting','Board & Batten','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed','Recessed + Sconces','Pendant','Other']),
+        m('door','Door Style','Doors & Hardware',['Standard','French Doors','Barn Door','Pocket Door','Other']),
+      ],
+      'Mudroom / Entry': [
+        m('flooring','Flooring','Flooring',['Tile','LVP / Vinyl Plank','Hardwood','Concrete Stain','Other']),
+        m('tile_pat','Tile Pattern (if tile)','Tile & Stone',['N/A','Straight Stack','Running Bond','Diagonal','Herringbone','Other']),
+        m('built_ins','Locker System / Built-ins','Cabinets & Millwork',['None','Bench + Hooks','Bench + Cubbies','Full Locker System','Custom Built-in','Other']),
+        m('bench','Bench Style','Cabinets & Millwork',['N/A','Wood Seat — Painted','Wood Seat — Stained','Upholstered','Other']),
+        m('hooks','Coat Hooks','Specialty',['None','Individual Hooks','Hook Rail','Built-in Hooks','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed','Pendant','Sconces','Other']),
+        m('wall_paint','Wall Paint','Paint & Finishes'),
+      ],
+      'Garage': [
+        m('floor','Floor Finish','Flooring',['Bare Concrete — Broom Finish','Epoxy Coating','Epoxy — Full Chip Flake','Stained Concrete','Tile','Other']),
+        m('walls','Wall Finish','Paint & Finishes',['Drywall — Unfinished','Drywall — Primed','Drywall — Painted','Block / Masonry — Sealed','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['LED Shop Lights','Recessed','Surface Mount Fluorescent','Other']),
+        m('heating','Heating','HVAC',['None','Gas Unit Heater','Mini-Split','Radiant','Other']),
+        m('storage','Cabinets / Storage','Cabinets & Millwork',['None','Wire Shelving','Metal Shelving','Cabinets — Allowance','Custom Built-ins','Other']),
+        m('ev','EV Charger Outlet','Lighting & Electrical',['None','240V Outlet Only','Level 2 EVSE Installed','Conduit for Future','Other']),
+      ],
+      'Basement / Bonus Room': [
+        m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Carpet','Tile','Polished Concrete','Other']),
+        m('wall_paint','Wall Paint','Paint & Finishes'),
+        m('ceiling','Ceiling Type','Specialty',['Open Joist','Drywall Flat','Drop / Suspended','Tongue & Groove','Other']),
+        m('wet_bar','Wet Bar','Cabinets & Millwork',['None','Basic Bar — Allowance','Full Bar — Custom','Other']),
+        m('egress','Egress Windows','Windows',['Standard Size — Existing','Egress Wells Added','N/A — Above Grade','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed','Surface Mount','Recessed + Sconces','Other']),
+      ],
+      "Butler's Pantry": [
+        m('flooring','Flooring','Flooring',['Same as Kitchen','LVP','Tile','Other']),
+        m('cabinets','Cabinets','Cabinets & Millwork',['Match Kitchen','Contrasting Color','Open Shelving','Mix Open + Closed','Other']),
+        m('counter','Countertop','Countertops',['Match Kitchen','Contrasting Material','Butcher Block','Tile','Other']),
+        m('backsplash','Backsplash','Tile & Stone',['Match Kitchen','Contrasting Tile','None','Other']),
+        m('sink','Sink','Plumbing Fixtures',['None','Undermount Bar Sink','Drop-in','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed','Under Cabinet','Pendant','Other']),
+      ],
+      'Gym / Fitness Room': [
+        m('flooring','Flooring','Flooring',['Rubber — Tiles','Rubber — Rolled','LVP / Vinyl Plank','Carpet','Polished Concrete','Cork','Other']),
+        m('wall_finish','Wall Finish','Paint & Finishes',['Drywall — Painted','Mirror Wall','Partial Mirror','Painted + Mirror Panel','Shiplap','Other']),
+        m('ceiling','Ceiling','Specialty',["Standard 9'","Standard 10'",'Vaulted','Open / Exposed — Industrial','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed','High Bay LED','Recessed + Track','Other']),
+        m('tv_av','TV / AV','AV & Smart Home',['None','TV Mount Blocking Only','TV + Sound Bar','Full AV System','Other']),
+      ],
+      'Theater / Media Room': [
+        m('flooring','Flooring','Flooring',['Carpet','LVP / Vinyl Plank','Other']),
+        m('wall_finish','Wall Finish','Paint & Finishes',['Drywall — Dark Paint','Acoustic Panels','Fabric Wrapped Panels','Drywall + Acoustic Panels','Other']),
+        m('ceiling','Ceiling Type','Specialty',['Drywall — Dark Paint','Acoustic Tile','Coffered — Dark','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Dimmable Recessed','Sconces','LED Step Lighting','Full Theater Lighting System','Other']),
+        m('screen','Screen / Display','AV & Smart Home',['Large Format TV','Projection Screen + Projector','Retractable Projection Screen','Other']),
+        m('av','AV / Sound System','AV & Smart Home',['Allowance','Pre-wire Only','Sonos Surround','Full Home Theater System','Other']),
+        m('seating','Seating / Riser Platform','Specialty',['None — Client Supplied','Riser Platform Framed','Other']),
+      ],
+      'Covered Patio / Outdoor Living': [
+        m('flooring','Patio Flooring','Flooring',['Concrete — Broom Finish','Stamped Concrete','Pavers','Tile','Composite Decking','Wood Decking','Other']),
+        m('ceiling','Ceiling Finish','Specialty',['Exposed Framing','Tongue & Groove Wood','Stained T&G','Drywall — Painted','Other']),
+        m('out_kitchen','Outdoor Kitchen','Specialty',['None','Grill Station Only','Grill + Counter','Full Outdoor Kitchen','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['String / Festoon Lights','Recessed','Ceiling Fan + Recessed','Sconces','Low Voltage Landscape','Other']),
+        m('heat','Patio Heating','HVAC',['None','Ceiling Mounted Infrared','Patio Heaters — Allowance','Mini-Split','Other']),
+        m('fireplace','Fireplace / Fire Feature','Specialty',['None','Gas Fire Pit','Gas Fireplace','Wood Fire Pit','Fire Feature — Custom','Other']),
+        m('fan','Ceiling Fan','Lighting & Electrical',['None','Standard Outdoor Fan','Exterior Rated Fan','Other']),
+      ],
+      'Loft': [
+        m('flooring','Flooring','Flooring',['LVP / Vinyl Plank','Hardwood','Carpet','Tile','Other']),
+        m('railing','Railing Style','Specialty',['Wood Cap + Cable','Wood Cap + Metal Balusters','Full Glass Panel','Wrought Iron','Wood Traditional','Other']),
+        m('wall_paint','Wall Paint','Paint & Finishes'),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed','Pendant','Chandelier','Other']),
+      ],
+      'Sunroom': [
+        m('flooring','Flooring','Flooring',['Tile','LVP / Vinyl Plank','Concrete Stain','Other']),
+        m('windows','Window Type','Windows',['Standard Double-Pane','Floor-to-Ceiling','Three-Season Package','Four-Season Package','Other']),
+        m('hvac','Heating / Cooling','HVAC',['Mini-Split','Extended from Main System','Space Heater — Client Supplied','None','Other']),
+        m('lighting','Lighting','Lighting & Electrical',['Recessed','Ceiling Fan','Ceiling Fan + Recessed','Other']),
+        m('wall_paint','Wall Paint / Trim Color','Paint & Finishes'),
+      ],
+    };
+
+    /* ── GLOBAL TEMPLATES ── */
+    const GLOBAL_TPL = {
+      'Roofing': [
+        m('material','Roofing Material','Roofing & Exterior',['Architectural Asphalt Shingle','Metal — Standing Seam','Metal — Exposed Fastener','Metal Tile','Synthetic Slate','Concrete Tile','Cedar Shake','Other']),
+        m('color','Shingle / Metal Color & Style','Roofing & Exterior'),
+        m('underlay','Underlayment','Roofing & Exterior',['Standard Felt','Synthetic','Ice & Water Shield Full','Peel & Stick Full','Other']),
+        m('vent','Ridge Vent / Ventilation','Roofing & Exterior',['Ridge Vent + Soffit Vents','Powered Attic Fan','Gable Vents','Other']),
+        m('gutters','Gutters & Downspouts','Roofing & Exterior',['K-Style Aluminum','Seamless Aluminum','Half-Round','Copper','Steel','None — Client','Other']),
+        m('gutter_color','Gutter Color','Roofing & Exterior'),
+      ],
+      'Exterior': [
+        m('siding','Siding Material','Roofing & Exterior',['LP SmartSide','HardiePlank / Fiber Cement','Stucco','Brick','Natural Stone','Natural Wood','Vinyl','Board & Batten','Shiplap','Mix — See Notes','Other']),
+        m('siding_color','Siding Color','Roofing & Exterior'),
+        m('soffit','Soffit Material & Color','Roofing & Exterior',['Match Siding','Aluminum — White','Aluminum — Match Siding','Wood — Stained','Hardie — Painted','Other']),
+        m('fascia','Fascia Material & Color','Roofing & Exterior',['Match Trim','Aluminum Clad','Hardie — Painted','Wood — Painted','Other']),
+        m('accent','Stone / Brick Accent','Roofing & Exterior',['None','Stone — Base / Water Table','Stone — Accent Areas','Full Stone Facade','Brick — Accent','Full Brick','Other']),
+        m('accent_det','Accent Stone / Brick Type & Color','Roofing & Exterior'),
+      ],
+      'Windows & Exterior Doors': [
+        m('win_brand','Window Brand','Windows',['Allowance','Andersen','Pella','Marvin','Milgard','JELD-WEN','Simonton','Other']),
+        m('win_style','Window Style','Windows',['Double-Hung','Casement','Awning','Fixed / Picture','Slider','Specialty / Custom','Mix — See Notes']),
+        m('win_ext','Window Frame — Exterior Color','Windows'),
+        m('win_int','Window Frame — Interior Color','Windows',['White','Pine / Wood','Painted to Match Trim','Black','Other']),
+        m('win_grid','Window Grid Style','Windows',['None','Colonial','Prairie','Craftsman','Other']),
+        m('win_glass','Glass Package','Windows',['Standard Double-Pane','Low-E','Triple-Pane','Tempered Where Required','Other']),
+        m('fd_style','Front Door Style','Doors & Hardware',['Craftsman','Modern / Contemporary','Traditional Panel','Dutch Door','Pivot Door','Other']),
+        m('fd_mat','Front Door Material','Doors & Hardware',['Fiberglass','Steel','Solid Wood','Steel + Glass Lite','Fiberglass + Glass Lite','Other']),
+        m('fd_color','Front Door Color','Doors & Hardware'),
+        m('fd_hw','Front Door Hardware Finish','Doors & Hardware',['Matte Black','Satin Brass','Brushed Nickel','Oil Rubbed Bronze','Other']),
+        m('patio_dr','Patio / Sliding Doors','Doors & Hardware',['None','Sliding Glass Door','French Doors — Hinged','Folding / Bi-Fold','Multi-Slide Pocketing','Other']),
+        m('other_dr','Additional Exterior Doors','Doors & Hardware'),
+      ],
+      'Exterior Paint / Stain': [
+        m('body','Body Color','Paint & Finishes'),
+        m('trim','Trim Color','Paint & Finishes'),
+        m('accent','Accent / Shutter / Door Color','Paint & Finishes'),
+        m('finish','Exterior Paint Finish','Paint & Finishes',['Flat','Satin','Semi-Gloss Trim','Other']),
+        m('stain','Stain (if applicable)','Paint & Finishes'),
+      ],
+      'Interior Paint Scheme': [
+        m('main_wall','Main Wall Color','Paint & Finishes'),
+        m('accent_wall','Accent Wall Color','Paint & Finishes'),
+        m('trim_color','Trim / Door Color','Paint & Finishes'),
+        m('ceiling_color','Ceiling Color','Paint & Finishes',['Ceiling White','Same as Walls','White','Contrasting — See Notes','Other']),
+        m('wall_finish','Wall Sheen','Paint & Finishes',['Flat','Eggshell','Satin','Other']),
+        m('trim_finish','Trim Sheen','Paint & Finishes',['Semi-Gloss','Satin','Gloss','Other']),
+      ],
+      'HVAC System': [
+        m('sys_type','System Type','HVAC',['Gas Forced Air','Heat Pump','Dual Fuel','Mini-Split — Multi-Zone','Radiant Floor + AC','Geothermal','Other']),
+        m('brand','Brand Preference','HVAC',['No Preference','Carrier','Lennox','Trane','Goodman','Mitsubishi','Daikin','Other']),
+        m('ac','AC Included','HVAC',['Yes — Included','Heat Only','Future Rough-In Only','N/A — Heat Pump']),
+        m('zoning','Zoning','HVAC',['Single Zone','Two Zone','Multi-Zone','Zone Per Floor','Other']),
+        m('thermo','Thermostat','HVAC',['Standard Programmable','Smart — Ecobee','Smart — Nest','Smart — Honeywell','Client Supplied','Other']),
+        m('hrv','HRV / ERV','HVAC',['None','HRV','ERV','Required by Code','Other']),
+      ],
+      'Water Heater': [
+        m('wh_type','Water Heater Type','HVAC',['Tankless Gas','Tank Gas','Tankless Electric','Tank Electric','Heat Pump Water Heater','Solar + Backup','Other']),
+        m('wh_brand','Brand Preference','HVAC',['No Preference','Rinnai','Navien','Bradford White','Rheem','A.O. Smith','Other']),
+        m('recirc','Recirculation Pump','HVAC',['None','Timer Based','Demand / On-Demand','Other']),
+        m('wh_qty','Quantity / Zoning','HVAC',['Single Unit','Two Units','Dedicated for Master Bath','Other']),
+      ],
+      'Electrical & Lighting': [
+        m('panel','Main Panel Size','Lighting & Electrical',['100A','200A','400A','Other']),
+        m('switch','Switch Style','Lighting & Electrical',['Standard Toggle','Decora / Rocker','Smart — Lutron Caseta','Smart — Leviton','Smart — TP-Link Kasa','Other']),
+        m('outlet','Outlet / Plug Finish','Lighting & Electrical',['Standard White','Almond','Black','Stainless','Match Wall Color','Other']),
+        m('int_lt','Interior Lighting Style','Lighting & Electrical',['Recessed Throughout','Mix of Fixtures + Recessed','Fixtures Only — No Recessed','Other']),
+        m('ext_lt','Exterior Lighting Style','Lighting & Electrical',['Coach Lights','Modern Sconces','Recessed Soffit','String / Festoon','Low Voltage Landscape','Other']),
+        m('fans','Ceiling Fan Locations','Lighting & Electrical'),
+      ],
+      'AV & Smart Home': [
+        m('speakers','Pre-wire for Speakers','AV & Smart Home',['None','Living Room Only','Select Rooms','Whole Home Audio','Outdoor + Interior','Other']),
+        m('spk_brand','Speaker Brand','AV & Smart Home',['N/A','Sonos','Klipsch','Polk Audio','No Preference — Allowance','Other']),
+        m('tv_locs','TV / Mount Blocking Locations','AV & Smart Home'),
+        m('smart','Smart Home System','AV & Smart Home',['None','Google Home','Apple HomeKit','Amazon Alexa','Lutron RA3','Control4','Savant','Other']),
+        m('security','Security System','AV & Smart Home',['None','Ring','ADT Pre-wire','SimpliSafe','Vivint','Camera Only','Other']),
+        m('doorbell','Doorbell','AV & Smart Home',['Standard','Ring Video','Nest Hello','Other']),
+        m('ethernet','Cat6 / Data Drops','AV & Smart Home',['None','Select Rooms — See Notes','All Rooms','Other']),
+      ],
+      'Insulation': [
+        m('wall_ins','Wall Insulation','Specialty',['Batt — Standard','Batt — High Density','Closed-Cell Spray Foam','Open-Cell Spray Foam','Rigid Exterior','Other']),
+        m('attic_ins','Attic Insulation','Specialty',['Blown-In Fiberglass','Blown-In Cellulose','Batt','Spray Foam — Roof Deck','Other']),
+        m('base_ins','Basement / Crawl Space','Specialty',['N/A','Batt','Spray Foam','Rigid Board','Vapor Barrier Only','Other']),
+        m('r_value','R-Value Notes / Targets','Specialty'),
+      ],
+      'Garage Doors': [
+        m('gd_style','Door Style','Doors & Hardware',['Raised Panel','Flush / Modern','Carriage House','Full-View Glass','Other']),
+        m('gd_mat','Door Material','Doors & Hardware',['Steel','Steel — Faux Wood','Composite Wood','Natural Wood','Aluminum','Other']),
+        m('gd_color','Color / Finish','Doors & Hardware'),
+        m('gd_win','Windows','Doors & Hardware',['None','Row of Windows','Full-View Glass Panels','Other']),
+        m('gd_ins','Insulated','Doors & Hardware',['Yes — Insulated','No','Other']),
+        m('gd_opener','Opener Type','Doors & Hardware',['Standard Belt Drive','Smart / MyQ','Jackshaft / Wall Mount','Other']),
+        m('gd_qty','Quantity & Sizes','Doors & Hardware'),
+      ],
+      'Fireplace': [
+        m('fp_type','Fireplace Type','Specialty',['None','Gas — Linear','Gas — Traditional','Gas — Two-Sided / See-Through','Wood Burning','Electric','Other']),
+        m('fp_brand','Brand / Unit','Specialty',['Allowance','Heat & Glo','Heatilator','Regency','Napoleon','Valor','Other']),
+        m('fp_surr','Surround Material','Tile & Stone',['N/A','Tile','Natural Stone','Ledge Stone','Brick','Drywall','Shiplap / Wood','Other']),
+        m('fp_mantle','Mantle','Cabinets & Millwork',['N/A','Simple Wood Shelf','Built-up Wood Mantle','Stone Mantle','Custom Surround Built-in','Other']),
+        m('fp_hearth','Hearth Material','Tile & Stone',['N/A','Same as Surround','Tile','Natural Stone','Raised Hearth — Stone','Flush / None','Other']),
+        m('fp_loc','Location / Room','Specialty'),
+      ],
+      'Plumbing System': [
+        m('softener','Water Softener','Plumbing Fixtures',['None','Included — Allowance','Client Supplied','Rough-In Only','Other']),
+        m('filter','Whole-Home Filtration','Plumbing Fixtures',['None','Included — Allowance','Client Supplied','Rough-In Only','Other']),
+        m('hose_bibs','Hose Bibs (qty + locations)','Plumbing Fixtures'),
+        m('gas','Gas Lines / Locations','Specialty'),
+        m('sump','Sump Pump','Plumbing Fixtures',['None','Standard','Battery Backup','Smart Sump','Other']),
+      ],
+      'Landscaping & Hardscape': [
+        m('front','Front Yard Finish','Specialty',['Sod — Kentucky Bluegrass','Sod — Tall Fescue','Hydroseed','Xeriscape / Rock','Allowance','Client Scope','Other']),
+        m('back','Back Yard Finish','Specialty',['Sod — Kentucky Bluegrass','Sod — Tall Fescue','Hydroseed','Xeriscape / Rock','Allowance','Client Scope','Other']),
+        m('irrigation','Irrigation System','Specialty',['None','Front Only','Front + Back','Smart Controller','Drip Only','Other']),
+        m('walkway','Walkway Material','Specialty',['Concrete','Pavers','Flagstone','Exposed Aggregate','Other']),
+        m('retaining','Retaining Walls','Specialty',['None','Concrete Block','Natural Stone','Timber','Other']),
+        m('fencing','Fencing','Specialty',['None','Cedar Privacy','Vinyl Privacy','Split Rail','Metal / Iron','Allowance','Client Scope','Other']),
+      ],
+      'Driveway': [
+        m('dr_mat','Driveway Material','Specialty',['Concrete — Standard','Concrete — Exposed Aggregate','Concrete — Stamped','Asphalt','Pavers','Gravel','Other']),
+        m('dr_color','Color / Finish Detail','Specialty'),
+        m('dr_layout','Width / Layout Notes','Specialty'),
+        m('dr_apron','Apron / Border Detail','Specialty',['None','Contrasting Color Border','Paver Apron','Other']),
+      ],
+    };
+
+    const TRADE_ORDER = [
+      'Flooring','Tile & Stone','Paint & Finishes','Cabinets & Millwork',
+      'Countertops','Plumbing Fixtures','Doors & Hardware','Lighting & Electrical',
+      'Appliances','HVAC','AV & Smart Home','Roofing & Exterior','Windows','Specialty'
+    ];
+
+    /* ── HELPERS ── */
+    const initItems = (tpl) => tpl.map(i => ({ ...i, value: '', notes: '', status: 'TBD' }));
+    const initGlobal = () => {
+      const g = {};
+      Object.keys(GLOBAL_TPL).forEach(k => { g[k] = initItems(GLOBAL_TPL[k]); });
+      return g;
+    };
+
+    /* ── COMPONENTS ── */
+
+    function StatusPill({ status, onCycle }) {
+      const s = SS[status] || SS.TBD;
+      return (
+        <button
+          onClick={onCycle}
+          className="status-pill"
+          style={{ background: s.bg, color: s.color, borderColor: s.bd }}
+        >
+          {status === 'Selected' ? '✓ Selected' : status === 'Allowance' ? '$ Allowance' : '? TBD'}
+        </button>
+      );
+    }
+
+    function SelectionRow({ item, onChange }) {
+      const cycle = () => {
+        const i = STATUSES.indexOf(item.status);
+        onChange('status', STATUSES[(i + 1) % STATUSES.length]);
+      };
+      return (
+        <div className="sel-row">
+          <div className="sel-label">
+            <span className="trade-tag">{item.trade}</span>
+            <span className="item-label">{item.label}</span>
+          </div>
+          <div className="sel-inputs">
+            {item.options.length > 0 ? (
+              <select className="sel-dropdown" value={item.value} onChange={e => onChange('value', e.target.value)}>
+                <option value="">— Select —</option>
+                {item.options.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            ) : (
+              <input type="text" className="sel-input" value={item.value} placeholder="Specify..." onChange={e => onChange('value', e.target.value)} />
+            )}
+            <input type="text" className="sel-notes" value={item.notes} placeholder="Notes / spec / model #..." onChange={e => onChange('notes', e.target.value)} />
+            <StatusPill status={item.status} onCycle={cycle} />
+          </div>
+        </div>
+      );
+    }
+
+    /* ── PRINT COMPONENTS ── */
+
+    function PrintHeader({ project, subtitle }) {
+      const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      return (
+        <div className="p-header">
+          <div className="p-header-left">
+            <img src={WORDMARK} className="p-wordmark" alt="OVB" />
+            <div className="p-doc-title">Materials & Selections</div>
+            <div className="p-doc-subtitle">{subtitle}</div>
+          </div>
+          <div className="p-header-right">
+            <div className="p-proj-info">
+              {project.client   && <div><strong>Client:</strong> {project.client}</div>}
+              {project.name     && <div><strong>Project:</strong> {project.name}</div>}
+              {project.address  && <div><strong>Address:</strong> {project.address}</div>}
+              {project.estStart && <div><strong>Est. Start:</strong> {project.estStart}</div>}
+              {project.date     && <div><strong>Date:</strong> {project.date}</div>}
+              {project.preparedBy && <div><strong>Prepared by:</strong> {project.preparedBy}</div>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PrintTable({ items, showLoc }) {
+      return (
+        <table className="p-table">
+          <thead>
+            <tr>
+              {showLoc && <th>Location</th>}
+              <th>Item</th>
+              <th>Selection</th>
+              <th>Notes / Spec</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, i) => {
+              const empty = !item.value && item.status === 'TBD';
+              const sc = { Selected: 'status-selected', TBD: 'status-tbd', Allowance: 'status-allowance' }[item.status] || 'status-tbd';
+              return (
+                <tr key={i} className={empty ? 'row-empty' : ''}>
+                  {showLoc && <td className="p-td-loc">{item.location}</td>}
+                  <td className="p-td-item">{item.label}</td>
+                  <td className="p-td-val">{item.value || '—'}</td>
+                  <td className="p-td-notes">{item.notes || ''}</td>
+                  <td className={`p-td-status ${sc}`}>{item.status}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      );
+    }
+
+    function PrintByRoom({ project, rooms, globalItems }) {
+      const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      return (
+        <div className="print-doc">
+          <PrintHeader project={project} subtitle="Organized by Room &amp; Category" />
+          {rooms.map(room => (
+            <div key={room.id} className="p-section">
+              <div className="p-section-title">{room.name}</div>
+              <PrintTable items={room.items} showLoc={false} />
+            </div>
+          ))}
+          {Object.entries(globalItems).map(([cat, items]) => (
+            <div key={cat} className="p-section">
+              <div className="p-section-title">
+                {cat}&nbsp;&nbsp;<span className="p-global-tag">Global</span>
+              </div>
+              <PrintTable items={items} showLoc={false} />
+            </div>
+          ))}
+          <div className="p-footer">
+            <span>Ogden Valley Builders &middot; GC License #14219939-5501 &middot; (385) 288-7921 &middot; info@ogdenvalleybuilders.com</span>
+            <span>{today}</span>
+          </div>
+        </div>
+      );
+    }
+
+    function PrintByTrade({ project, rooms, globalItems }) {
+      const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      const tagged = [];
+      rooms.forEach(room => room.items.forEach(item => tagged.push({ ...item, location: room.name })));
+      Object.entries(globalItems).forEach(([cat, items]) => items.forEach(item => tagged.push({ ...item, location: cat })));
+
+      const tradeMap = {};
+      tagged.forEach(item => {
+        if (!tradeMap[item.trade]) tradeMap[item.trade] = [];
+        tradeMap[item.trade].push(item);
+      });
+      const orderedTrades = TRADE_ORDER.filter(t => tradeMap[t]);
+
+      return (
+        <div className="print-doc">
+          <PrintHeader project={project} subtitle="Organized by Trade" />
+          {orderedTrades.map(trade => (
+            <div key={trade} className="p-section">
+              <div className="p-section-title">{trade}</div>
+              <PrintTable items={tradeMap[trade]} showLoc={true} />
+            </div>
+          ))}
+          <div className="p-footer">
+            <span>Ogden Valley Builders &middot; GC License #14219939-5501 &middot; (385) 288-7921 &middot; info@ogdenvalleybuilders.com</span>
+            <span>{today}</span>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── MAIN APP ── */
+    function App() {
+      const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+      const [project, setProject] = useState({ name:'', client:'', address:'', estStart:'', date: today, preparedBy:'Taylor Whitesides' });
+      const [rooms, setRooms] = useState([]);
+      const [globalItems, setGlobalItems] = useState(initGlobal);
+      const [activeTab, setActiveTab] = useState('project');
+      const [showRoomPicker, setShowRoomPicker] = useState(false);
+      const [printMode, setPrintMode] = useState(null);
+
+      const addRoom = (type) => {
+        const cnt = rooms.filter(r => r.type === type).length + 1;
+        const name = cnt === 1 ? type : `${type} ${cnt}`;
+        const nr = { id: Date.now(), type, name, items: initItems(ROOM_TPL[type] || []) };
+        setRooms(prev => [...prev, nr]);
+        setActiveTab(nr.id);
+        setShowRoomPicker(false);
+      };
+
+      const removeRoom = (id) => {
+        setRooms(prev => prev.filter(r => r.id !== id));
+        setActiveTab('project');
+      };
+
+      const updateRoomName = (id, name) =>
+        setRooms(prev => prev.map(r => r.id === id ? { ...r, name } : r));
+
+      const updateRoomItem = (roomId, idx, field, val) =>
+        setRooms(prev => prev.map(r => {
+          if (r.id !== roomId) return r;
+          const items = [...r.items];
+          items[idx] = { ...items[idx], [field]: val };
+          return { ...r, items };
+        }));
+
+      const updateGlobalItem = (cat, idx, field, val) =>
+        setGlobalItems(prev => {
+          const arr = [...prev[cat]];
+          arr[idx] = { ...arr[idx], [field]: val };
+          return { ...prev, [cat]: arr };
+        });
+
+      const handlePrint = (mode) => {
+        setPrintMode(mode);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          window.print();
+          setTimeout(() => setPrintMode(null), 800);
+        }));
+      };
+
+      const handleReset = () => {
+        if (window.confirm('Reset all data? This cannot be undone.')) {
+          setProject({ name:'', client:'', address:'', estStart:'', date: today, preparedBy:'Taylor Whitesides' });
+          setRooms([]);
+          setGlobalItems(initGlobal());
+          setActiveTab('project');
+        }
+      };
+
+      const selectedCount = () => {
+        let s = 0, a = 0;
+        rooms.forEach(r => r.items.forEach(i => { if (i.status==='Selected') s++; if (i.status==='Allowance') a++; }));
+        Object.values(globalItems).forEach(arr => arr.forEach(i => { if (i.status==='Selected') s++; if (i.status==='Allowance') a++; }));
+        return { s, a };
+      };
+
+      const renderContent = () => {
+        if (activeTab === 'project') return renderProjectForm();
+        const room = rooms.find(r => r.id === activeTab);
+        if (room) return renderRoomContent(room);
+        if (globalItems[activeTab]) return renderGlobalContent(activeTab);
+        return null;
+      };
+
+      const renderProjectForm = () => (
+        <div>
+          <div className="sec-header">
+            <div className="sec-header-left">
+              <span className="sec-type-tag">Setup</span>
+              <span className="sec-title">Project Information</span>
+            </div>
+          </div>
+          <div className="proj-grid">
+            {[
+              { k:'name',       label:'Project Name',        ph:'e.g., Smith Residence Addition' },
+              { k:'client',     label:'Client Name',         ph:'e.g., John & Jane Smith' },
+              { k:'address',    label:'Project Address',     ph:'123 Mountain View Dr, Eden, UT 84310' },
+              { k:'estStart',   label:'Estimated Start Date',ph:'MM/DD/YYYY' },
+              { k:'date',       label:'Date Prepared',       ph:'MM/DD/YYYY' },
+              { k:'preparedBy', label:'Prepared By',         ph:'Taylor Whitesides' },
+            ].map(f => (
+              <div key={f.k} className="proj-field">
+                <label className="field-label">{f.label}</label>
+                <input type="text" className="field-input" value={project[f.k]} placeholder={f.ph}
+                  onChange={e => setProject(prev => ({ ...prev, [f.k]: e.target.value }))} />
+              </div>
+            ))}
+          </div>
+          <div className="proj-hint">
+            ↙ Use the sidebar to add rooms, then fill in selections room by room. Global categories cover whole-project items like HVAC, roofing, and paint. Click any status pill to cycle: TBD → Selected → Allowance.
+          </div>
+        </div>
+      );
+
+      const renderRoomContent = (room) => (
+        <div>
+          <div className="sec-header">
+            <div className="sec-header-left">
+              <span className="sec-type-tag">{room.type}</span>
+              <input className="room-name-edit" value={room.name}
+                onChange={e => updateRoomName(room.id, e.target.value)}
+                size={Math.max(room.name.length, 8)} />
+            </div>
+            <button className="remove-room-btn" onClick={() => removeRoom(room.id)}>Remove Room</button>
+          </div>
+          <div className="items-list">
+            {room.items.map((item, idx) => (
+              <SelectionRow key={item.id + '-' + idx} item={item}
+                onChange={(field, val) => updateRoomItem(room.id, idx, field, val)} />
+            ))}
+          </div>
+        </div>
+      );
+
+      const renderGlobalContent = (cat) => (
+        <div>
+          <div className="sec-header">
+            <div className="sec-header-left">
+              <span className="sec-type-tag">Global</span>
+              <span className="sec-title">{cat}</span>
+            </div>
+          </div>
+          <div className="items-list">
+            {globalItems[cat].map((item, idx) => (
+              <SelectionRow key={item.id + '-' + idx} item={item}
+                onChange={(field, val) => updateGlobalItem(cat, idx, field, val)} />
+            ))}
+          </div>
+        </div>
+      );
+
+      const stats = selectedCount();
+
+      return (
+        <div className={`app ${printMode ? 'printing-' + printMode : ''}`}>
+
+          {/* ── SCREEN UI ── */}
+          <div className="screen-only" style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
+            <header className="app-header">
+              <div className="header-left">
+                <div className="bear-wrap">
+                  <img src={BEAR} className="bear-img" alt="" />
+                </div>
+                <div>
+                  <div className="header-product">Materials &amp; Selections</div>
+                  <div className="header-company">Ogden Valley Builders</div>
+                </div>
+              </div>
+              <div className="header-right">
+                {project.client && <span className="header-client">{project.client}</span>}
+                {project.client && project.name && <span className="header-sep">·</span>}
+                {project.name && <span className="header-detail">{project.name}</span>}
+                {(project.client || project.name) && project.address && <span className="header-sep">·</span>}
+                {project.address && <span className="header-detail">{project.address}</span>}
+              </div>
+            </header>
+
+            <div className="main-layout">
+              {/* SIDEBAR */}
+              <aside className="sidebar">
+                <div className="sb-section">
+                  <div className="sb-label">Project</div>
+                  <button className={`nav-item ${activeTab === 'project' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('project')}>Project Info</button>
+                </div>
+
+                <div className="sb-section">
+                  <div className="sb-label">Rooms</div>
+                  {rooms.map(room => (
+                    <button key={room.id}
+                      className={`nav-item ${activeTab === room.id ? 'active' : ''}`}
+                      onClick={() => setActiveTab(room.id)}>
+                      {room.name}
+                    </button>
+                  ))}
+                  <div className="add-room-wrap">
+                    <button className="add-room-btn" onClick={() => setShowRoomPicker(v => !v)}>
+                      + Add Room
+                    </button>
+                    {showRoomPicker && (
+                      <div className="room-picker">
+                        {ROOM_TYPE_LIST.map(type => (
+                          <button key={type} className="rp-option" onClick={() => addRoom(type)}>
+                            {type}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="sb-section">
+                  <div className="sb-label">Global Categories</div>
+                  {Object.keys(GLOBAL_TPL).map(cat => (
+                    <button key={cat}
+                      className={`nav-item ${activeTab === cat ? 'active' : ''}`}
+                      onClick={() => setActiveTab(cat)}>
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </aside>
+
+              {/* MAIN CONTENT */}
+              <main className="main-content" onClick={() => showRoomPicker && setShowRoomPicker(false)}>
+                {renderContent()}
+                <div style={{ height: '70px' }} />
+              </main>
+            </div>
+
+            {/* BOTTOM BAR */}
+            <div className="bottom-bar">
+              <div className="bottom-stats">
+                {rooms.length} room{rooms.length !== 1 ? 's' : ''} &nbsp;·&nbsp; {stats.s} selected &nbsp;·&nbsp; {stats.a} allowance
+              </div>
+              <div className="bottom-actions">
+                <button className="btn-ghost" onClick={handleReset}>Reset</button>
+                <button className="btn-print" onClick={() => handlePrint('trade')}>Print by Trade</button>
+                <button className="btn-print-primary" onClick={() => handlePrint('room')}>Print by Room</button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── PRINT SECTIONS ── */}
+          <div className="print-by-room">
+            <PrintByRoom project={project} rooms={rooms} globalItems={globalItems} />
+          </div>
+          <div className="print-by-trade">
+            <PrintByTrade project={project} rooms={rooms} globalItems={globalItems} />
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
