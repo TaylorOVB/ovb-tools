@@ -489,6 +489,96 @@
         font-size: 6.5pt; color: #AAA;
       }
     }
+    /* ── COST GUIDE PANEL ── */
+    .cost-guide-overlay {
+      position: absolute; inset: 0;
+      background: var(--bg);
+      z-index: 100;
+      display: flex; flex-direction: column;
+      animation: slideInRight 0.16s ease-out;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(40px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    .cg-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--bg-deep);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0; gap: 12px;
+    }
+    .cg-title { font-size: 15px; font-weight: 600; color: var(--smoke); }
+    .cg-subtitle { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--tan); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1px; }
+    .cg-close {
+      background: none; border: 1px solid var(--border-mid);
+      border-radius: var(--r); color: var(--muted);
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      padding: 6px 14px; cursor: pointer; white-space: nowrap;
+      transition: background 0.12s, color 0.12s;
+    }
+    .cg-close:hover { background: var(--tan-dim); color: var(--smoke); }
+    .cg-nav {
+      display: flex; gap: 4px; flex-wrap: wrap;
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0; background: var(--bg-deep);
+    }
+    .cg-nav-pill {
+      background: none; border: 1px solid var(--border);
+      border-radius: 20px; padding: 3px 10px;
+      font-family: 'DM Mono', monospace; font-size: 8px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--muted); cursor: pointer;
+      transition: background 0.1s, color 0.1s, border-color 0.1s;
+      white-space: nowrap;
+    }
+    .cg-nav-pill:hover  { background: var(--tan-dim); color: var(--smoke); border-color: var(--border-mid); }
+    .cg-nav-pill.active { background: var(--tan-dim); color: var(--tan);   border-color: var(--tan); }
+    .cg-body { flex: 1; overflow-y: auto; padding: 18px 20px 80px; }
+    .cg-body::-webkit-scrollbar { width: 3px; }
+    .cg-body::-webkit-scrollbar-thumb { background: var(--border-mid); }
+    .cg-section { margin-bottom: 28px; }
+    .cg-section-title {
+      font-family: 'DM Mono', monospace; font-size: 9px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--tan); margin-bottom: 12px;
+      padding-bottom: 7px; border-bottom: 1px solid var(--border);
+    }
+    .cg-item { margin-bottom: 16px; }
+    .cg-item-name { font-size: 13px; font-weight: 600; color: var(--smoke); margin-bottom: 1px; }
+    .cg-item-unit { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--muted); margin-bottom: 8px; }
+    .cg-tiers { display: flex; flex-direction: column; gap: 3px; }
+    .cg-tier {
+      display: grid; grid-template-columns: 78px 140px 1fr;
+      align-items: start; gap: 12px;
+      padding: 7px 11px; border-radius: var(--r);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.025);
+    }
+    .cg-tier-label { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; padding-top: 1px; }
+    .cg-tier-range { font-size: 12.5px; font-weight: 700; color: var(--smoke); }
+    .cg-tier-note { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+    .tier-Builder  { border-color: rgba(242,239,232,0.07); }
+    .tier-Builder  .cg-tier-label { color: rgba(242,239,232,0.35); }
+    .tier-Mid      { border-color: rgba(199,170,139,0.18); }
+    .tier-Mid      .cg-tier-label { color: var(--tan); }
+    .tier-Premium  { border-color: rgba(111,168,220,0.2); }
+    .tier-Premium  .cg-tier-label { color: #6FA8DC; }
+    .tier-Luxury   { border-color: rgba(212,175,55,0.24); background: rgba(212,175,55,0.04); }
+    .tier-Luxury   .cg-tier-label { color: #D4AF37; }
+
+    /* ── INFO BUTTON (per row) ── */
+    .info-btn {
+      flex-shrink: 0; width: 24px; height: 24px;
+      border-radius: 50%; border: 1px solid var(--border-mid);
+      background: none; color: rgba(199,170,139,0.4);
+      font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      font-family: inherit; line-height: 1;
+    }
+    .info-btn:hover { background: var(--tan-dim); color: var(--tan); border-color: var(--tan); }
   </style>
 </head>
 <body>
@@ -497,7 +587,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
     const BEAR = "https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png";
     const WORDMARK = "https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png";
@@ -517,6 +607,213 @@
     ];
 
     const m = (id, label, trade, options = []) => ({ id, label, trade, options });
+
+    /* ── COST GUIDE DATA ── */
+    const COST_DATA = {
+      'Flooring': [
+        { label: 'Carpet', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$2–$4/sf', note: 'Loop pile, basic color palette, standard pad' },
+          { tier: 'Mid', range: '$4–$7/sf', note: 'Cut pile, broader color options, upgraded cushion pad' },
+          { tier: 'Premium', range: '$7–$12/sf', note: 'Wool blend, plush pile, memory foam pad' },
+          { tier: 'Luxury', range: '$12–$22+/sf', note: 'Pure wool, custom or patterned carpet, bespoke install' },
+        ]},
+        { label: 'LVP / Vinyl Plank', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$3–$5/sf', note: '6–8 mil wear layer, basic wood looks, thin profile' },
+          { tier: 'Mid', range: '$5–$8/sf', note: '12–20 mil wear layer, realistic texture, waterproof core' },
+          { tier: 'Premium', range: '$8–$13/sf', note: '20+ mil, wide plank, premium brands (COREtec, Shaw)' },
+        ]},
+        { label: 'Hardwood', unit: 'per sf installed', tiers: [
+          { tier: 'Mid', range: '$8–$12/sf', note: 'Prefinished oak, standard 2¼"–3¼" widths' },
+          { tier: 'Premium', range: '$12–$20/sf', note: 'Wide plank 5"+, site-finished, exotic species' },
+          { tier: 'Luxury', range: '$20–$40+/sf', note: 'Custom stain, hand-scraped, reclaimed or rare species' },
+        ]},
+        { label: 'Engineered Hardwood', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$5–$8/sf', note: 'Thin veneer, standard widths, limited finish options' },
+          { tier: 'Mid', range: '$8–$14/sf', note: 'Thicker veneer, wide plank, more species/finishes' },
+          { tier: 'Premium', range: '$14–$24/sf', note: 'Thick sawn veneer, wire-brushed, premium brands' },
+        ]},
+        { label: 'Tile (Floor)', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$6–$10/sf', note: 'Ceramic 12x12, straight lay, standard grout' },
+          { tier: 'Mid', range: '$10–$18/sf', note: 'Porcelain, larger format, basic pattern layout' },
+          { tier: 'Premium', range: '$18–$35/sf', note: 'Large format 24x24+, stone look, patterned layout' },
+          { tier: 'Luxury', range: '$35–$80+/sf', note: 'Natural stone (marble, travertine), custom mosaic' },
+        ]},
+        { label: 'Epoxy (Garage)', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$2–$4/sf', note: 'Basic epoxy coat, single color' },
+          { tier: 'Mid', range: '$4–$7/sf', note: 'Polyaspartic topcoat, vinyl chip broadcast' },
+          { tier: 'Premium', range: '$7–$12/sf', note: 'Full flake broadcast, multiple coats, UV stable top coat' },
+        ]},
+      ],
+      'Tile & Stone': [
+        { label: 'Shower / Wall Tile', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$8–$14/sf', note: 'Ceramic subway or standard field tile' },
+          { tier: 'Mid', range: '$14–$25/sf', note: 'Porcelain, larger format, niche included' },
+          { tier: 'Premium', range: '$25–$50/sf', note: 'Natural stone look, mosaic accents, custom layout' },
+          { tier: 'Luxury', range: '$50–$120+/sf', note: 'Marble, Zellige, book-matched stone, full custom design' },
+        ]},
+        { label: 'Backsplash', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$8–$14/sf', note: 'Ceramic subway, basic white or neutral' },
+          { tier: 'Mid', range: '$14–$28/sf', note: 'Porcelain, glass tile, simple pattern layouts' },
+          { tier: 'Premium', range: '$28–$60/sf', note: 'Natural stone, Zellige, handmade tile, custom mosaic' },
+          { tier: 'Luxury', range: '$60–$150+/sf', note: 'Slab stone backsplash, rare artisan tile, book-matched' },
+        ]},
+      ],
+      'Countertops': [
+        { label: 'Countertops', unit: 'per sf installed (material + fab + install)', tiers: [
+          { tier: 'Builder', range: '$20–$40/sf', note: 'Laminate — durable, many patterns, limited edge profiles' },
+          { tier: 'Mid', range: '$55–$95/sf', note: 'Entry quartz (MSI, Silestone) or mid-grade granite' },
+          { tier: 'Premium', range: '$95–$145/sf', note: 'Premium quartz (Cambria), quartzite, high-end granite' },
+          { tier: 'Luxury', range: '$145–$300+/sf', note: 'Marble, book-matched stone, waterfall edge, custom fab' },
+        ]},
+        { label: 'Butcher Block', unit: 'per lf installed', tiers: [
+          { tier: 'Builder', range: '$50–$80/lf', note: 'Maple or birch, standard thickness, oil finish' },
+          { tier: 'Mid', range: '$80–$130/lf', note: 'Walnut, end-grain option, thicker profile' },
+          { tier: 'Premium', range: '$130–$250+/lf', note: 'Custom end-grain, exotic species, integrated sink cutout' },
+        ]},
+      ],
+      'Cabinets & Millwork': [
+        { label: 'Kitchen Cabinets', unit: 'per lf of base cabinet installed', tiers: [
+          { tier: 'Builder', range: '$150–$275/lf', note: 'Stock (box store), limited sizes/finishes, particleboard box' },
+          { tier: 'Mid', range: '$275–$475/lf', note: 'Semi-custom, plywood box, soft-close, more finish options' },
+          { tier: 'Premium', range: '$475–$900/lf', note: 'Custom, dovetail drawers, painted inset or full-overlay' },
+          { tier: 'Luxury', range: '$900–$2,000+/lf', note: 'Fully custom, furniture-grade, inset, specialty finishes' },
+        ]},
+        { label: 'Bathroom Vanity', unit: 'per vanity (cabinet only)', tiers: [
+          { tier: 'Builder', range: '$400–$900', note: 'Pre-fab box store, limited sizes, standard finish' },
+          { tier: 'Mid', range: '$900–$2,500', note: 'Semi-custom shaker, soft-close, painted or stained' },
+          { tier: 'Premium', range: '$2,500–$6,000', note: 'Custom built, inset doors, specialty finish, integrated lighting' },
+          { tier: 'Luxury', range: '$6,000–$18,000+', note: 'Fully custom furniture-grade, bespoke design' },
+        ]},
+        { label: 'Trim & Millwork', unit: 'per lf installed (baseboard + casing)', tiers: [
+          { tier: 'Builder', range: '$3–$5/lf', note: 'Finger-joint pine, ranch or colonial profile, painted' },
+          { tier: 'Mid', range: '$5–$9/lf', note: 'MDF or clear pine, craftsman profile, painted' },
+          { tier: 'Premium', range: '$9–$18/lf', note: 'Solid wood, custom profile, layered built-up molding' },
+          { tier: 'Luxury', range: '$18–$40+/lf', note: 'Custom milled hardwood, wainscoting, coffered ceilings' },
+        ]},
+      ],
+      'Plumbing Fixtures': [
+        { label: 'Shower System', unit: 'fixtures only (not labor)', tiers: [
+          { tier: 'Builder', range: '$200–$500', note: 'Standard pressure-balance valve + basic showerhead' },
+          { tier: 'Mid', range: '$500–$1,500', note: 'Rain head + hand-held, Kohler/Delta/Moen' },
+          { tier: 'Premium', range: '$1,500–$4,000', note: 'Thermostatic valve, rain + hand-held, Hansgrohe/Brizo' },
+          { tier: 'Luxury', range: '$4,000–$15,000+', note: 'Full body spray system, digital control, Waterworks/Dornbracht' },
+        ]},
+        { label: 'Soaking / Freestanding Tub', unit: 'fixture only', tiers: [
+          { tier: 'Builder', range: '$400–$900', note: 'Acrylic alcove or basic freestanding, white' },
+          { tier: 'Mid', range: '$900–$2,500', note: 'Freestanding acrylic, clean modern lines' },
+          { tier: 'Premium', range: '$2,500–$6,000', note: 'Cast iron freestanding, stone resin, air tub' },
+          { tier: 'Luxury', range: '$6,000–$25,000+', note: 'Stone, copper, custom sculptural tub' },
+        ]},
+        { label: 'Full Bathroom Fixtures', unit: 'faucet + shower + toilet combined', tiers: [
+          { tier: 'Builder', range: '$800–$1,800', note: 'Moen/Delta standard, basic shower valve, round toilet' },
+          { tier: 'Mid', range: '$1,800–$4,000', note: 'Kohler, comfort height toilet, Delta Trinsic, hand-held' },
+          { tier: 'Premium', range: '$4,000–$9,000', note: 'Brizo, Hansgrohe, wall-hung toilet, thermostatic valve' },
+          { tier: 'Luxury', range: '$9,000–$30,000+', note: 'Waterworks, THG, Toto Neorest bidet, full custom system' },
+        ]},
+        { label: 'Kitchen Faucet', unit: 'fixture only', tiers: [
+          { tier: 'Builder', range: '$80–$200', note: 'Moen/Delta single handle pull-down, standard finish' },
+          { tier: 'Mid', range: '$200–$500', note: 'Kohler, Delta Trinsic, touchless option' },
+          { tier: 'Premium', range: '$500–$1,200', note: 'Brizo, Newport Brass, commercial bridge style' },
+          { tier: 'Luxury', range: '$1,200–$3,500+', note: 'Waterworks, Dornbracht, Kallista — designer statement' },
+        ]},
+      ],
+      'Appliances': [
+        { label: 'Kitchen Suite', unit: 'range + hood + fridge + dishwasher', tiers: [
+          { tier: 'Builder', range: '$3,500–$6,000', note: 'Samsung/LG/Whirlpool standard — functional, basic features' },
+          { tier: 'Mid', range: '$6,000–$14,000', note: 'Bosch, KitchenAid, Café — quieter, better build quality' },
+          { tier: 'Premium', range: '$14,000–$30,000', note: 'Thermador, Wolf range, Sub-Zero refrigerator' },
+          { tier: 'Luxury', range: '$30,000–$100,000+', note: 'Full Sub-Zero/Wolf/Cove suite, built-in column fridge, pro range' },
+        ]},
+        { label: 'Range / Cooktop', unit: 'unit only', tiers: [
+          { tier: 'Builder', range: '$700–$1,500', note: 'Standard 30" slide-in, basic burners' },
+          { tier: 'Mid', range: '$1,500–$4,000', note: 'KitchenAid/Samsung, dual fuel, convection' },
+          { tier: 'Premium', range: '$4,000–$10,000', note: 'Thermador/Bosch 36"+ dual fuel or induction' },
+          { tier: 'Luxury', range: '$10,000–$30,000+', note: 'Wolf 48" dual fuel, BlueStar, La Cornue' },
+        ]},
+        { label: 'Refrigerator', unit: 'unit only', tiers: [
+          { tier: 'Builder', range: '$800–$1,800', note: 'French door, 25–28 cu ft, standard depth' },
+          { tier: 'Mid', range: '$1,800–$4,500', note: 'Counter-depth French door, better finish and features' },
+          { tier: 'Premium', range: '$4,500–$12,000', note: 'Sub-Zero integrated, column refrigerator, panel-ready' },
+          { tier: 'Luxury', range: '$12,000–$30,000+', note: 'Full Sub-Zero column pair, custom panels, integrated design' },
+        ]},
+      ],
+      'Doors & Hardware': [
+        { label: 'Front Entry Door', unit: 'door + hardware + installation', tiers: [
+          { tier: 'Builder', range: '$800–$1,600', note: 'Steel prehung, standard sizes, basic hardware' },
+          { tier: 'Mid', range: '$1,600–$3,500', note: 'Fiberglass with glass lites, upgraded hardware, painted' },
+          { tier: 'Premium', range: '$3,500–$8,000', note: 'Solid wood or pivot, fiberglass with sidelites/transom' },
+          { tier: 'Luxury', range: '$8,000–$25,000+', note: 'Custom pivot, oversized steel, solid wood + custom hardware' },
+        ]},
+        { label: 'Interior Door Hardware', unit: 'per door (knob/lever + hinges)', tiers: [
+          { tier: 'Builder', range: '$30–$80/door', note: 'Basic passage set, standard finishes' },
+          { tier: 'Mid', range: '$80–$200/door', note: 'Schlage/Emtek, consistent finish throughout' },
+          { tier: 'Premium', range: '$200–$500/door', note: 'Emtek, Rocky Mountain, designer levers' },
+          { tier: 'Luxury', range: '$500–$1,500+/door', note: 'Custom hardware, unlacquered brass, specialty finish' },
+        ]},
+      ],
+      'Windows': [
+        { label: 'Windows', unit: 'per window installed (avg. 3×4)', tiers: [
+          { tier: 'Builder', range: '$350–$600/window', note: 'JELD-WEN, Simonton — basic double-pane, vinyl frame' },
+          { tier: 'Mid', range: '$600–$1,100/window', note: 'Milgard, mid-Pella/Andersen, better glass, more sizes' },
+          { tier: 'Premium', range: '$1,100–$2,200/window', note: 'Andersen A-Series, Pella Architect, fiberglass or clad' },
+          { tier: 'Luxury', range: '$2,200–$6,000+/window', note: 'Marvin Signature, Loewen, custom sizes, clad wood interior' },
+        ]},
+      ],
+      'HVAC': [
+        { label: 'HVAC System', unit: 'whole-home installed', tiers: [
+          { tier: 'Builder', range: '$8,000–$14,000', note: 'Gas forced air, 80% AFUE, single zone, standard brand' },
+          { tier: 'Mid', range: '$14,000–$22,000', note: '95%+ AFUE, 2-stage, zoning, smart thermostat' },
+          { tier: 'Premium', range: '$22,000–$38,000', note: 'Dual fuel/heat pump, variable speed, multi-zone smart' },
+          { tier: 'Luxury', range: '$38,000–$90,000+', note: 'Radiant hydronic + AC, geothermal, whole-home dehumidification' },
+        ]},
+        { label: 'Water Heater', unit: 'unit + installation', tiers: [
+          { tier: 'Builder', range: '$1,200–$2,000', note: '40–50 gal tank gas, standard install' },
+          { tier: 'Mid', range: '$2,000–$3,500', note: 'Heat pump WH or mid-range tankless gas (Rheem, A.O. Smith)' },
+          { tier: 'Premium', range: '$3,500–$5,500', note: 'High-efficiency tankless (Navien, Rinnai), recirculation pump' },
+          { tier: 'Luxury', range: '$5,500–$14,000+', note: 'Dual tankless, on-demand recirculation, per-zone units' },
+        ]},
+        { label: 'Radiant Floor Heat', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$8–$12/sf', note: 'Electric mat in mortar bed, basic thermostat' },
+          { tier: 'Mid', range: '$12–$18/sf', note: 'Electric cable system, smart thermostat, select rooms' },
+          { tier: 'Premium', range: '$18–$28/sf', note: 'Hydronic (boiler), multi-zone, whole floor coverage' },
+          { tier: 'Luxury', range: '$28–$45+/sf', note: 'Full hydronic slab, high-efficiency boiler, smart zoning' },
+        ]},
+      ],
+      'Roofing & Exterior': [
+        { label: 'Roofing', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$4–$6/sf', note: 'Architectural asphalt shingle (30-yr), standard colors' },
+          { tier: 'Mid', range: '$6–$9/sf', note: 'Premium asphalt (50-yr), designer colors, synthetic underlayment' },
+          { tier: 'Premium', range: '$9–$18/sf', note: 'Metal exposed fastener or stone-coated steel' },
+          { tier: 'Luxury', range: '$18–$40+/sf', note: 'Metal standing seam, synthetic slate, cedar shake' },
+        ]},
+        { label: 'Siding', unit: 'per sf installed', tiers: [
+          { tier: 'Builder', range: '$4–$7/sf', note: 'Vinyl siding, basic profile and color selection' },
+          { tier: 'Mid', range: '$7–$14/sf', note: 'LP SmartSide or HardiePlank, painted, standard profiles' },
+          { tier: 'Premium', range: '$14–$22/sf', note: 'Premium Hardie, cedar, board & batten, mixed materials' },
+          { tier: 'Luxury', range: '$22–$45+/sf', note: 'Natural wood, brick, full stone, custom detailing' },
+        ]},
+      ],
+      'Specialty': [
+        { label: 'Fireplace', unit: 'unit + basic surround installed', tiers: [
+          { tier: 'Builder', range: '$1,500–$3,500', note: 'Electric insert, drywall surround, basic mantle' },
+          { tier: 'Mid', range: '$4,500–$9,000', note: 'Gas traditional, tile surround, wood mantle' },
+          { tier: 'Premium', range: '$9,000–$20,000', note: 'Gas linear, stone surround, custom built-in' },
+          { tier: 'Luxury', range: '$20,000–$60,000+', note: 'Two-sided, custom masonry, imported stone, designer surround' },
+        ]},
+        { label: 'Window Coverings', unit: 'per window installed', tiers: [
+          { tier: 'Builder', range: '$80–$200/window', note: 'Basic blinds or roller shades, manual cord' },
+          { tier: 'Mid', range: '$200–$500/window', note: 'Cellular/honeycomb shades, quality roller, manual' },
+          { tier: 'Premium', range: '$500–$1,200/window', note: 'Motorized battery, Hunter Douglas, Roman shades' },
+          { tier: 'Luxury', range: '$1,200–$4,000+/window', note: 'Hardwired motorized, Lutron Serena, custom drapery' },
+        ]},
+        { label: 'Landscaping & Irrigation', unit: 'rough whole-yard estimate', tiers: [
+          { tier: 'Builder', range: '$8,000–$18,000', note: 'Sod front/back, basic irrigation, minimal plantings' },
+          { tier: 'Mid', range: '$18,000–$40,000', note: 'Sod + plantings, smart irrigation, paver walkway' },
+          { tier: 'Premium', range: '$40,000–$90,000', note: 'Full landscape design, custom hardscape, outdoor lighting' },
+          { tier: 'Luxury', range: '$90,000–$300,000+', note: 'Master landscape plan, water features, full outdoor living' },
+        ]},
+      ],
+    };
 
     /* ── ROOM TEMPLATES ── */
     const ROOM_TPL = {
@@ -867,11 +1164,12 @@
       );
     }
 
-    function SelectionRow({ item, onChange }) {
+    function SelectionRow({ item, onChange, onInfo }) {
       const cycle = () => {
         const i = STATUSES.indexOf(item.status);
         onChange('status', STATUSES[(i + 1) % STATUSES.length]);
       };
+      const hasCost = !!COST_DATA[item.trade];
       return (
         <div className="sel-row">
           <div className="sel-label">
@@ -889,6 +1187,9 @@
             )}
             <input type="text" className="sel-notes" value={item.notes} placeholder="Notes / spec / model #..." onChange={e => onChange('notes', e.target.value)} />
             <StatusPill status={item.status} onCycle={cycle} />
+            {hasCost && onInfo && (
+              <button className="info-btn" onClick={() => onInfo(item.trade)} title={`${item.trade} cost guide`}>$</button>
+            )}
           </div>
         </div>
       );
@@ -1007,6 +1308,72 @@
       );
     }
 
+    /* ── COST GUIDE COMPONENT ── */
+    function CostGuide({ scrollTo, onClose }) {
+      const cats = Object.keys(COST_DATA);
+      const [activeSection, setActiveSection] = useState(scrollTo || cats[0]);
+      const bodyRef = React.useRef(null);
+
+      useEffect(() => {
+        if (scrollTo) {
+          setActiveSection(scrollTo);
+          const id = 'cg-' + scrollTo.replace(/[^a-z0-9]/gi, '');
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, [scrollTo]);
+
+      const jumpTo = (cat) => {
+        setActiveSection(cat);
+        const id = 'cg-' + cat.replace(/[^a-z0-9]/gi, '');
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      return (
+        <div className="cost-guide-overlay">
+          <div className="cg-header">
+            <div>
+              <div className="cg-title">Cost Guide</div>
+              <div className="cg-subtitle">Builder · Mid · Premium · Luxury — Utah 2026 installed costs</div>
+            </div>
+            <button className="cg-close" onClick={onClose}>✕ Close</button>
+          </div>
+          <div className="cg-nav">
+            {cats.map(cat => (
+              <button key={cat}
+                className={`cg-nav-pill ${activeSection === cat ? 'active' : ''}`}
+                onClick={() => jumpTo(cat)}>
+                {cat}
+              </button>
+            ))}
+          </div>
+          <div className="cg-body" ref={bodyRef}>
+            {Object.entries(COST_DATA).map(([cat, items]) => (
+              <div key={cat} className="cg-section" id={'cg-' + cat.replace(/[^a-z0-9]/gi, '')}>
+                <div className="cg-section-title">{cat}</div>
+                {items.map((item, i) => (
+                  <div key={i} className="cg-item">
+                    <div className="cg-item-name">{item.label}</div>
+                    <div className="cg-item-unit">{item.unit}</div>
+                    <div className="cg-tiers">
+                      {item.tiers.map((t, j) => (
+                        <div key={j} className={`cg-tier tier-${t.tier}`}>
+                          <span className="cg-tier-label">{t.tier}</span>
+                          <span className="cg-tier-range">{t.range}</span>
+                          <span className="cg-tier-note">{t.note}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     /* ── MAIN APP ── */
     function App() {
       const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
@@ -1016,6 +1383,13 @@
       const [activeTab, setActiveTab] = useState('project');
       const [showRoomPicker, setShowRoomPicker] = useState(false);
       const [printMode, setPrintMode] = useState(null);
+      const [showCostGuide, setShowCostGuide] = useState(false);
+      const [costGuideSection, setCostGuideSection] = useState(null);
+
+      const openCostGuide = (trade) => {
+        setCostGuideSection(trade || null);
+        setShowCostGuide(true);
+      };
 
       const addRoom = (type) => {
         const cnt = rooms.filter(r => r.type === type).length + 1;
@@ -1125,7 +1499,8 @@
           <div className="items-list">
             {room.items.map((item, idx) => (
               <SelectionRow key={item.id + '-' + idx} item={item}
-                onChange={(field, val) => updateRoomItem(room.id, idx, field, val)} />
+                onChange={(field, val) => updateRoomItem(room.id, idx, field, val)}
+                onInfo={openCostGuide} />
             ))}
           </div>
         </div>
@@ -1142,7 +1517,8 @@
           <div className="items-list">
             {globalItems[cat].map((item, idx) => (
               <SelectionRow key={item.id + '-' + idx} item={item}
-                onChange={(field, val) => updateGlobalItem(cat, idx, field, val)} />
+                onChange={(field, val) => updateGlobalItem(cat, idx, field, val)}
+                onInfo={openCostGuide} />
             ))}
           </div>
         </div>
@@ -1221,9 +1597,16 @@
               </aside>
 
               {/* MAIN CONTENT */}
-              <main className="main-content" onClick={() => showRoomPicker && setShowRoomPicker(false)}>
+              <main className="main-content" onClick={() => showRoomPicker && setShowRoomPicker(false)}
+                style={{ position: 'relative' }}>
                 {renderContent()}
                 <div style={{ height: '70px' }} />
+                {showCostGuide && (
+                  <CostGuide
+                    scrollTo={costGuideSection}
+                    onClose={() => setShowCostGuide(false)}
+                  />
+                )}
               </main>
             </div>
 
@@ -1234,6 +1617,7 @@
               </div>
               <div className="bottom-actions">
                 <button className="btn-ghost" onClick={handleReset}>Reset</button>
+                <button className="btn-print" onClick={() => openCostGuide(null)}>Cost Guide</button>
                 <button className="btn-print" onClick={() => handlePrint('trade')}>Print by Trade</button>
                 <button className="btn-print-primary" onClick={() => handlePrint('room')}>Print by Room</button>
               </div>
