@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Tools" />
+  <meta name="theme-color" content="#141210" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <title>Finish & Detail Guide — OVB Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #141210; --surface: #1A1816; --card: #222020; --card2: #2C2A28;
+      --tan: #C7AA8B; --tan-d: rgba(199,170,139,0.08); --tan-m: rgba(199,170,139,0.18);
+      --smoke: #F2EFE8; --muted: rgba(242,239,232,0.38);
+      --border: rgba(199,170,139,0.09); --border2: rgba(199,170,139,0.18);
+      --green: #4CAF84; --r: 4px;
+    }
+    html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--smoke); -webkit-font-smoothing: antialiased; }
+    .app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+
+    /* HEADER */
+    .hdr { height: 54px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0; }
+    .bear-wrap { width: 32px; height: 32px; filter: drop-shadow(0 0 6px rgba(199,170,139,0.3)); flex-shrink: 0; }
+    .bear-img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
+    .hdr-title { font-size: 14px; font-weight: 600; color: var(--smoke); line-height: 1.1; }
+    .hdr-sub { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--tan); text-transform: uppercase; letter-spacing: 0.1em; }
+    .hdr-right { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 8px; color: rgba(199,170,139,0.3); text-align: right; line-height: 1.6; }
+
+    /* CATEGORY NAV */
+    .cat-nav { background: var(--bg); border-bottom: 1px solid var(--border); padding: 7px 16px; display: flex; gap: 4px; flex-wrap: wrap; flex-shrink: 0; }
+    .cat-btn {
+      background: none; border: 1px solid var(--border); border-radius: var(--r);
+      color: var(--muted); font-family: 'DM Mono', monospace;
+      font-size: 8px; letter-spacing: 0.09em; text-transform: uppercase;
+      padding: 5px 11px; cursor: pointer; white-space: nowrap;
+      transition: all 0.12s; -webkit-tap-highlight-color: transparent;
+    }
+    .cat-btn:hover { background: var(--tan-d); color: var(--smoke); border-color: var(--border2); }
+    .cat-btn.active { background: var(--tan-d); border-color: var(--border2); color: var(--tan); font-weight: 500; }
+
+    /* SECTION INTRO */
+    .sec-intro { padding: 12px 18px 10px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .sec-intro-title { font-size: 14px; font-weight: 600; color: var(--smoke); }
+    .sec-intro-desc { font-size: 11.5px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+    .tier-legend { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+    .legend-label { font-family: 'DM Mono', monospace; font-size: 7.5px; color: rgba(199,170,139,0.3); }
+
+    /* CARD GRID */
+    .card-grid-wrap { flex: 1; overflow-y: auto; padding: 14px 14px 72px; }
+    .card-grid-wrap::-webkit-scrollbar { width: 3px; }
+    .card-grid-wrap::-webkit-scrollbar-thumb { background: var(--border2); }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+
+    /* CARDS */
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+      overflow: hidden; display: flex; flex-direction: column;
+      transition: border-color 0.12s;
+    }
+    .card:hover { border-color: var(--border2); }
+    .card-illo { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; padding: 6px; }
+    .card-illo svg { width: 100%; height: auto; display: block; }
+    .card-body { padding: 11px 13px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .card-name-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .card-name { font-size: 12.5px; font-weight: 600; color: var(--smoke); line-height: 1.25; }
+    .card-cost { font-family: 'DM Mono', monospace; font-size: 10.5px; font-weight: 500; color: var(--tan); }
+    .card-note { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    /* TEXT CARD ICON AREA */
+    .card-icon-area { background: var(--surface); border-bottom: 1px solid var(--border); height: 80px; display: flex; align-items: center; justify-content: center; }
+    .card-icon-inner { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .card-icon-glyph { font-size: 28px; opacity: 0.2; color: var(--tan); }
+    .card-icon-label { font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(199,170,139,0.28); }
+
+    /* TIER BADGES */
+    .badge { display: inline-block; font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 500; border-radius: 20px; padding: 2px 7px; border: 1px solid; white-space: nowrap; flex-shrink: 0; }
+    .badge-builder  { background: rgba(242,239,232,0.05); color: rgba(242,239,232,0.38); border-color: rgba(242,239,232,0.09); }
+    .badge-mid      { background: rgba(199,170,139,0.10); color: #C7AA8B; border-color: rgba(199,170,139,0.22); }
+    .badge-premium  { background: rgba(111,168,220,0.10); color: #6FA8DC; border-color: rgba(111,168,220,0.2); }
+    .badge-luxury   { background: rgba(212,175,55,0.08); color: #D4AF37; border-color: rgba(212,175,55,0.22); }
+
+    /* BOTTOM BAR */
+    .btm { position: fixed; bottom: 0; left: 0; right: 0; height: 54px; background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 50; }
+    .btm-lic { font-family: 'DM Mono', monospace; font-size: 8px; color: rgba(199,170,139,0.25); }
+    .btn-print { background: var(--tan); border: 1px solid var(--tan); border-radius: var(--r); color: #141210; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; padding: 7px 16px; cursor: pointer; transition: opacity 0.15s; }
+    .btn-print:hover { opacity: 0.88; }
+
+    /* PRINT */
+    @media print {
+      @page { margin: 0.5in 0.55in; size: letter portrait; }
+      body { background: white !important; color: #1E1C1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .app { height: auto !important; overflow: visible !important; }
+      .hdr, .cat-nav, .btm { display: none !important; }
+      .sec-intro { background: white !important; border-bottom: 1.5pt solid #C7AA8B; padding: 0 0 10pt; margin-bottom: 12pt; }
+      .sec-intro-title { font-size: 16pt; color: #1E1C1A; }
+      .sec-intro-desc { color: #555; font-size: 9pt; }
+      .tier-legend { display: none; }
+      .card-grid-wrap { overflow: visible !important; padding: 0 !important; }
+      .card-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8pt !important; }
+      .card { background: white !important; border: 0.75pt solid #DDD !important; break-inside: avoid; }
+      .card-illo { background: #F8F6F3 !important; border-bottom: 0.5pt solid #E0D8CE !important; }
+      .card-icon-area { background: #F8F6F3 !important; border-bottom: 0.5pt solid #E0D8CE !important; }
+      .card-name { color: #1E1C1A !important; }
+      .card-cost { color: #8B6E4E !important; }
+      .card-note { color: #555 !important; }
+      .badge-builder  { background: #F0EDE8 !important; color: #888 !important; border-color: #DDD !important; }
+      .badge-mid      { background: #F5EFE6 !important; color: #8B6E4E !important; border-color: #D4B896 !important; }
+      .badge-premium  { background: #EBF2F9 !important; color: #3A6FA8 !important; border-color: #A8C8E8 !important; }
+      .badge-luxury   { background: #FBF6E8 !important; color: #8B7020 !important; border-color: #D4B840 !important; }
+      .card-icon-glyph { color: #C7AA8B !important; opacity: 0.4 !important; }
+      .card-icon-label { color: #AAA !important; }
+      .p-header { display: flex !important; justify-content: space-between; align-items: center; margin-bottom: 14pt; padding-bottom: 8pt; border-bottom: 2pt solid #C7AA8B; }
+      .p-wordmark { height: 18pt; filter: brightness(0); }
+      .p-info { font-family: 'DM Mono', monospace; font-size: 7pt; color: #888; text-align: right; line-height: 1.6; }
+    }
+    @media screen { .p-header { display: none; } }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const { useState } = React;
+
+const WORDMARK = "https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a217c4cdb0cf7f735453d5_2.png";
+const BEAR = "https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png";
+
+/* ─────────────────────────────────────────
+   SVG ILLUSTRATIONS
+   All use architectural line-drawing style:
+   dark bg, tan fills, white edge strokes
+───────────────────────────────────────── */
+
+// Shared drawing constants
+const W = '#1A1816';   // wall surface color
+const FL = '#111';    // floor/shadow
+const WD = '#C4A882'; // wood/trim fill
+const WDE = 'rgba(255,255,255,0.13)'; // edge highlight
+const WDS = 'rgba(0,0,0,0.3)';        // shadow line
+const BG = '#1A1816';
+
+/* BASEBOARD — cross-section profiles */
+function BaseboardSVG({ type }) {
+  // ViewBox 0 0 180 170. Wall block left, floor bottom, trim cross-section in tan.
+  // Scale: 12px per inch. Floor at y=130, Wall at x=38.
+  const wall = { x: 0, w: 38 };
+  const floor = { y: 130 };
+
+  const profiles = {
+    ranch: {
+      // 3.5" = 42px tall, ~20px deep. Gentle bead/clamshell curve at top.
+      path: 'M 38,130 L 38,88 Q 42,84 50,83 Q 56,83 58,87 L 58,130 Z',
+      cap:  'M 38,88 Q 42,84 50,83 Q 56,83 58,87',
+      h: 42, label: '3½" tall', profile: 'Clamshell / bead top'
+    },
+    colonial: {
+      // 4.25" = 51px. Flat cap, then ogee curve steps out.
+      path: 'M 38,130 L 38,79 L 52,79 L 52,86 Q 56,89 60,94 L 60,130 Z',
+      cap:  'M 38,79 L 52,79 L 52,86 Q 56,89 60,94',
+      h: 51, label: '4¼" tall', profile: 'Flat cap + ogee'
+    },
+    craftsman: {
+      // 5.25" = 63px. Wide flat face, small step at top.
+      path: 'M 38,130 L 38,67 L 56,67 L 56,74 L 61,77 L 61,130 Z',
+      cap:  'M 38,67 L 56,67 L 56,74 L 61,77',
+      h: 63, label: '5¼" tall', profile: 'Wide flat + step cap'
+    },
+    tall: {
+      // 7" = 84px. Very tall, minimal profile.
+      path: 'M 38,130 L 38,46 L 54,46 L 54,52 L 57,54 L 57,130 Z',
+      cap:  'M 38,46 L 54,46 L 54,52 L 57,54',
+      h: 84, label: '7" tall', profile: 'Tall flat / modern'
+    },
+  };
+
+  const p = profiles[type];
+  const topY = floor.y - p.h;
+
+  return (
+    <svg viewBox="0 0 180 170" xmlns="http://www.w3.org/2000/svg">
+      <rect width="180" height="170" fill="#1E1C1A"/>
+      {/* Wall block */}
+      <rect x="0" y="0" width={wall.w} height="170" fill="#272523"/>
+      <line x1={wall.w} y1="0" x2={wall.w} y2="170" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
+      {/* Floor block */}
+      <rect x="0" y={floor.y} width="180" height="40" fill="#111"/>
+      <line x1="0" y1={floor.y} x2="180" y2={floor.y} stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
+      {/* Trim profile */}
+      <path d={p.path} fill={WD} opacity="0.88"/>
+      <path d={p.path} fill="none" stroke={WDE} strokeWidth="0.75"/>
+      {/* Shadow on wall side */}
+      <line x1="38" y1={topY} x2="38" y2="130" stroke="rgba(0,0,0,0.25)" strokeWidth="1.5"/>
+      {/* Height dimension */}
+      <line x1="95" y1={topY} x2="95" y2="130" stroke="rgba(199,170,139,0.18)" strokeWidth="1" strokeDasharray="2,3"/>
+      <line x1="91" y1={topY} x2="99" y2={topY} stroke="rgba(199,170,139,0.3)" strokeWidth="1"/>
+      <line x1="91" y1="130" x2="99" y2="130" stroke="rgba(199,170,139,0.3)" strokeWidth="1"/>
+      {/* Labels */}
+      <text x="105" y={topY + (p.h/2) + 4} fill="rgba(199,170,139,0.55)" fontSize="9.5" fontFamily="DM Mono, monospace" fontWeight="500">{p.label}</text>
+      <text x="38" y="155" fill="rgba(199,170,139,0.3)" fontSize="8" fontFamily="DM Mono, monospace">{p.profile}</text>
+      {/* Section label */}
+      <text x="10" y="155" fill="rgba(255,255,255,0.12)" fontSize="7" fontFamily="DM Mono, monospace">WALL</text>
+    </svg>
+  );
+}
+
+/* WINDOW CASING — top-left corner elevation */
+function WindowCasingSVG({ type }) {
+  // ViewBox 0 0 200 190. Shows corner of window with different casing treatments.
+  const BG2 = '#252320';
+  const WALL = '#1E1C1A';
+  const OPEN = '#111';
+  const JAMB = '#2E2C2A';
+  const TRIM = '#C4A882';
+  const EDG = 'rgba(255,255,255,0.12)';
+
+  const configs = {
+    drywall: () => <>
+      <rect width="200" height="190" fill={WALL}/>
+      {/* Window opening */}
+      <rect x="72" y="72" width="128" height="118" fill={OPEN}/>
+      {/* Jamb (window frame edge — recessed) */}
+      <rect x="64" y="64" width="8" height="126" fill={JAMB}/>
+      <rect x="64" y="64" width="136" height="8" fill={JAMB}/>
+      {/* Reveal line only — no casing */}
+      <line x1="64" y1="64" x2="64" y2="190" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>
+      <line x1="64" y1="64" x2="200" y2="64" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>
+      {/* Drywall return corner chip */}
+      <polygon points="64,64 72,64 72,72 64,72" fill="#1A1816"/>
+      {/* Annotation */}
+      <text x="10" y="30" fill="rgba(199,170,139,0.4)" fontSize="8" fontFamily="DM Mono, monospace">NO CASING</text>
+      <text x="10" y="43" fill="rgba(255,255,255,0.18)" fontSize="7.5" fontFamily="DM Mono, monospace">Drywall wraps into</text>
+      <text x="10" y="55" fill="rgba(255,255,255,0.18)" fontSize="7.5" fontFamily="DM Mono, monospace">the rough opening</text>
+    </>,
+    flat: () => <>
+      <rect width="200" height="190" fill={WALL}/>
+      <rect x="72" y="72" width="128" height="118" fill={OPEN}/>
+      {/* Flat casing — left side */}
+      <rect x="56" y="56" width="16" height="134" fill={TRIM} opacity="0.85"/>
+      <rect x="56" y="56" width="16" height="134" fill="none" stroke={EDG} strokeWidth="0.75"/>
+      {/* Flat casing — top */}
+      <rect x="56" y="56" width="144" height="16" fill={TRIM} opacity="0.85"/>
+      <rect x="56" y="56" width="144" height="16" fill="none" stroke={EDG} strokeWidth="0.75"/>
+      {/* Miter shadow */}
+      <line x1="56" y1="56" x2="72" y2="72" stroke={WDS} strokeWidth="1.5"/>
+      {/* Dimension: casing width */}
+      <line x1="44" y1="56" x2="44" y2="72" stroke="rgba(199,170,139,0.2)" strokeWidth="1" strokeDasharray="2,3"/>
+      <text x="7" y="67" fill="rgba(199,170,139,0.4)" fontSize="8" fontFamily="DM Mono, monospace">3–4"</text>
+      <text x="10" y="30" fill="rgba(199,170,139,0.4)" fontSize="8" fontFamily="DM Mono, monospace">FLAT CASING</text>
+      <text x="10" y="43" fill="rgba(255,255,255,0.18)" fontSize="7.5" fontFamily="DM Mono, monospace">Mitered corners</text>
+    </>,
+    stoolapron: () => <>
+      <rect width="200" height="190" fill={WALL}/>
+      {/* Window opening — shorter, leaves room for sill */}
+      <rect x="60" y="46" width="140" height="118" fill={OPEN}/>
+      {/* Head casing */}
+      <rect x="44" y="30" width="156" height="16" fill={TRIM} opacity="0.85"/>
+      <rect x="44" y="30" width="156" height="16" fill="none" stroke={EDG} strokeWidth="0.75"/>
+      {/* Left side casing */}
+      <rect x="44" y="44" width="16" height="124" fill={TRIM} opacity="0.85"/>
+      <rect x="44" y="44" width="16" height="124" fill="none" stroke={EDG} strokeWidth="0.75"/>
+      {/* Stool (horizontal sill — projects out from wall) */}
+      <rect x="38" y="164" width="162" height="14" fill={TRIM}/>
+      <rect x="38" y="164" width="162" height="14" fill="none" stroke={EDG} strokeWidth="0.75"/>
+      {/* Apron (below stool) */}
+      <rect x="46" y="178" width="130" height="9" fill={TRIM} opacity="0.75"/>
+      <rect x="46" y="178" width="130" height="9" fill="none" stroke={EDG} strokeWidth="0.5"/>
+      {/* Labels */}
+      <text x="10" y="14" fill="rgba(199,170,139,0.4)" fontSize="8" fontFamily="DM Mono, monospace">STOOL & APRON</text>
+      <line x1="38" y1="175" x2="32" y2="175" stroke="rgba(199,170,139,0.25)" strokeWidth="1"/>
+      <text x="2" y="172" fill="rgba(199,170,139,0.35)" fontSize="7" fontFamily="DM Mono, monospace" transform="rotate(-90,2,172)">STOOL</text>
+    </>,
+    pictureframe: () => <>
+      <rect width="200" height="190" fill={WALL}/>
+      <rect x="68" y="68" width="132" height="122" fill={OPEN}/>
+      {/* Corner plinth blocks */}
+      <rect x="48" y="48" width="20" height="20" fill={TRIM}/>
+      <rect x="48" y="48" width="20" height="20" fill="none" stroke={EDG} strokeWidth="0.75"/>
+      {/* Diagonal detail on corner block */}
+      <line x1="48" y1="68" x2="68" y2="48" stroke={WDS} strokeWidth="0.75"/>
+      {/* Head casing */}
+      <rect x="66" y="48" width="134" height="20" fill={TRIM} opacity="0.85"/>
+      <rect x="66" y="48" width="134" height="20" fill="none" stroke={EDG} strokeWidth="0.75"/>
+      {/* Left side casing */}
+      <rect x="48" y="66" width="20" height="124" fill={TRIM} opacity="0.85"/>
+      <rect x="48" y="66" width="20" height="124" fill="none" stroke={EDG} strokeWidth="0.75"/>
+      {/* Labels */}
+      <text x="10" y="22" fill="rgba(199,170,139,0.4)" fontSize="8" fontFamily="DM Mono, monospace">PICTURE FRAME</text>
+      <text x="10" y="35" fill="rgba(255,255,255,0.18)" fontSize="7.5" fontFamily="DM Mono, monospace">Equal casing all sides</text>
+      <text x="10" y="47" fill="rgba(255,255,255,0.18)" fontSize="7.5" fontFamily="DM Mono, monospace">+ corner plinth blocks</text>
+    </>,
+  };
+
+  const render = configs[type];
+  return (
+    <svg viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg">
+      {render()}
+    </svg>
+  );
+}
+
+/* DOOR STYLES — front elevation */
+function DoorSVG({ type }) {
+  const BG3 = '#1E1C1A';
+  const FRAME = '#111';
+  const DOOR = '#2A2826';
+  const PANEL = '#1E1C1A';
+  const PHL = '#3A3835';  // panel highlight
+  const TRIM2 = '#C4A882';
+  const EDG2 = 'rgba(255,255,255,0.1)';
+  const SHD = 'rgba(0,0,0,0.4)';
+
+  // Door in viewBox 0 0 150 210. Door body: x=18,y=14 w=98 h=170
+  const dx=18, dy=14, dw=98, dh=170;
+
+  const configs = {
+    slab: () => <>
+      <rect width="150" height="210" fill={BG3}/>
+      <rect x={dx-5} y={dy-5} width={dw+10} height={dh+10} fill={FRAME} rx="1"/>
+      <rect x={dx} y={dy} width={dw} height={dh} fill={DOOR} rx="1"/>
+      <rect x={dx} y={dy} width={dw} height={dh} fill="none" stroke={EDG2} strokeWidth="1" rx="1"/>
+      {/* Knob */}
+      <circle cx={dx+dw-14} cy={dy+dh*0.52} r="5" fill={TRIM2} opacity="0.7"/>
+      <circle cx={dx+dw-14} cy={dy+dh*0.52} r="2.5" fill="rgba(255,255,255,0.2)"/>
+      {/* Label */}
+      <text x="75" y="198" fill="rgba(199,170,139,0.45)" fontSize="8.5" fontFamily="DM Mono, monospace" textAnchor="middle">FLUSH / SLAB</text>
+    </>,
+    shaker: () => <>
+      <rect width="150" height="210" fill={BG3}/>
+      <rect x={dx-5} y={dy-5} width={dw+10} height={dh+10} fill={FRAME} rx="1"/>
+      <rect x={dx} y={dy} width={dw} height={dh} fill={DOOR} rx="1"/>
+      {/* Single recessed flat panel */}
+      <rect x={dx+10} y={dy+10} width={dw-20} height={dh-20} fill={PANEL} rx="1"/>
+      <rect x={dx+10} y={dy+10} width={dw-20} height={dh-20} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" rx="1"/>
+      {/* Shadow lines inside panel (inner bevel) */}
+      <line x1={dx+10} y1={dy+10} x2={dx+dw-10} y2={dy+10} stroke={SHD} strokeWidth="1"/>
+      <line x1={dx+10} y1={dy+10} x2={dx+10} y2={dy+dh-10} stroke={SHD} strokeWidth="1"/>
+      <rect x={dx} y={dy} width={dw} height={dh} fill="none" stroke={EDG2} strokeWidth="1" rx="1"/>
+      <circle cx={dx+dw-14} cy={dy+dh*0.52} r="5" fill={TRIM2} opacity="0.7"/>
+      <circle cx={dx+dw-14} cy={dy+dh*0.52} r="2.5" fill="rgba(255,255,255,0.2)"/>
+      <text x="75" y="198" fill="rgba(199,170,139,0.45)" fontSize="8.5" fontFamily="DM Mono, monospace" textAnchor="middle">SHAKER / FLAT PANEL</text>
+    </>,
+    twopanel: () => <>
+      <rect width="150" height="210" fill={BG3}/>
+      <rect x={dx-5} y={dy-5} width={dw+10} height={dh+10} fill={FRAME} rx="1"/>
+      <rect x={dx} y={dy} width={dw} height={dh} fill={DOOR} rx="1"/>
+      {/* Two horizontal panels */}
+      <rect x={dx+9} y={dy+9} width={dw-18} height={dh*0.43} fill={PANEL} rx="1"/>
+      <rect x={dx+9} y={dy+9} width={dw-18} height={dh*0.43} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" rx="1"/>
+      <line x1={dx+9} y1={dy+9} x2={dx+dw-9} y2={dy+9} stroke={SHD} strokeWidth="1"/>
+      <line x1={dx+9} y1={dy+9} x2={dx+9} y2={dy+dh*0.43+9} stroke={SHD} strokeWidth="1"/>
+      <rect x={dx+9} y={dy+dh*0.53} width={dw-18} height={dh*0.4} fill={PANEL} rx="1"/>
+      <rect x={dx+9} y={dy+dh*0.53} width={dw-18} height={dh*0.4} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" rx="1"/>
+      <line x1={dx+9} y1={dy+dh*0.53} x2={dx+dw-9} y2={dy+dh*0.53} stroke={SHD} strokeWidth="1"/>
+      <line x1={dx+9} y1={dy+dh*0.53} x2={dx+9} y2={dy+dh*0.93} stroke={SHD} strokeWidth="1"/>
+      <rect x={dx} y={dy} width={dw} height={dh} fill="none" stroke={EDG2} strokeWidth="1" rx="1"/>
+      <circle cx={dx+dw-14} cy={dy+dh*0.52} r="5" fill={TRIM2} opacity="0.7"/>
+      <circle cx={dx+dw-14} cy={dy+dh*0.52} r="2.5" fill="rgba(255,255,255,0.2)"/>
+      <text x="75" y="198" fill="rgba(199,170,139,0.45)" fontSize="8.5" fontFamily="DM Mono, monospace" textAnchor="middle">2-PANEL</text>
+    </>,
+    fivepanel: () => <>
+      <rect width="150" height="210" fill={BG3}/>
+      <rect x={dx-5} y={dy-5} width={dw+10} height={dh+10} fill={FRAME} rx="1"/>
+      <rect x={dx} y={dy} width={dw} height={dh} fill={DOOR} rx="1"/>
+      {/* 5-panel: top-L, top-R, mid (wide), bot-L, bot-R */}
+      {[
+        [dx+8, dy+8, dw*0.39, dh*0.2],
+        [dx+dw*0.54, dy+8, dw*0.38, dh*0.2],
+        [dx+8, dy+dh*0.305, dw-16, dh*0.27],
+        [dx+8, dy+dh*0.635, dw*0.39, dh*0.28],
+        [dx+dw*0.54, dy+dh*0.635, dw*0.38, dh*0.28],
+      ].map(([px,py,pw,ph],i) => <>
+        <rect key={i+'f'} x={px} y={py} width={pw} height={ph} fill={PANEL} rx="1"/>
+        <rect key={i+'s'} x={px} y={py} width={pw} height={ph} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" rx="1"/>
+        <line key={i+'h'} x1={px} y1={py} x2={px+pw} y2={py} stroke={SHD} strokeWidth="0.75"/>
+        <line key={i+'v'} x1={px} y1={py} x2={px} y2={py+ph} stroke={SHD} strokeWidth="0.75"/>
+      </>)}
+      <rect x={dx} y={dy} width={dw} height={dh} fill="none" stroke={EDG2} strokeWidth="1" rx="1"/>
+      <circle cx={dx+dw-14} cy={dy+dh*0.52} r="5" fill={TRIM2} opacity="0.7"/>
+      <circle cx={dx+dw-14} cy={dy+dh*0.52} r="2.5" fill="rgba(255,255,255,0.2)"/>
+      <text x="75" y="198" fill="rgba(199,170,139,0.45)" fontSize="8.5" fontFamily="DM Mono, monospace" textAnchor="middle">5-PANEL TRADITIONAL</text>
+    </>,
+    barn: () => <>
+      <rect width="150" height="210" fill={BG3}/>
+      {/* Sliding track */}
+      <rect x="8" y="10" width="134" height="5" fill="#2E2C2A" rx="2"/>
+      <rect x="32" y="6" width="10" height="10" rx="5" fill="#3A3835"/>
+      <rect x="108" y="6" width="10" height="10" rx="5" fill="#3A3835"/>
+      {/* Door */}
+      <rect x={dx} y={dy+6} width={dw} height={dh-12} fill={DOOR} rx="1"/>
+      {/* Top rail */}
+      <rect x={dx} y={dy+6} width={dw} height="15" fill={PHL} rx="1"/>
+      {/* Bottom rail */}
+      <rect x={dx} y={dy+dh-24} width={dw} height="14" fill={PHL}/>
+      {/* Z-brace diagonal */}
+      <line x1={dx+8} y1={dy+20} x2={dx+dw-8} y2={dy+dh-26} stroke="rgba(199,170,139,0.22)" strokeWidth="7" strokeLinecap="round"/>
+      <line x1={dx+8} y1={dy+20} x2={dx+dw-8} y2={dy+dh-26} stroke={BG3} strokeWidth="1" strokeLinecap="round"/>
+      {/* Door edge */}
+      <rect x={dx} y={dy+6} width={dw} height={dh-12} fill="none" stroke={EDG2} strokeWidth="1" rx="1"/>
+      {/* Handle */}
+      <rect x={dx+dw-13} y={dy+dh*0.44} width="7" height="22" rx="3" fill={TRIM2} opacity="0.65"/>
+      <text x="75" y="198" fill="rgba(199,170,139,0.45)" fontSize="8.5" fontFamily="DM Mono, monospace" textAnchor="middle">BARN DOOR</text>
+    </>,
+  };
+
+  return (
+    <svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg">
+      {configs[type]()}
+    </svg>
+  );
+}
+
+/* CEILING TYPES — room cross-section */
+function CeilingSVG({ type }) {
+  // ViewBox 0 0 230 155. Room section.
+  const BG4 = '#1E1C1A';
+  const CEIL = '#2E2C2A';
+  const WALLC = '#252320';
+  const ROOM = '#111';
+  const BEAM = '#3A3835';
+  const EDG3 = 'rgba(255,255,255,0.07)';
+  // Room: x=25 to x=205, ceiling starts at y=30
+  const rx=25, cw=180;
+
+  const configs = {
+    flat: () => <>
+      <rect width="230" height="155" fill={BG4}/>
+      <rect x={rx} y="30" width={cw} height="130" fill={ROOM}/>
+      <rect x={rx} y="26" width={cw} height="14" fill={CEIL}/>
+      <rect x="12" y="26" width="15" height="129" fill={WALLC}/>
+      <rect x={rx+cw} y="26" width="15" height="129" fill={WALLC}/>
+      <line x1={rx} y1="40" x2={rx+cw} y2="40" stroke={EDG3} strokeWidth="0.75"/>
+      <text x="115" y="22" fill="rgba(199,170,139,0.38)" fontSize="8" fontFamily="DM Mono, monospace" textAnchor="middle">FLAT / STANDARD</text>
+      <text x="115" y="80" fill="rgba(255,255,255,0.06)" fontSize="48" fontFamily="DM Mono, monospace" textAnchor="middle">—</text>
+    </>,
+    tray: () => <>
+      <rect width="230" height="155" fill={BG4}/>
+      <rect x={rx} y="30" width={cw} height="125" fill={ROOM}/>
+      {/* Side lower sections */}
+      <rect x={rx} y="26" width="38" height="28" fill={CEIL}/>
+      <rect x={rx+cw-38} y="26" width="38" height="28" fill={CEIL}/>
+      {/* Center raised section */}
+      <rect x={rx+36} y="26" width={cw-72} height="14" fill={CEIL}/>
+      {/* Step transition lines */}
+      <line x1={rx+38} y1="40" x2={rx+38} y2="54" stroke={EDG3} strokeWidth="1"/>
+      <line x1={rx+38} y1="54" x2={rx+cw-38} y2="54" stroke={EDG3} strokeWidth="1"/>
+      <line x1={rx+cw-38} y1="40" x2={rx+cw-38} y2="54" stroke={EDG3} strokeWidth="1"/>
+      <rect x="12" y="26" width="15" height="129" fill={WALLC}/>
+      <rect x={rx+cw} y="26" width="15" height="129" fill={WALLC}/>
+      <text x="115" y="22" fill="rgba(199,170,139,0.38)" fontSize="8" fontFamily="DM Mono, monospace" textAnchor="middle">TRAY CEILING</text>
+    </>,
+    coffered: () => <>
+      <rect width="230" height="155" fill={BG4}/>
+      <rect x={rx} y="30" width={cw} height="125" fill={ROOM}/>
+      {/* Main ceiling plane */}
+      <rect x={rx} y="26" width={cw} height="12" fill={CEIL}/>
+      {/* Longitudinal beams (drop down from ceiling) */}
+      <rect x={rx} y="26" width="12" height="34" fill={CEIL}/>
+      <rect x={rx+58} y="26" width="10" height="34" fill={CEIL}/>
+      <rect x={rx+112} y="26" width="10" height="34" fill={CEIL}/>
+      <rect x={rx+cw-12} y="26" width="12" height="34" fill={CEIL}/>
+      {/* Cross beam */}
+      <rect x={rx} y="44" width={cw} height="8" fill={CEIL} opacity="0.65"/>
+      {/* Coffered panels visible between beams */}
+      <rect x={rx+14} y="40" width="42" height="22" fill={ROOM}/>
+      <rect x={rx+14} y="40" width="42" height="22" fill="none" stroke={EDG3} strokeWidth="0.75"/>
+      <rect x={rx+72} y="40" width="38" height="22" fill={ROOM}/>
+      <rect x={rx+72} y="40" width="38" height="22" fill="none" stroke={EDG3} strokeWidth="0.75"/>
+      <rect x={rx+122} y="40" width="42" height="22" fill={ROOM}/>
+      <rect x={rx+122} y="40" width="42" height="22" fill="none" stroke={EDG3} strokeWidth="0.75"/>
+      <rect x="12" y="26" width="15" height="129" fill={WALLC}/>
+      <rect x={rx+cw} y="26" width="15" height="129" fill={WALLC}/>
+      <text x="115" y="22" fill="rgba(199,170,139,0.38)" fontSize="8" fontFamily="DM Mono, monospace" textAnchor="middle">COFFERED</text>
+    </>,
+    vaulted: () => <>
+      <rect width="230" height="155" fill={BG4}/>
+      {/* Room space as polygon */}
+      <polygon points={`${rx},155 ${rx},72 115,26 ${rx+cw},72 ${rx+cw},155`} fill={ROOM}/>
+      {/* Left slope ceiling */}
+      <polygon points={`${rx-2},72 115,22 115,30 ${rx+5},78`} fill={CEIL}/>
+      {/* Right slope ceiling */}
+      <polygon points={`115,22 ${rx+cw+2},72 ${rx+cw-5},78 115,30`} fill={CEIL}/>
+      {/* Ridge detail */}
+      <line x1="115" y1="22" x2="115" y2="30" stroke={EDG3} strokeWidth="2"/>
+      {/* Walls below the peak */}
+      <rect x="12" y="72" width="15" height="83" fill={WALLC}/>
+      <rect x={rx+cw} y="72" width="15" height="83" fill={WALLC}/>
+      <text x="115" y="16" fill="rgba(199,170,139,0.38)" fontSize="8" fontFamily="DM Mono, monospace" textAnchor="middle">VAULTED / CATHEDRAL</text>
+    </>,
+    tng: () => <>
+      <rect width="230" height="155" fill={BG4}/>
+      <rect x={rx} y="30" width={cw} height="125" fill={ROOM}/>
+      {/* T&G plank ceiling */}
+      <rect x={rx} y="26" width={cw} height="18" fill="#2E2A24"/>
+      {/* Plank joints — vertical lines */}
+      {Array.from({length:29}, (_,i) => rx + (i+1)*6).map((x,i) => (
+        <line key={i} x1={x} y1="26" x2={x} y2="44" stroke="rgba(0,0,0,0.3)" strokeWidth="0.75"/>
+      ))}
+      {/* Exposed structural beams */}
+      <rect x={rx+38} y="34" width="16" height="26" fill={BEAM}/>
+      <rect x={rx+38} y="34" width="16" height="26" fill="none" stroke={EDG3} strokeWidth="0.75"/>
+      <rect x={rx+126} y="34" width="16" height="26" fill={BEAM}/>
+      <rect x={rx+126} y="34" width="16" height="26" fill="none" stroke={EDG3} strokeWidth="0.75"/>
+      {/* Grain lines on T&G */}
+      <line x1={rx} y1="32" x2={rx+cw} y2="32" stroke="rgba(255,255,255,0.04)" strokeWidth="0.75"/>
+      <line x1={rx} y1="38" x2={rx+cw} y2="38" stroke="rgba(255,255,255,0.04)" strokeWidth="0.75"/>
+      <rect x="12" y="26" width="15" height="129" fill={WALLC}/>
+      <rect x={rx+cw} y="26" width="15" height="129" fill={WALLC}/>
+      <text x="115" y="22" fill="rgba(199,170,139,0.38)" fontSize="8" fontFamily="DM Mono, monospace" textAnchor="middle">T&G / EXPOSED BEAM</text>
+    </>,
+  };
+
+  return (
+    <svg viewBox="0 0 230 155" xmlns="http://www.w3.org/2000/svg">
+      {configs[type]()}
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────
+   GUIDE DATA
+───────────────────────────────────────── */
+const SECTIONS = [
+  {
+    id: 'baseboard', label: 'Baseboard & Trim', type: 'svg',
+    desc: 'Profile and height are the two biggest cost levers. Taller and more detailed = more material and install time.',
+    items: [
+      { name: 'Ranch / Clamshell', tier: 'Builder', cost: '$3–$5/lf installed', note: 'Most common builder grade. 3½" tall with a simple clamshell bead at top. Finger-joint pine or MDF, paint grade only.', svg: <BaseboardSVG type="ranch"/> },
+      { name: 'Colonial', tier: 'Mid', cost: '$5–$9/lf installed', note: '4¼" tall with a flat cap and ogee curve. More visual weight and presence. Clear pine or MDF, paint grade.', svg: <BaseboardSVG type="colonial"/> },
+      { name: 'Craftsman', tier: 'Premium', cost: '$9–$16/lf installed', note: 'Wide flat face (5¼"+) with a clean stepped cap. Minimal ornamentation. Works painted or stained. Often solid wood.', svg: <BaseboardSVG type="craftsman"/> },
+      { name: 'Tall Modern / Custom', tier: 'Luxury', cost: '$16–$32+/lf installed', note: '7"+ tall with minimal profile. High visual impact, especially in tall-ceiling rooms. Custom milled or built-up layered molding.', svg: <BaseboardSVG type="tall"/> },
+    ]
+  },
+  {
+    id: 'window-casing', label: 'Window Casing', type: 'svg',
+    desc: 'Window trim is one of the most visible finish decisions in a home. The choice affects every window — costs multiply quickly.',
+    items: [
+      { name: 'Drywall Return', tier: 'Builder', cost: '$0 — no casing material', note: 'No trim at all. Drywall wraps back into the rough opening. Clean, modern look. Requires careful corner work. Least expensive but unforgiving if drywall work is imperfect.', svg: <WindowCasingSVG type="drywall"/> },
+      { name: 'Flat Casing', tier: 'Mid', cost: '$6–$12/lf installed', note: 'Flat board (3–4" wide) mitered at corners. Works in modern and craftsman styles. Adds warmth. The most common upgrade from drywall return.', svg: <WindowCasingSVG type="flat"/> },
+      { name: 'Stool & Apron', tier: 'Premium', cost: '$14–$24/lf installed', note: 'Full traditional treatment. Horizontal stool projects into the room, with side and head casing and an apron below. Classic, high-quality look that holds up for decades.', svg: <WindowCasingSVG type="stoolapron"/> },
+      { name: 'Picture Frame', tier: 'Luxury', cost: '$20–$40+/lf installed', note: 'Equal casing on all four sides with corner plinth blocks. Formal and symmetrical. Common in traditional or high-end transitional homes. Highest material and labor of any casing style.', svg: <WindowCasingSVG type="pictureframe"/> },
+    ]
+  },
+  {
+    id: 'doors', label: 'Door Styles', type: 'svg',
+    desc: 'Interior door style is a whole-house decision. Changing door style throughout a home moves total cost significantly.',
+    items: [
+      { name: 'Flush / Slab', tier: 'Builder', cost: '$80–$200/door installed', note: 'Flat, no panel detail. Hollow-core standard, solid-core upgrade. Most common in builder-grade construction. Very clean in modern homes with the right hardware.', svg: <DoorSVG type="slab"/> },
+      { name: 'Shaker / Flat Panel', tier: 'Mid', cost: '$160–$380/door installed', note: 'Single recessed flat panel. The most popular interior door style today. Works in modern, transitional, and farmhouse aesthetics. Strong demand has made this the new baseline in quality builds.', svg: <DoorSVG type="shaker"/> },
+      { name: '2-Panel', tier: 'Mid', cost: '$190–$420/door installed', note: 'Two horizontal recessed panels. Traditional and clean. Common in craftsman and transitional homes. Slightly more milling than shaker — modest cost step.', svg: <DoorSVG type="twopanel"/> },
+      { name: '5-Panel Traditional', tier: 'Premium', cost: '$300–$650/door installed', note: 'Classic 5-panel configuration — two small top panels, one wide middle, two larger bottom. Formal aesthetic. More milling complexity = more cost per door.', svg: <DoorSVG type="fivepanel"/> },
+      { name: 'Barn Door', tier: 'Premium', cost: '$450–$1,400/door installed', note: 'Sliding hardware + door panel. Adds character but requires wall space to slide. Hardware is the major cost driver. Not a sound-sealing door — not ideal for bathrooms or offices needing privacy.', svg: <DoorSVG type="barn"/> },
+    ]
+  },
+  {
+    id: 'ceilings', label: 'Ceiling Types', type: 'svg',
+    desc: 'Ceiling upgrades are additive — every step up adds framing complexity, more drywall, and significantly more finish labor.',
+    items: [
+      { name: 'Flat / Standard', tier: 'Builder', cost: 'Base — included in scope', note: 'Standard 9\' or 10\' flat ceiling. Simple framing, drywall, finish, and paint. The starting point all other ceiling types are priced against.', svg: <CeilingSVG type="flat"/> },
+      { name: 'Tray Ceiling', tier: 'Mid', cost: '+$1,400–$4,000 per room', note: 'Stepped ceiling with a raised center section. Adds visual height and architectural interest. Requires additional framing and drywall around the step perimeter.', svg: <CeilingSVG type="tray"/> },
+      { name: 'Coffered', tier: 'Premium', cost: '+$4,500–$12,000 per room', note: 'Grid of recessed panels formed by intersecting beams. High visual impact. Significant framing, drywall taping, and paint labor. Common in formal dining rooms and offices.', svg: <CeilingSVG type="coffered"/> },
+      { name: 'Vaulted / Cathedral', tier: 'Premium', cost: '+$8,000–$22,000 per room', note: 'Follows the roofline to a peak. Requires special framing and longer finish runs. Dramatic effect. Also affects HVAC sizing and ongoing heating costs — heat rises.', svg: <CeilingSVG type="vaulted"/> },
+      { name: 'T&G / Exposed Beam', tier: 'Luxury', cost: '+$14,000–$45,000+ per room', note: 'Wood plank ceiling with exposed structural or decorative beams. Material and labor intensive. Most dramatic ceiling option. Creates a signature architectural feature.', svg: <CeilingSVG type="tng"/> },
+    ]
+  },
+  {
+    id: 'cabinets', label: 'Cabinet Door Styles', type: 'card',
+    desc: 'Cabinet door style is often the first thing clients touch every day. Style drives fabrication complexity and cost per linear foot.',
+    items: [
+      { name: 'Flat / Slab', tier: 'Builder–Mid', cost: '$150–$280/lf', icon: '▬', iconLabel: 'FLAT FACE', note: 'Completely flat face — no frame, no panel detail. Requires tight alignment and quality European hinges. Very popular in modern and European styles. Hardware finish is the main design decision.' },
+      { name: 'Shaker', tier: 'Mid', cost: '$275–$480/lf', icon: '⬜', iconLabel: '5-PIECE DOOR', note: 'Five-piece door with a flat center panel and square rail/stile frame. The most versatile and popular style. Works painted or stained. Strong market demand has made this the standard in quality builds.' },
+      { name: 'Raised Panel', tier: 'Premium', cost: '$420–$750/lf', icon: '◈', iconLabel: 'RAISED CENTER', note: 'Center panel is routed up (raised), not recessed. Traditional and formal. More profiles and milling = more cost. Common in colonial, craftsman, and formal traditional homes.' },
+      { name: 'Inset', tier: 'Luxury', cost: '$750–$1,600+/lf', icon: '▣', iconLabel: 'FLUSH INSET', note: 'Door sits flush inside the face frame — not overlay. Requires very tight tolerances and skilled cabinetmakers. Any wood movement shows. The hallmark of custom furniture-quality cabinetry.' },
+    ]
+  },
+  {
+    id: 'fireplace', label: 'Fireplace Surrounds', type: 'card',
+    desc: 'The firebox unit drives the mechanical cost. The surround and mantle drive the visual cost — and the range is enormous.',
+    items: [
+      { name: 'Drywall / Painted', tier: 'Builder', cost: '$800–$2,500 surround', icon: '▭', iconLabel: 'MINIMAL', note: 'Simple drywall returns with a basic paint-grade MDF mantle shelf. Clean and minimal. Best paired with a modern linear gas insert. Very low material cost — all in the unit.' },
+      { name: 'Tile Surround', tier: 'Mid', cost: '$2,500–$7,000 surround', icon: '⊞', iconLabel: 'TILED', note: 'Tile around the firebox opening with a wood mantle. Huge range based on tile selection — subway to large-format to mosaic land at very different price points. Most common mid-grade choice.' },
+      { name: 'Stone / Ledge Stone', tier: 'Premium', cost: '$6,000–$20,000 surround', icon: '◫', iconLabel: 'STONE', note: 'Stacked stone, ledge stone, or natural fieldstone. Heavy material and labor-intensive installation. Stone type and floor-to-ceiling vs partial coverage are the main cost drivers.' },
+      { name: 'Built-in Surround', tier: 'Luxury', cost: '$15,000–$50,000+ surround', icon: '▤', iconLabel: 'FULL BUILT-IN', note: 'Custom millwork flanking and surrounding the fireplace — bookshelves, cabinetry, TV above, concealed storage. Room-defining feature. Requires tight coordination between framing, millwork, and AV.' },
+    ]
+  },
+  {
+    id: 'railings', label: 'Stair Railings', type: 'card',
+    desc: 'Railing is visible from across the room and custom fabricated — labor is the dominant cost. Choose early since it affects framing.',
+    items: [
+      { name: 'Wood Traditional', tier: 'Builder–Mid', cost: '$120–$240/lf installed', icon: '⠿', iconLabel: 'WOOD', note: 'Painted or stained wood newel posts, square or turned balusters, wood cap rail. Solid and durable. Upgrades come from wood species, baluster profile, and newel post detail.' },
+      { name: 'Metal Balusters', tier: 'Mid', cost: '$190–$360/lf installed', icon: '⦀', iconLabel: 'METAL + WOOD', note: 'Wood cap rail with wrought iron or steel balusters. Can be straight or with basket/scroll patterns. Clean upgrade over all-wood. Baluster pattern complexity drives the cost spread.' },
+      { name: 'Cable Railing', tier: 'Premium', cost: '$300–$550/lf installed', icon: '≡', iconLabel: 'CABLE', note: 'Horizontal stainless steel cables with steel or wood posts. Modern and open — maintains sightlines. Hardware end fittings are expensive. Requires structural posts at correct spacing. Post material (steel vs wood) matters.' },
+      { name: 'Glass Panel', tier: 'Luxury', cost: '$420–$900+/lf installed', icon: '◻', iconLabel: 'GLASS', note: 'Frameless or framed tempered glass panels. Maximum openness and light. Standoffs or channels are visible hardware choices. Highest material and fabrication cost. Glass requires regular cleaning to look its best.' },
+    ]
+  },
+  {
+    id: 'shower', label: 'Shower Systems', type: 'card',
+    desc: 'The rough-in plumbing is a fraction of total cost — it\'s the valves and fixtures where cost steps happen. Decide before framing.',
+    items: [
+      { name: 'Standard Showerhead', tier: 'Builder', cost: '$200–$600 fixtures', icon: '☂', iconLabel: 'SINGLE VALVE', note: 'Single pressure-balance valve and fixed showerhead. Code minimum. Functional and reliable. Worth adding wall blocking for a future hand-held at rough-in — no cost at that stage, significant cost later.' },
+      { name: 'Rain Head + Hand-Held', tier: 'Mid', cost: '$600–$2,000 fixtures', icon: '⛆', iconLabel: 'DUAL FUNCTION', note: 'Ceiling rain head + diverter + hand-held. Two-function system, one valve. The most popular upgrade. Most clients who see it in person want it. Ceiling plumbing location must be set at rough-in — can\'t move it later.' },
+      { name: 'Thermostatic System', tier: 'Premium', cost: '$2,500–$7,000 fixtures', icon: '⊕', iconLabel: 'THERMOSTATIC', note: 'Separate volume and temperature controls — water is always the same temp regardless of other fixtures running. Requires larger hot water supply. Can run rain, hand-held, and body sprays simultaneously.' },
+      { name: 'Full Custom System', tier: 'Luxury', cost: '$7,000–$25,000+ fixtures', icon: '❋', iconLabel: 'SPA SYSTEM', note: 'Multiple thermostatic valves, body spray array, steam generator, digital controls. Brands: Waterworks, Dornbracht, Kohler DTV. Requires significant structural and plumbing planning. This is a spa, not a shower.' },
+    ]
+  },
+];
+
+/* ─────────────────────────────────────────
+   COMPONENTS
+───────────────────────────────────────── */
+const TIER_CLASS = {
+  'Builder': 'badge-builder', 'Builder–Mid': 'badge-builder',
+  'Mid': 'badge-mid', 'Mid–Premium': 'badge-mid',
+  'Premium': 'badge-premium', 'Luxury': 'badge-luxury',
+};
+
+function TierBadge({ tier }) {
+  return <span className={`badge ${TIER_CLASS[tier] || 'badge-mid'}`}>{tier}</span>;
+}
+
+function SVGCard({ item }) {
+  return (
+    <div className="card">
+      <div className="card-illo">{item.svg}</div>
+      <div className="card-body">
+        <div className="card-name-row">
+          <span className="card-name">{item.name}</span>
+          <TierBadge tier={item.tier}/>
+        </div>
+        <div className="card-cost">{item.cost}</div>
+        <div className="card-note">{item.note}</div>
+      </div>
+    </div>
+  );
+}
+
+function TextCard({ item }) {
+  return (
+    <div className="card">
+      <div className="card-icon-area">
+        <div className="card-icon-inner">
+          <div className="card-icon-glyph">{item.icon}</div>
+          <div className="card-icon-label">{item.iconLabel}</div>
+        </div>
+      </div>
+      <div className="card-body">
+        <div className="card-name-row">
+          <span className="card-name">{item.name}</span>
+          <TierBadge tier={item.tier}/>
+        </div>
+        <div className="card-cost">{item.cost}</div>
+        <div className="card-note">{item.note}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   APP
+───────────────────────────────────────── */
+function App() {
+  const [active, setActive] = useState('baseboard');
+  const sec = SECTIONS.find(s => s.id === active);
+
+  return (
+    <div className="app">
+      {/* Print header — screen only shows nothing */}
+      <div className="p-header">
+        <img src={WORDMARK} className="p-wordmark" alt="OVB"/>
+        <div className="p-info">
+          Ogden Valley Builders · GC #14219939-5501<br/>
+          (385) 288-7921 · info@ogdenvalleybuilders.com<br/>
+          Utah 2026 Installed Cost Reference
+        </div>
+      </div>
+
+      {/* Screen header */}
+      <header className="hdr">
+        <div className="bear-wrap">
+          <img src={BEAR} className="bear-img" alt=""/>
+        </div>
+        <div>
+          <div className="hdr-title">Finish &amp; Detail Guide</div>
+          <div className="hdr-sub">Ogden Valley Builders</div>
+        </div>
+        <div className="hdr-right">
+          Cost-driving selections<br/>
+          Utah 2026 reference
+        </div>
+      </header>
+
+      {/* Category nav */}
+      <nav className="cat-nav">
+        {SECTIONS.map(s => (
+          <button key={s.id} className={`cat-btn ${active === s.id ? 'active' : ''}`}
+            onClick={() => setActive(s.id)}>{s.label}</button>
+        ))}
+      </nav>
+
+      {/* Section intro */}
+      <div className="sec-intro">
+        <div className="sec-intro-title">{sec.label}</div>
+        <div className="sec-intro-desc">{sec.desc}</div>
+        <div className="tier-legend">
+          {['Builder','Mid','Premium','Luxury'].map(t => <TierBadge key={t} tier={t}/>)}
+          <span className="legend-label">— cost tiers, Utah 2026 installed</span>
+        </div>
+      </div>
+
+      {/* Cards */}
+      <div className="card-grid-wrap">
+        <div className="card-grid">
+          {sec.items.map((item, i) =>
+            sec.type === 'svg'
+              ? <SVGCard key={i} item={item}/>
+              : <TextCard key={i} item={item}/>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="btm">
+        <span className="btm-lic">OVB Tools · GC #14219939-5501 · Pricing reference — Utah 2026 installed costs</span>
+        <button className="btn-print" onClick={() => window.print()}>Print Leave-Behind</button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
