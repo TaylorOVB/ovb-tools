@@ -49,10 +49,11 @@
 const { useState, useMemo } = React;
 
 // ─── Project type shorthands ───────────────────────────────────────────────────
-const A  = ['new_build','addition','full_remodel','interior_remodel'];
+const A  = ['new_build','addition','full_remodel','interior_remodel','basement_finish'];
 const NB = ['new_build','addition'];
-const RM = ['full_remodel','interior_remodel'];
-const NI = ['new_build','addition','full_remodel'];
+const RM = ['full_remodel','interior_remodel','basement_finish'];
+const NI = ['new_build','addition','full_remodel','basement_finish'];
+const BF = ['basement_finish'];
 
 // ─── JT Task Types (from your account) ───────────────────────────────────────
 // Every task maps to one of these exactly as they appear in JT
@@ -100,7 +101,7 @@ const TASK_DEFS = [
   { id:'dumpster',         group:'Sitework & Demo', name:'Dumpster Delivery',                    description:'Coordinate roll-off delivery.',                                      dur:1, deps:['preconstruction_mtg'],                 types:A,  taskType:T.PM  },
   { id:'porta_potty',      group:'Sitework & Demo', name:'Portable Toilet Delivery',             description:'Coordinate portable toilet placement.',                              dur:1, deps:['preconstruction_mtg'],                 types:NI, taskType:T.PM  },
   { id:'hazmat_abatement', group:'Sitework & Demo', name:'Hazmat Abatement',                    description:'Licensed abatement if testing positive. Skip if results clean.',     dur:3, deps:['asbestos_testing','site_protection'],   types:RM, taskType:T.DEM },
-  { id:'interior_demo',    group:'Sitework & Demo', name:'Selective Interior Demo',              description:'Remove walls, ceilings, and finishes per plans.',                    dur:3, deps:['site_protection','dumpster'],            types:['addition','full_remodel','interior_remodel'], taskType:T.DEM },
+  { id:'interior_demo',    group:'Sitework & Demo', name:'Selective Interior Demo',              description:'Remove walls, ceilings, and finishes per plans.',                    dur:3, deps:['site_protection','dumpster'],            types:['addition','full_remodel','interior_remodel','basement_finish'], taskType:T.DEM },
   { id:'exterior_demo',    group:'Sitework & Demo', name:'Selective Exterior Demo',              description:'Remove siding and trim at tie-in points.',                           dur:2, deps:['site_protection'],                       types:['addition','full_remodel'], taskType:T.DEM },
 
   // FOUNDATION ──────────────────────────────────────────────────────────────
@@ -116,6 +117,7 @@ const TASK_DEFS = [
   { id:'frame_walls',        group:'Framing & Structure', name:'Framing - Walls',                 description:'Frame all exterior and interior walls.',           dur:4, deps:['frame_floor'],             types:NB, taskType:T.FS  },
   { id:'frame_roof',         group:'Framing & Structure', name:'Framing - Roof & Trusses',        description:'Set engineered trusses and complete roof framing.', dur:3, deps:['frame_walls'],            types:NB, taskType:T.FS  },
   { id:'framing_inspection', group:'Framing & Structure', name:'Framing Inspection',              description:'',                                                dur:1, deps:['frame_roof'],              types:NB, taskType:T.IP,  inspect:true },
+  { id:'basement_framing',   group:'Framing & Structure', name:'Partition Framing - Basement',    description:'Frame all new partition walls, soffits, and beam pockets per plans.', dur:3, deps:['interior_demo'], altDeps:['site_protection'], types:BF, taskType:T.FS },
 
   // EXTERIOR SHELL ──────────────────────────────────────────────────────────
   { id:'sheathing_wrap', group:'Exterior Shell', name:'Sheathing & House Wrap',             description:'Install sheathing and WRB. Tape all seams.',                               dur:2, deps:['framing_inspection'],      types:NB, taskType:T.EXT },
@@ -125,7 +127,7 @@ const TASK_DEFS = [
   { id:'gutters',        group:'Exterior Shell', name:'Gutters & Downspouts',                description:'Install seamless gutters.',                                                dur:1, deps:['siding'],                   types:NB, taskType:T.EXT },
 
   // MEP ROUGH-IN — HVAC → Plumbing → Electrical → LV ───────────────────────
-  { id:'hvac_rough',       group:'MEP Rough-In', name:'HVAC Rough-In',           description:'Extend existing system or install new zone.',  dur:3, deps:['framing_inspection'], altDeps:['interior_demo'], types:A, taskType:T.MEP },
+  { id:'hvac_rough',       group:'MEP Rough-In', name:'HVAC Rough-In',           description:'Extend existing system or install new zone.',  dur:3, deps:['framing_inspection'], altDeps:['basement_framing','interior_demo'], types:A, taskType:T.MEP },
   { id:'plumbing_rough',   group:'MEP Rough-In', name:'Plumbing Rough-In',       description:'All supply, drain, and vent rough-in per plans.',dur:4, deps:['hvac_rough'],                                   types:A, taskType:T.MEP },
   { id:'electrical_rough', group:'MEP Rough-In', name:'Electrical Rough-In',     description:'All circuits, boxes, and wire per NEC.',         dur:4, deps:['plumbing_rough'],                               types:A, taskType:T.MEP },
   { id:'lv_rough',         group:'MEP Rough-In', name:'Low Voltage Rough-In',    description:'Data, AV, security, and speaker rough-in.',      dur:2, deps:['electrical_rough'],                             types:A, taskType:T.MEP },
@@ -182,6 +184,7 @@ const PROJECT_TYPES = [
   { id:'addition',         label:'Addition'         },
   { id:'full_remodel',     label:'Full Remodel'     },
   { id:'interior_remodel', label:'Interior Remodel' },
+  { id:'basement_finish',  label:'Basement Finish'  },
 ];
 
 // ─── Date helpers ──────────────────────────────────────────────────────────────
