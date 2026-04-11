@@ -20,121 +20,167 @@
     :root {
       --bg:      #141210;
       --surface: #1A1816;
-      --card:    #222020;
-      --card2:   #2A2826;
+      --card:    #1E1C1A;
+      --card2:   #252220;
       --tan:     #C7AA8B;
-      --tan-d:   rgba(199,170,139,0.08);
+      --tan-d:   rgba(199,170,139,0.07);
       --tan-m:   rgba(199,170,139,0.18);
-      --border:  rgba(199,170,139,0.09);
-      --border2: rgba(199,170,139,0.18);
+      --border:  rgba(199,170,139,0.08);
+      --border2: rgba(199,170,139,0.16);
       --smoke:   #F2EFE8;
       --muted:   rgba(242,239,232,0.38);
       --green:   #4CAF84;
+      --amber:   #D4A847;
       --mono:    'DM Mono', monospace;
       --sans:    'DM Sans', sans-serif;
       --r:       4px;
     }
 
-    html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: var(--sans); color: var(--smoke); -webkit-font-smoothing: antialiased; }
-
-    .shell { display: flex; height: 100vh; height: 100dvh; }
-
-    /* ── Sidebar ── */
-    .sidebar {
-      width: 52px;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: max(14px, env(safe-area-inset-top)) 0 12px;
-      flex-shrink: 0;
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--smoke);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    .bear-wrap { width: 28px; height: 28px; filter: brightness(1.05); }
-    .bear-wrap img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
-    .sidebar-divider { width: 24px; height: 1px; background: var(--border); margin: 12px 0; }
-    .sidebar-clock { font-family: var(--mono); font-size: 6.5px; color: rgba(242,239,232,0.15); letter-spacing: 0.04em; text-align: center; line-height: 1.7; margin-top: auto; }
 
-    /* ── Main ── */
-    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    /* ── SVG symbol defs (hidden) ── */
+    .svg-defs { display: none; }
 
     /* ── Topbar ── */
     .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+      padding: max(10px, env(safe-area-inset-top)) 20px 10px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
-      flex-shrink: 0;
     }
+    .topbar-bear { width: 22px; height: 22px; flex-shrink: 0; }
+    .topbar-bear img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
     .topbar-brand { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); white-space: nowrap; }
     .topbar-sep { width: 1px; height: 12px; background: var(--border2); flex-shrink: 0; }
-    .topbar-sub { font-family: var(--mono); font-size: 8.5px; color: var(--muted); letter-spacing: 0.03em; white-space: nowrap; }
-    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .topbar-sub { font-family: var(--mono); font-size: 8px; color: var(--muted); letter-spacing: 0.03em; white-space: nowrap; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+    .topbar-clock { font-family: var(--mono); font-size: 8px; color: rgba(199,170,139,0.35); white-space: nowrap; }
     .topbar-phone { font-family: var(--mono); font-size: 8.5px; color: var(--tan); text-decoration: none; opacity: 0.6; white-space: nowrap; }
     .topbar-phone:hover { opacity: 1; }
     .topbar-lic { font-family: var(--mono); font-size: 7.5px; color: rgba(242,239,232,0.15); white-space: nowrap; }
-    @media (max-width: 540px) { .topbar-sub, .topbar-sep, .topbar-lic { display: none; } }
+    @media (max-width: 540px) {
+      .topbar-sub, .topbar-sep, .topbar-lic, .topbar-clock { display: none; }
+    }
 
-    /* ── Role strip ── */
-    .role-strip {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 16px;
+    /* ── Live Strip ── */
+    .live-strip {
+      background: var(--surface);
       border-bottom: 1px solid var(--border);
-      background: var(--bg);
-      flex-shrink: 0;
+      padding: 0 20px;
+    }
+    .live-strip-inner {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
-    .role-strip::-webkit-scrollbar { display: none; }
-    .role-strip-label { font-family: var(--mono); font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(199,170,139,0.28); margin-right: 4px; white-space: nowrap; flex-shrink: 0; }
+    .live-strip-inner::-webkit-scrollbar { display: none; }
 
-    .role-btn {
+    .live-hdr {
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 12px;
-      border-radius: var(--r);
-      border: 1px solid transparent;
-      background: transparent;
-      font-family: var(--mono);
-      font-size: 8.5px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.12s;
-      white-space: nowrap;
+      padding: 9px 16px 9px 0;
+      border-right: 1px solid var(--border);
+      margin-right: 16px;
       flex-shrink: 0;
+    }
+    .live-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 5px rgba(76,175,132,0.5);
+      animation: pulse 2.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .live-label { font-family: var(--mono); font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); white-space: nowrap; }
+
+    .live-cards { display: flex; align-items: center; gap: 6px; padding: 7px 0; flex-shrink: 0; }
+    .live-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      padding: 6px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      min-width: 140px;
+      max-width: 200px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.12s, background 0.12s;
       -webkit-tap-highlight-color: transparent;
     }
-    .role-btn:hover { background: var(--tan-d); color: var(--smoke); }
-    .role-btn.active { background: var(--tan-d); border-color: var(--border2); color: var(--tan); }
-    .role-btn svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .live-card:hover { border-color: var(--tan-m); background: var(--card2); }
+    .live-card-type { font-family: var(--mono); font-size: 6.5px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(199,170,139,0.4); }
+    .live-card-name { font-size: 11px; font-weight: 600; color: var(--smoke); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .live-card-meta { font-family: var(--mono); font-size: 7px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .live-card.estimate .live-card-type { color: rgba(212,168,71,0.55); }
+    .live-card.estimate { border-color: rgba(212,168,71,0.08); }
+    .live-card.estimate:hover { border-color: rgba(212,168,71,0.25); }
 
-    /* ── Panels ── */
-    .panels { flex: 1; overflow: hidden; position: relative; }
-    .panel { position: absolute; inset: 0; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
-    .panel.active { display: block; }
-    .panel::-webkit-scrollbar { width: 2px; }
-    .panel::-webkit-scrollbar-thumb { background: rgba(199,170,139,0.12); }
+    .live-skeleton {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 0;
+    }
+    .skel-card {
+      width: 150px; height: 46px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+    .live-empty { font-family: var(--mono); font-size: 8px; color: rgba(242,239,232,0.2); padding: 14px 0; }
+    .live-error { font-family: var(--mono); font-size: 8px; color: rgba(199,170,139,0.4); padding: 14px 0; cursor: pointer; }
+    .live-error:hover { color: var(--tan); }
 
-    /* ── Panel grid ── */
-    .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); min-height: 100%; }
-    @media (max-width: 580px) { .panel-grid { grid-template-columns: 1fr; } }
-    .panel-col { background: var(--bg); padding: 14px 14px 20px; display: flex; flex-direction: column; gap: 14px; }
+    /* ── Page layout ── */
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px 20px max(20px, env(safe-area-inset-bottom));
+    }
+
+    /* ── Grid ── */
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 620px) { .tool-grid { grid-template-columns: 1fr; gap: 0; } }
 
     /* ── Section ── */
-    .sec { display: flex; flex-direction: column; gap: 5px; }
-    .sec-hdr { display: flex; align-items: center; gap: 8px; }
-    .sec-lbl { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(199,170,139,0.35); white-space: nowrap; }
+    .sec { margin-bottom: 20px; }
+    .sec-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .sec-lbl { font-family: var(--mono); font-size: 7px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(199,170,139,0.32); white-space: nowrap; }
     .sec-rule { flex: 1; height: 1px; background: var(--border); }
 
     /* ── Tool rows ── */
-    .tool-list { display: flex; flex-direction: column; gap: 3px; }
+    .tool-list { display: flex; flex-direction: column; gap: 2px; }
     .tool-row {
       display: grid;
       grid-template-columns: 8px 1fr auto;
@@ -151,40 +197,40 @@
     }
     .tool-row:hover { border-color: var(--tan-m); background: var(--card2); }
     .tool-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
-    .dot-live { background: var(--green); box-shadow: 0 0 4px rgba(76,175,132,0.4); }
+    .dot-live { background: var(--green); box-shadow: 0 0 4px rgba(76,175,132,0.35); }
     .dot-ext  { background: rgba(242,239,232,0.1); }
     .tool-body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
     .tool-name { font-size: 12.5px; font-weight: 600; color: var(--smoke); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
-    .tool-trigger { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.45); letter-spacing: 0.02em; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tool-badge { font-family: var(--mono); font-size: 7px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--r); flex-shrink: 0; margin-top: 2px; }
-    .badge-live { background: rgba(76,175,132,0.1); color: var(--green); border: 1px solid rgba(76,175,132,0.18); }
-    .badge-ext  { background: rgba(242,239,232,0.04); color: var(--muted); border: 1px solid rgba(242,239,232,0.07); }
-    .badge-app  { background: rgba(199,170,139,0.06); color: rgba(199,170,139,0.55); border: 1px solid rgba(199,170,139,0.12); }
+    .tool-trigger { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.4); letter-spacing: 0.02em; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tool-badge { font-family: var(--mono); font-size: 7px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--r); flex-shrink: 0; margin-top: 2px; white-space: nowrap; }
+    .badge-live { background: rgba(76,175,132,0.08); color: var(--green); border: 1px solid rgba(76,175,132,0.16); }
+    .badge-ext  { background: rgba(242,239,232,0.03); color: var(--muted); border: 1px solid rgba(242,239,232,0.07); }
+    .badge-app  { background: rgba(199,170,139,0.05); color: rgba(199,170,139,0.5); border: 1px solid rgba(199,170,139,0.1); }
 
     /* ── Link rows ── */
-    .link-list { display: flex; flex-direction: column; gap: 3px; }
+    .link-list { display: flex; flex-direction: column; gap: 2px; }
     .link-row {
       display: flex; align-items: center; gap: 9px; padding: 8px 11px;
       background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
-      text-decoration: none; cursor: pointer; transition: border-color 0.12s;
+      text-decoration: none; cursor: pointer; transition: border-color 0.12s, background 0.12s;
       -webkit-tap-highlight-color: transparent;
     }
-    .link-row:hover { border-color: var(--tan-m); }
+    .link-row:hover { border-color: var(--tan-m); background: var(--card2); }
     .link-icon { font-size: 11px; width: 15px; text-align: center; flex-shrink: 0; }
     .link-body { flex: 1; min-width: 0; }
     .link-name { font-size: 12px; font-weight: 500; color: var(--smoke); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .link-trigger { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.4); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .link-domain { font-family: var(--mono); font-size: 7px; color: rgba(242,239,232,0.15); flex-shrink: 0; }
+    .link-trigger { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.38); display: block; }
+    .link-domain { font-family: var(--mono); font-size: 7px; color: rgba(242,239,232,0.14); flex-shrink: 0; }
 
     /* ── Contact cards ── */
-    .contact-list { display: flex; flex-direction: column; gap: 3px; }
+    .contact-list { display: flex; flex-direction: column; gap: 2px; }
     .contact-card {
       background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
       padding: 9px 11px; display: flex; flex-direction: column; gap: 1px;
       transition: border-color 0.12s;
     }
     .contact-card:hover { border-color: var(--tan-m); }
-    .contact-role-lbl { font-family: var(--mono); font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(199,170,139,0.35); margin-bottom: 1px; }
+    .contact-role-lbl { font-family: var(--mono); font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(199,170,139,0.32); margin-bottom: 1px; }
     .contact-name { font-size: 12.5px; font-weight: 600; color: var(--smoke); line-height: 1.3; }
     .contact-company { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
     .contact-actions { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -196,644 +242,476 @@
       -webkit-tap-highlight-color: transparent; white-space: nowrap;
     }
     .contact-btn:hover { background: var(--tan-d); border-color: var(--tan); }
-    .contact-btn svg { width: 8px; height: 8px; stroke: var(--tan); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-    .contact-note { font-family: var(--mono); font-size: 7px; color: rgba(242,239,232,0.18); margin-top: 4px; line-height: 1.5; }
+    .contact-btn svg { width: 9px; height: 9px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .contact-note { font-family: var(--mono); font-size: 7px; color: rgba(242,239,232,0.16); margin-top: 5px; line-height: 1.5; }
 
-    /* SVGs used inline in contact buttons */
-    .ico-phone { display:contents; }
-    .ico-mail  { display:contents; }
-    .ico-link  { display:contents; }
+    /* ── Divider between grid cols ── */
+    @media (min-width: 621px) {
+      .tool-grid > .col:first-child { padding-right: 10px; border-right: 1px solid var(--border); }
+      .tool-grid > .col:last-child  { padding-left: 10px; }
+    }
+    .col { display: flex; flex-direction: column; gap: 0; }
   </style>
 </head>
 <body>
-<div class="shell">
 
-  <!-- ── Sidebar ── -->
-  <div class="sidebar">
-    <div class="bear-wrap">
-      <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="" />
-    </div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-clock" id="sidebar-clock">--:--<br>---</div>
+<!-- ── SVG Symbol Definitions ── -->
+<svg class="svg-defs" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="ico-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+    </symbol>
+    <symbol id="ico-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+      <polyline points="22,6 12,13 2,6"/>
+    </symbol>
+    <symbol id="ico-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ── Topbar ── -->
+<div class="topbar">
+  <div class="topbar-bear">
+    <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="" />
   </div>
+  <span class="topbar-brand">OVB Tools</span>
+  <div class="topbar-sep"></div>
+  <span class="topbar-sub">Ogden Valley Builders</span>
+  <div class="topbar-right">
+    <span class="topbar-clock" id="topbar-clock"></span>
+    <a href="tel:3852887921" class="topbar-phone">(385) 288-7921</a>
+    <span class="topbar-lic">GC #14219939-5501</span>
+  </div>
+</div>
 
-  <!-- ── Main ── -->
-  <div class="main">
-
-    <!-- Topbar -->
-    <div class="topbar">
-      <span class="topbar-brand">OVB Tools</span>
-      <div class="topbar-sep"></div>
-      <span class="topbar-sub">Ogden Valley Builders</span>
-      <div class="topbar-right">
-        <a href="tel:3852887921" class="topbar-phone">(385) 288-7921</a>
-        <span class="topbar-lic">GC #14219939-5501</span>
-      </div>
+<!-- ── Live Strip ── -->
+<div class="live-strip">
+  <div class="live-strip-inner">
+    <div class="live-hdr">
+      <div class="live-dot"></div>
+      <span class="live-label">JobTread Live</span>
     </div>
-
-    <!-- Role strip -->
-    <div class="role-strip">
-      <span class="role-strip-label">View as</span>
-
-      <button class="role-btn active" onclick="switchRole('sales', this)">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        Sales
-      </button>
-
-      <button class="role-btn" onclick="switchRole('pm', this)">
-        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        PM
-      </button>
-
-      <button class="role-btn" onclick="switchRole('admin', this)">
-        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        Admin
-      </button>
-    </div>
-
-    <!-- Panels -->
-    <div class="panels">
-
-      <!-- ══ SALES ══ -->
-      <div class="panel active" id="panel-sales">
-        <div class="panel-grid">
-          <div class="panel-col">
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Lead Tools</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="/OVB-Discovery-Call.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Discovery Call</span>
-                    <span class="tool-trigger">When: Incoming lead · first phone call</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-
-                <a class="tool-row" href="/OVB-Site-Visit-Worksheet.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Site Visit</span>
-                    <span class="tool-trigger">When: Before starting any estimate · site walk</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-                
-                <a class="tool-row" href="/OVB-Rough-Budget-Calculator.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Rough Budget Calculator</span>
-                    <span class="tool-trigger">When: Client asks ballpark before plans exist</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-                
-                <a class="tool-row" href="/OVB-Scope-Library.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Scope Library</span>
-                    <span class="tool-trigger">When: Use when building scope language for a JT estimate or contract."</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>  
-                <a class="tool-row" href="/OVB-Materials-Selections.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Materials & Selections</span>
-                    <span class="tool-trigger">When: Pre-bid client meeting · capturing finish selections</span>
-                  </div>
-                <span class="tool-badge badge-live">Live</span>
-              </a>
-                <a class="tool-row" href="/OVB-Finish-Guide.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Finish & Detail Guide</span>
-                    <span class="tool-trigger">When: Pre-bid client meeting · explaining finish decisions + cost</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-              </a>
-                <a class="tool-row" href="/OVB-Precon-Agreement.html" target="_blank">
-                   <div class="tool-dot dot-live"></div>
-                   <div class="tool-body">
-                    <span class="tool-name">Precon Agreement</span>
-                    <span class="tool-trigger">When: New project engaged · precon services scoped</span>
-                    </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-                <a class="tool-row" href="/OVB-Schedule-Builder.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">JT Schedule Builder</span>
-                    <span class="tool-trigger">When: Use when building schedule for projects."</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">CRM</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="javascript:void(0)" onclick="openApp('jobtread://', 'https://app.jobtread.com')">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">JobTread</span>
-                    <span class="tool-trigger">When: Log call · update lead · create customer</span>
-                  </div>
-                  <span class="tool-badge badge-app">App</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Marketing</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="https://www.canva.com" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Canva</span>
-                    <span class="tool-trigger">When: Creating graphics · proposals · marketing</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="https://webflow.com" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Webflow</span>
-                    <span class="tool-trigger">When: Editing the OVB website</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="https://www.ogdenvalleybuilders.com" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">OVB Website</span>
-                    <span class="tool-trigger">When: Reviewing live site</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">AI</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="https://claude.ai" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Claude</span>
-                    <span class="tool-trigger">When: Drafting proposals · client comms · research</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="https://chat.openai.com" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">ChatGPT</span>
-                    <span class="tool-trigger">When: Quick lookups · image generation</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-              </div>
-            </div>
-
-          </div>
-          <div class="panel-col">
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Key Contacts — Sales</span><div class="sec-rule"></div></div>
-              <div class="contact-list">
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Insurance Agent — GL &amp; Builders Risk</span>
-                  <span class="contact-name">Jason Call</span>
-                  <span class="contact-company">Sentry West</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:8013911277">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (801) 391-1277
-                    </a>
-                    <a class="contact-btn" href="mailto:jason.call@sentrywest.com">
-                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                      Email
-                    </a>
-                  </div>
-                  <span class="contact-note">COI requests · GL questions · Builders Risk quotes</span>
-                </div>
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Construction Lender</span>
-                  <span class="contact-name">Banker Name</span>
-                  <span class="contact-company">Bank Name</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:0000000000">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (000) 000-0000
-                    </a>
-                    <a class="contact-btn" href="mailto:banker@bank.com">
-                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                      Email
-                    </a>
-                  </div>
-                  <span class="contact-note">Construction-to-perm · draw schedules · client referrals</span>
-                </div>
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Architect / Designer</span>
-                  <span class="contact-name">Designer Name</span>
-                  <span class="contact-company">Firm Name</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:0000000000">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (000) 000-0000
-                    </a>
-                    <a class="contact-btn" href="mailto:designer@firm.com">
-                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                      Email
-                    </a>
-                  </div>
-                  <span class="contact-note">Plans · client design referrals · feasibility</span>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ PM ══ -->
-      <div class="panel" id="panel-pm">
-        <div class="panel-grid">
-          <div class="panel-col">
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Pre-Construction Tools</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="/OVB-Builders-Risk-Worksheet.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Builders Risk Worksheet</span>
-                    <span class="tool-trigger">When: Contract signed · before work starts</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-                <a class="tool-row" href="/OVB-Master-Sub-Agreement.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Master Sub Agreement</span>
-                    <span class="tool-trigger">When: Onboarding any new subcontractor</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-                 <a class="tool-row" href="/OVB-Closeout-Tracker.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Close Out Tracker</span>
-                    <span class="tool-trigger">When: Closeout, Commissioning and Warranty</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Compliance</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="https://secure.utah.gov/scr/" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">UT Sub Registry</span>
-                    <span class="tool-trigger">When: Verify sub registration before first PO</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="https://secure.utah.gov/llv/search/index.html" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">DOPL License Lookup</span>
-                    <span class="tool-trigger">When: Verify contractor license is active</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="https://bluestakes.org" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Blue Stakes 811</span>
-                    <span class="tool-trigger">When: Any excavation · request 2 days before dig</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Permit Portals</span><div class="sec-rule"></div></div>
-              <div class="link-list">
-                <a class="link-row" href="https://frontier.co.weber.ut.us/Home" target="_blank">
-                  <span class="link-icon">📋</span>
-                  <div class="link-body">
-                    <span class="link-name">Weber County</span>
-                    <span class="link-trigger">Permits · inspections · plan check status</span>
-                  </div>
-                  <span class="link-domain">frontier.co.weber.ut.us</span>
-                </a>
-                <a class="link-row" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank">
-                  <span class="link-icon">📋</span>
-                  <div class="link-body">
-                    <span class="link-name">Morgan County</span>
-                    <span class="link-trigger">Permits · inspections · plan check status</span>
-                  </div>
-                  <span class="link-domain">civicreview.com</span>
-                </a>
-                <a class="link-row" href="https://op.ogdencity.com" target="_blank">
-                  <span class="link-icon">📋</span>
-                  <div class="link-body">
-                    <span class="link-name">Ogden City</span>
-                    <span class="link-trigger">City permits · inspections</span>
-                  </div>
-                  <span class="link-domain">op.ogdencity.com</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Project Management</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="javascript:void(0)" onclick="openApp('jobtread://', 'https://app.jobtread.com')">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">JobTread</span>
-                    <span class="tool-trigger">When: Schedule · budget · RFIs · daily notes</span>
-                  </div>
-                  <span class="tool-badge badge-app">App</span>
-                </a>
-                <a class="tool-row" href="javascript:void(0)" onclick="openApp('comgooglemaps://', 'https://maps.google.com')">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Google Maps</span>
-                    <span class="tool-trigger">When: Navigating to job site</span>
-                  </div>
-                  <span class="tool-badge badge-app">App</span>
-                </a>
-              </div>
-            </div>
-
-          </div>
-          <div class="panel-col">
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Key Contacts — PM</span><div class="sec-rule"></div></div>
-              <div class="contact-list">
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Inspector — Weber County</span>
-                  <span class="contact-name">Inspector Name</span>
-                  <span class="contact-company">Weber County Building Dept.</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:8016990760">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (801) 699-0760
-                    </a>
-                  </div>
-                  <span class="contact-note">Schedule inspections · code questions · failed inspection follow-up</span>
-                </div>
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Inspector — Morgan County</span>
-                  <span class="contact-name">Inspector Name</span>
-                  <span class="contact-company">Morgan County Building Dept.</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:8018452552">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (801) 845-2552
-                    </a>
-                  </div>
-                  <span class="contact-note">Schedule inspections · code questions · failed inspection follow-up</span>
-                </div>
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Structural Engineer</span>
-                  <span class="contact-name">Engineer Name</span>
-                  <span class="contact-company">Firm Name</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:0000000000">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (000) 000-0000
-                    </a>
-                    <a class="contact-btn" href="mailto:engineer@firm.com">
-                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                      Email
-                    </a>
-                  </div>
-                  <span class="contact-note">Structural calcs · beam sizing · special inspections</span>
-                </div>
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Utility Locates</span>
-                  <span class="contact-name">Blue Stakes of Utah</span>
-                  <span class="contact-company">811 — Call Before You Dig</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:811">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      Dial 811
-                    </a>
-                    <a class="contact-btn" href="https://bluestakes.org" target="_blank">
-                      <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                      bluestakes.org
-                    </a>
-                  </div>
-                  <span class="contact-note">Required 2+ business days before any excavation</span>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ ADMIN ══ -->
-      <div class="panel" id="panel-admin">
-        <div class="panel-grid">
-          <div class="panel-col">
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Finance</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="/OVB-LOC-Manager.html">
-                  <div class="tool-dot dot-live"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">LOC Manager</span>
-                    <span class="tool-trigger">When: Recording draws, payments, or checking interest</span>
-                  </div>
-                  <span class="tool-badge badge-live">Live</span>
-                </a>
-                
-                <a class="tool-row" href="https://app.qbo.intuit.com" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">QuickBooks Online</span>
-                    <span class="tool-trigger">When: Invoicing · bills · reconciliation · payroll</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="https://www.bankofutah.com" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Bank of Utah</span>
-                    <span class="tool-trigger">When: Transfers · draws · account management</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Files &amp; Docs</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="javascript:void(0)" onclick="openApp('googledrive://', 'https://drive.google.com')">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Google Drive</span>
-                    <span class="tool-trigger">When: Project files · contracts · photos</span>
-                  </div>
-                  <span class="tool-badge badge-app">App</span>
-                </a>
-                <a class="tool-row" href="https://docs.google.com/spreadsheets" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Google Sheets</span>
-                    <span class="tool-trigger">When: Trackers · budgets · COI logs</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="https://docs.google.com/document" target="_blank">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Google Docs</span>
-                    <span class="tool-trigger">When: Letters · SOWs · client correspondence</span>
-                  </div>
-                  <span class="tool-badge badge-ext">Web</span>
-                </a>
-                <a class="tool-row" href="javascript:void(0)" onclick="openApp('notion://', 'https://www.notion.so')">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Notion</span>
-                    <span class="tool-trigger">When: SOPs · internal docs · process tracking</span>
-                  </div>
-                  <span class="tool-badge badge-app">App</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Communication</span><div class="sec-rule"></div></div>
-              <div class="tool-list">
-                <a class="tool-row" href="javascript:void(0)" onclick="openApp('googlegmail://', 'https://mail.google.com')">
-                  <div class="tool-dot dot-ext"></div>
-                  <div class="tool-body">
-                    <span class="tool-name">Gmail</span>
-                    <span class="tool-trigger">When: Client emails · vendor correspondence</span>
-                  </div>
-                  <span class="tool-badge badge-app">App</span>
-                </a>
-              </div>
-            </div>
-
-          </div>
-          <div class="panel-col">
-
-            <div class="sec">
-              <div class="sec-hdr"><span class="sec-lbl">Key Contacts — Admin</span><div class="sec-rule"></div></div>
-              <div class="contact-list">
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Accountant / CPA</span>
-                  <span class="contact-name">CPA Name</span>
-                  <span class="contact-company">Firm Name</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:0000000000">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (000) 000-0000
-                    </a>
-                    <a class="contact-btn" href="mailto:cpa@firm.com">
-                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                      Email
-                    </a>
-                  </div>
-                  <span class="contact-note">Tax · QBO questions · payroll · year-end</span>
-                </div>
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Attorney</span>
-                  <span class="contact-name">Attorney Name</span>
-                  <span class="contact-company">Firm Name</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:0000000000">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (000) 000-0000
-                    </a>
-                    <a class="contact-btn" href="mailto:attorney@firm.com">
-                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                      Email
-                    </a>
-                  </div>
-                  <span class="contact-note">Contracts · liens · disputes · business matters</span>
-                </div>
-
-                <div class="contact-card">
-                  <span class="contact-role-lbl">Bank — Relationship Manager</span>
-                  <span class="contact-name">Banker Name</span>
-                  <span class="contact-company">Bank of Utah</span>
-                  <div class="contact-actions">
-                    <a class="contact-btn" href="tel:0000000000">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      (000) 000-0000
-                    </a>
-                    <a class="contact-btn" href="mailto:banker@bankofutah.com">
-                      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                      Email
-                    </a>
-                  </div>
-                  <span class="contact-note">Lines of credit · wire transfers · account access</span>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
+    <div id="live-content" class="live-skeleton">
+      <div class="skel-card"></div>
+      <div class="skel-card"></div>
+      <div class="skel-card"></div>
     </div>
   </div>
 </div>
 
-<script>
-  function switchRole(id, btn) {
-    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
-    document.querySelectorAll('.role-btn').forEach(function(b) { b.classList.remove('active'); });
-    document.getElementById('panel-' + id).classList.add('active');
-    btn.classList.add('active');
-  }
+<!-- ── Page ── -->
+<div class="page">
+  <div class="tool-grid">
 
+    <!-- ══ LEFT COLUMN ══ -->
+    <div class="col">
+
+      <!-- Lead → Close -->
+      <div class="sec">
+        <div class="sec-hdr"><span class="sec-lbl">Lead → Close</span><div class="sec-rule"></div></div>
+        <div class="tool-list">
+          <a class="tool-row" href="/OVB-Discovery-Call.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Discovery Call</span>
+              <span class="tool-trigger">When: Incoming lead · first phone call</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="/OVB-Site-Visit-Worksheet.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Site Visit</span>
+              <span class="tool-trigger">When: Before starting any estimate · site walk</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="/OVB-Rough-Budget-Calculator.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Rough Budget Calculator</span>
+              <span class="tool-trigger">When: Client asks ballpark before plans exist</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="/OVB-Scope-Library.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Scope Library</span>
+              <span class="tool-trigger">When: Building scope language for a JT estimate or contract</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="/OVB-Materials-Selections.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Materials &amp; Selections</span>
+              <span class="tool-trigger">When: Pre-bid client meeting · capturing finish selections</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="/OVB-Finish-Guide.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Finish &amp; Detail Guide</span>
+              <span class="tool-trigger">When: Pre-bid client meeting · explaining finish decisions + cost</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="/OVB-Precon-Agreement.html" target="_blank" rel="noopener noreferrer">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Precon Agreement</span>
+              <span class="tool-trigger">When: New project engaged · precon services scoped</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Pre-Construction -->
+      <div class="sec">
+        <div class="sec-hdr"><span class="sec-lbl">Pre-Construction</span><div class="sec-rule"></div></div>
+        <div class="tool-list">
+          <a class="tool-row" href="/OVB-Builders-Risk-Worksheet.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Builders Risk Worksheet</span>
+              <span class="tool-trigger">When: Contract signed · before work starts</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="/OVB-Master-Sub-Agreement.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Master Sub Agreement</span>
+              <span class="tool-trigger">When: Onboarding any new subcontractor</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="/OVB-Schedule-Builder.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">JT Schedule Builder</span>
+              <span class="tool-trigger">When: Building project schedule in JobTread</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="https://secure.utah.gov/scr/" target="_blank" rel="noopener noreferrer">
+            <div class="tool-dot dot-ext"></div>
+            <div class="tool-body">
+              <span class="tool-name">UT Sub Registry</span>
+              <span class="tool-trigger">When: Verify sub registration before first PO</span>
+            </div>
+            <span class="tool-badge badge-ext">Web</span>
+          </a>
+          <a class="tool-row" href="https://secure.utah.gov/llv/search/index.html" target="_blank" rel="noopener noreferrer">
+            <div class="tool-dot dot-ext"></div>
+            <div class="tool-body">
+              <span class="tool-name">DOPL License Lookup</span>
+              <span class="tool-trigger">When: Verify contractor license is active</span>
+            </div>
+            <span class="tool-badge badge-ext">Web</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- In Field -->
+      <div class="sec">
+        <div class="sec-hdr"><span class="sec-lbl">In Field</span><div class="sec-rule"></div></div>
+        <div class="tool-list">
+          <a class="tool-row" href="/OVB-Closeout-Tracker.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Closeout Tracker</span>
+              <span class="tool-trigger">When: Closeout · Commissioning · Warranty</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+        </div>
+        <div style="height:6px"></div>
+        <div class="link-list">
+          <a class="link-row" href="https://frontier.co.weber.ut.us/Home" target="_blank" rel="noopener noreferrer">
+            <span class="link-icon">📋</span>
+            <div class="link-body">
+              <span class="link-name">Weber County Permits</span>
+              <span class="link-trigger">Permits · inspections · plan check status</span>
+            </div>
+            <span class="link-domain">co.weber.ut.us</span>
+          </a>
+          <a class="link-row" href="https://app.civicreview.com/application/641db259d3a8ae9867874539" target="_blank" rel="noopener noreferrer">
+            <span class="link-icon">📋</span>
+            <div class="link-body">
+              <span class="link-name">Morgan County Permits</span>
+              <span class="link-trigger">Permits · inspections · plan check status</span>
+            </div>
+            <span class="link-domain">civicreview.com</span>
+          </a>
+          <a class="link-row" href="https://op.ogdencity.com" target="_blank" rel="noopener noreferrer">
+            <span class="link-icon">📋</span>
+            <div class="link-body">
+              <span class="link-name">Ogden City Permits</span>
+              <span class="link-trigger">City permits · inspections</span>
+            </div>
+            <span class="link-domain">op.ogdencity.com</span>
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /col left -->
+
+    <!-- ══ RIGHT COLUMN ══ -->
+    <div class="col">
+
+      <!-- Admin -->
+      <div class="sec">
+        <div class="sec-hdr"><span class="sec-lbl">Admin</span><div class="sec-rule"></div></div>
+        <div class="tool-list">
+          <a class="tool-row" href="javascript:void(0)" onclick="openApp('jobtread://', 'https://app.jobtread.com')">
+            <div class="tool-dot dot-ext"></div>
+            <div class="tool-body">
+              <span class="tool-name">JobTread</span>
+              <span class="tool-trigger">When: Projects · estimates · budgets · daily notes</span>
+            </div>
+            <span class="tool-badge badge-app">App</span>
+          </a>
+          <a class="tool-row" href="/OVB-LOC-Manager.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">LOC Manager</span>
+              <span class="tool-trigger">When: Recording draws · payments · checking interest</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+          <a class="tool-row" href="https://app.qbo.intuit.com" target="_blank" rel="noopener noreferrer">
+            <div class="tool-dot dot-ext"></div>
+            <div class="tool-body">
+              <span class="tool-name">QuickBooks Online</span>
+              <span class="tool-trigger">When: Invoicing · bills · reconciliation · payroll</span>
+            </div>
+            <span class="tool-badge badge-ext">Web</span>
+          </a>
+          <a class="tool-row" href="https://www.bankofutah.com" target="_blank" rel="noopener noreferrer">
+            <div class="tool-dot dot-ext"></div>
+            <div class="tool-body">
+              <span class="tool-name">Bank of Utah</span>
+              <span class="tool-trigger">When: Transfers · draws · account management</span>
+            </div>
+            <span class="tool-badge badge-ext">Web</span>
+          </a>
+          <a class="tool-row" href="javascript:void(0)" onclick="openApp('googledrive://', 'https://drive.google.com')">
+            <div class="tool-dot dot-ext"></div>
+            <div class="tool-body">
+              <span class="tool-name">Google Drive</span>
+              <span class="tool-trigger">When: Project files · contracts · photos · sheets · docs</span>
+            </div>
+            <span class="tool-badge badge-app">App</span>
+          </a>
+          <a class="tool-row" href="javascript:void(0)" onclick="openApp('notion://', 'https://www.notion.so')">
+            <div class="tool-dot dot-ext"></div>
+            <div class="tool-body">
+              <span class="tool-name">Notion</span>
+              <span class="tool-trigger">When: SOPs · internal docs · process tracking</span>
+            </div>
+            <span class="tool-badge badge-app">App</span>
+          </a>
+          <a class="tool-row" href="javascript:void(0)" onclick="openApp('googlegmail://', 'https://mail.google.com')">
+            <div class="tool-dot dot-ext"></div>
+            <div class="tool-body">
+              <span class="tool-name">Gmail</span>
+              <span class="tool-trigger">When: Client emails · vendor correspondence</span>
+            </div>
+            <span class="tool-badge badge-app">App</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Contacts -->
+      <div class="sec">
+        <div class="sec-hdr"><span class="sec-lbl">Key Contacts</span><div class="sec-rule"></div></div>
+        <div class="contact-list">
+
+          <div class="contact-card">
+            <span class="contact-role-lbl">Insurance — GL &amp; Builders Risk</span>
+            <span class="contact-name">Jason Call</span>
+            <span class="contact-company">SentryWest</span>
+            <div class="contact-actions">
+              <a class="contact-btn" href="tel:8013911277">
+                <svg width="9" height="9"><use href="#ico-phone"/></svg>
+                (801) 391-1277
+              </a>
+              <a class="contact-btn" href="mailto:jason.call@sentrywest.com">
+                <svg width="9" height="9"><use href="#ico-mail"/></svg>
+                Email
+              </a>
+            </div>
+            <span class="contact-note">COI requests · GL questions · Builders Risk quotes · Acuity QU8PY2-02</span>
+          </div>
+
+          <div class="contact-card">
+            <span class="contact-role-lbl">Inspector — Weber County</span>
+            <span class="contact-name">Weber County Building Dept.</span>
+            <span class="contact-company">Weber County</span>
+            <div class="contact-actions">
+              <a class="contact-btn" href="tel:8016990760">
+                <svg width="9" height="9"><use href="#ico-phone"/></svg>
+                (801) 699-0760
+              </a>
+            </div>
+            <span class="contact-note">Schedule inspections · code questions · failed inspection follow-up</span>
+          </div>
+
+          <div class="contact-card">
+            <span class="contact-role-lbl">Inspector — Morgan County</span>
+            <span class="contact-name">Morgan County Building Dept.</span>
+            <span class="contact-company">Morgan County</span>
+            <div class="contact-actions">
+              <a class="contact-btn" href="tel:8018452552">
+                <svg width="9" height="9"><use href="#ico-phone"/></svg>
+                (801) 845-2552
+              </a>
+            </div>
+            <span class="contact-note">Schedule inspections · code questions · failed inspection follow-up</span>
+          </div>
+
+          <div class="contact-card">
+            <span class="contact-role-lbl">Utility Locates</span>
+            <span class="contact-name">Blue Stakes of Utah</span>
+            <span class="contact-company">811 — Call Before You Dig</span>
+            <div class="contact-actions">
+              <a class="contact-btn" href="tel:811">
+                <svg width="9" height="9"><use href="#ico-phone"/></svg>
+                Dial 811
+              </a>
+              <a class="contact-btn" href="https://bluestakes.org" target="_blank" rel="noopener noreferrer">
+                <svg width="9" height="9"><use href="#ico-link"/></svg>
+                bluestakes.org
+              </a>
+            </div>
+            <span class="contact-note">Required 2+ business days before any excavation</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /col right -->
+
+  </div><!-- /tool-grid -->
+</div><!-- /page -->
+
+<script>
+  /* ── Clock ── */
+  function updateClock() {
+    var now = new Date();
+    var t = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    var d = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+    var el = document.getElementById('topbar-clock');
+    if (el) el.textContent = t + ' · ' + d;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  /* ── App deep-link helper ── */
   function openApp(appUrl, webUrl) {
     var start = Date.now();
-    setTimeout(function() {
+    setTimeout(function () {
       if (Date.now() - start < 2000) window.open(webUrl, '_blank');
     }, 600);
     window.location.href = appUrl;
   }
 
-  function updateClock() {
-    var now = new Date();
-    var t = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    var d = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-    document.getElementById('sidebar-clock').innerHTML = t + '<br>' + d;
+  /* ── JobTread Live Strip ── */
+  async function loadLiveStrip() {
+    var container = document.getElementById('live-content');
+    try {
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          mcp_servers: [{ type: 'url', url: 'https://api.jobtread.com/mcp?', name: 'jobtread' }],
+          messages: [{
+            role: 'user',
+            content: 'Query JobTread for: (1) all active jobs — return name and updatedDate, (2) all open/pending estimates — return name and totalAmount. Return ONLY a valid JSON object, no markdown, no explanation. Format: {"projects":[{"name":"...","updated":"..."}],"estimates":[{"name":"...","amount":0}]}'
+          }]
+        })
+      });
+
+      var data = await res.json();
+
+      /* Extract JSON from response */
+      var raw = '';
+      if (data.content) {
+        for (var i = 0; i < data.content.length; i++) {
+          if (data.content[i].type === 'text') { raw += data.content[i].text; }
+          if (data.content[i].type === 'mcp_tool_result') {
+            var tc = data.content[i].content;
+            if (tc && tc[0] && tc[0].text) raw += tc[0].text;
+          }
+        }
+      }
+
+      /* Strip markdown fences if present */
+      raw = raw.replace(/```json|```/g, '').trim();
+      /* Find the JSON object */
+      var match = raw.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('no json');
+      var parsed = JSON.parse(match[0]);
+
+      var projects  = parsed.projects  || [];
+      var estimates = parsed.estimates || [];
+
+      if (projects.length === 0 && estimates.length === 0) {
+        container.className = 'live-empty';
+        container.textContent = 'No active projects or open estimates';
+        return;
+      }
+
+      var html = '<div class="live-cards">';
+
+      projects.forEach(function(p) {
+        var updated = p.updated ? new Date(p.updated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : '';
+        html += '<a class="live-card" href="javascript:void(0)" onclick="openApp(\'jobtread://\', \'https://app.jobtread.com\')">'
+          + '<span class="live-card-type">Active Project</span>'
+          + '<span class="live-card-name">' + esc(p.name) + '</span>'
+          + (updated ? '<span class="live-card-meta">Updated ' + updated + '</span>' : '')
+          + '</a>';
+      });
+
+      estimates.forEach(function(e) {
+        var amt = e.amount ? '$' + Number(e.amount).toLocaleString() : '';
+        html += '<a class="live-card estimate" href="javascript:void(0)" onclick="openApp(\'jobtread://\', \'https://app.jobtread.com\')">'
+          + '<span class="live-card-type">Open Estimate</span>'
+          + '<span class="live-card-name">' + esc(e.name) + '</span>'
+          + (amt ? '<span class="live-card-meta">' + amt + '</span>' : '')
+          + '</a>';
+      });
+
+      html += '</div>';
+      container.className = '';
+      container.innerHTML = html;
+
+    } catch (err) {
+      container.className = 'live-error';
+      container.textContent = '⚠ Could not load JobTread data — tap to retry';
+      container.onclick = function() {
+        container.className = 'live-skeleton';
+        container.innerHTML = '<div class="skel-card"></div><div class="skel-card"></div><div class="skel-card"></div>';
+        container.onclick = null;
+        loadLiveStrip();
+      };
+    }
   }
-  updateClock();
-  setInterval(updateClock, 15000);
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  loadLiveStrip();
 </script>
 </body>
 </html>
