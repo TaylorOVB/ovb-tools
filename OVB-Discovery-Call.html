@@ -473,34 +473,79 @@
     const { useState } = React;
 
     // ─── Constants ───────────────────────────────────────────────────────────
+    // Every string below matches a JobTread picklist value EXACTLY.
+    // JT uses plain hyphens, never en/em dashes. Do not "prettify" these.
 
-    // NOTE: must match the JT "Budget Range" picklist EXACTLY.
-    const BUDGET_OPTS = [
-      'Under $50K','Under $100K','$100K–$200K','$200K–$400K',
-      '$400K–$600K','$600K–$800K','$800K–$1M','$1M+','Not Sure',
-    ];
+    const BUDGET_OPTS = ['Under $50K','Under $100K','$100K-$200K','$200K-$400K',
+      '$400K-$600K','$600K-$800K','$800K-$1M','$1M+','Not Sure'];
+    const BIG_BUDGET = ['$600K-$800K','$800K-$1M','$1M+'];
+    const MID_BUDGET = ['$200K-$400K','$400K-$600K'];
 
-    const BIG_BUDGET   = ['$600K–$800K','$800K–$1M','$1M+'];
-    const MID_BUDGET   = ['$200K–$400K','$400K–$600K'];
-    const NEW_BUILD    = ['New Construction','ADU / In-Law Suite'];
-    const LOT_RELEVANT = ['','New Construction','ADU / In-Law Suite','Addition'];
+    // JT job custom field "Job Type"
+    const JOB_TYPES = ['New Build','Dry Addition','Wet Addition','Full Remodel',
+      'Kitchen Remodel','Bathroom Remodel','Basement Finish','Detached / Garage / ADU',
+      'ADU','Deck / Outdoor Living','Garage','Commercial','Other'];
+    const NEW_BUILD    = ['New Build','ADU','Detached / Garage / ADU'];
+    const LOT_RELEVANT = ['','New Build','ADU','Detached / Garage / ADU','Dry Addition','Wet Addition'];
 
-    const REFERRAL_SRC = ['Past Client Referral','Architect Referral','Realtor Referral','Sub / Vendor Referral','Lender Referral'];
+    const COUNTY_OPTS  = ['Weber County','Morgan County','Other'];
+    const CUST_TYPES   = ['Homeowner - Primary Residence','Homeowner - Second Home',
+      'Homeowner - Investment Property','Realtor','Developer','Architect','Designer','Investor','Contractor'];
+    const LEAD_SRC     = ['Past Client Referral','Architect Referral','Realtor Referral',
+      'Sub / Vendor Referral','Lender Referral','Personal Network','Google Search','Organic Social',
+      'Website','Yard Sign / Job Site','Home Show / Event','Drove By / Walk-Up',
+      'Facebook - Contractor Bidding Group','BuildZoom 4.25%','Other'];
+    const REFERRAL_SRC = ['Past Client Referral','Architect Referral','Realtor Referral',
+      'Sub / Vendor Referral','Lender Referral'];
+
+    const MEETING_TYPES = ['Phone','In Person - Office','In Person - Their Lot','In Person - Their Home','Video'];
+    const LOT_STATUS    = ['Owns Free & Clear','Owns With Loan','Under Contract',
+      'Identified - Not Under Contract','Still Looking','N/A - Remodel'];
+    const WATER_OPTS    = ['Culinary - Connected','Culinary - Available','Well - Existing','Well - To Be Drilled','None Identified'];
+    const SEWER_OPTS    = ['Sewer - Connected','Sewer - Available','Septic - Perc Passed','Septic - No Perc','None Identified'];
+    const POWER_OPTS    = ['At Lot','Nearby - Short Run','Extension Required','Unknown'];
+    const GAS_OPTS      = ['Natural Gas','Propane','All Electric','Unknown'];
+    const ACCESS_OPTS   = ['County Maintained - Paved','Private Drive','Shared Easement','Seasonal - Winter Limited'];
+    const TOPO_OPTS     = ['Flat','Gentle Slope','Walkout','Steep Hillside','Rock'];
+    const AUTH_OPTS     = ['Weber County','Morgan County','Ogden City','Huntsville','Eden','Other'];
+    const HOA_OPTS      = ['No HOA','HOA - No ARC','ARC Required - Not Started','ARC Required - In Process','ARC Approved'];
+
+    const PLAN_STAGE    = ['No Plans','Idea - Sketch','Stock Plan to Modify','Schematic',
+      'Design Development','Construction Docs','Permit Ready'];
+    const FINISH_LEVEL  = ['Builder','Mid','High','Custom - Luxury'];
+
+    const BUDGET_BASIS  = ['All-In (Land + Build + FF&E)','Construction Only','Unsure'];
+    const FIN_TYPES     = ['Cash','Construction-to-Perm (One Close)','Two-Close Construction',
+      'HELOC - Land Equity','Private Money','Undecided'];
+    const PREAPPROVAL   = ['Pre-Approved','Application In Process','Not Started','N/A - Cash'];
+
+    // JT customer custom field "Timeline / Urgency"
+    const TIMELINE_OPTS = ['ASAP','1-3 Months','3-6 Months','6-12 Months','12-18 Months','18+ Months','Undecided'];
+    const DESIGN_OPTS   = ['Already Underway','ASAP','1-3 Months','3-6 Months','6-12 Months','12+ Months','Undecided'];
+    const ACTIVE_TL     = ['ASAP','1-3 Months','3-6 Months','6-12 Months'];
+    const NEAR_TL       = ['ASAP','1-3 Months','3-6 Months'];
+
+    const COST_PLUS     = ['Prefers It','Understands - Skeptical','Needs Explanation','Wants Fixed Price'];
+    const BUILT_BEFORE  = ['First-Time Builder','Built Once','Built Multiple'];
+    const BUILDERS_CONS = ['Just OVB','2','3','4+'];
+    const PRECON_OPTS   = ['Yes - Interested','Yes - Hesitant','No - Not Yet','Not Applicable'];
+    const DM_OPTS       = ['Solo','Spouse Involved','Multiple Stakeholders'];
 
     // ─── Scoring ─────────────────────────────────────────────────────────────
 
     const SCORE_ROWS = [
       { label: 'Budget $600K+',        pts: 3, check: f => BIG_BUDGET.includes(f.budget) },
-      { label: 'Budget $200K–$600K',   pts: 2, check: f => MID_BUDGET.includes(f.budget),
+      { label: 'Budget $200K-$600K',   pts: 2, check: f => MID_BUDGET.includes(f.budget),
         hideIf: f => BIG_BUDGET.includes(f.budget) },
-      { label: 'In Service Area',      pts: 2, check: f => f.county === 'Weber' || f.county === 'Morgan' },
+      { label: 'In Service Area',      pts: 2, check: f => f.county === 'Weber County' || f.county === 'Morgan County' },
       { label: 'Lot Owned Outright',   pts: 3, check: f => f.lotStatus === 'Owns Free & Clear' },
       { label: 'Lot Under Contract',   pts: 2, check: f => f.lotStatus === 'Owns With Loan' || f.lotStatus === 'Under Contract',
         hideIf: f => f.lotStatus === 'Owns Free & Clear' },
-      { label: 'Lot Identified',       pts: 1, check: f => f.lotStatus === 'Identified — Not Under Contract',
+      { label: 'Lot Identified',       pts: 1, check: f => f.lotStatus === 'Identified - Not Under Contract',
         hideIf: f => ['Owns Free & Clear','Owns With Loan','Under Contract'].includes(f.lotStatus) },
       { label: 'Utilities Confirmed',  pts: 1, check: f =>
-          !!f.water && f.water !== 'None Identified' && !!f.sewer && f.sewer !== 'None Identified' && !!f.power && f.power !== 'Unknown' },
+          !!f.water && f.water !== 'None Identified' && !!f.sewer && f.sewer !== 'None Identified'
+          && !!f.power && f.power !== 'Unknown' },
       { label: 'Plans CD / Permit',    pts: 2, check: f => ['Construction Docs','Permit Ready'].includes(f.planStage) },
       { label: 'Plans SD / DD',        pts: 1, check: f => ['Schematic','Design Development'].includes(f.planStage),
         hideIf: f => ['Construction Docs','Permit Ready'].includes(f.planStage) },
@@ -508,12 +553,11 @@
       { label: 'Financing Approved',   pts: 2, check: f => f.finType !== 'Cash' && f.preApproved === 'Pre-Approved',
         hideIf: f => f.finType === 'Cash' },
       { label: 'High-Value Referral',  pts: 2, check: f => REFERRAL_SRC.includes(f.leadSource) },
-      { label: 'Construction ≤12 Mo',  pts: 2, check: f => ['ASAP','Under 6 Months','6–12 Months'].includes(f.constStart) },
+      { label: 'Construction <12 Mo',  pts: 2, check: f => ACTIVE_TL.includes(f.constStart) },
       { label: 'Aligned on Cost Plus', pts: 1, check: f => f.costPlus === 'Prefers It' },
       { label: 'All DMs Present',      pts: 1, check: f => f.allDmPresent === 'Yes' },
-      // Penalties
-      { label: 'No Lot · Fast Start',  pts: -2, neg: true, check: f =>
-          NEW_BUILD.includes(f.projectType) && f.lotStatus === 'Still Looking' && ['ASAP','Under 6 Months'].includes(f.constStart) },
+      { label: 'No Lot / Fast Start',  pts: -2, neg: true, check: f =>
+          NEW_BUILD.includes(f.projectType) && f.lotStatus === 'Still Looking' && NEAR_TL.includes(f.constStart) },
       { label: 'Wants Fixed Price',    pts: -2, neg: true, check: f => f.costPlus === 'Wants Fixed Price' },
       { label: '4+ Builders Bidding',  pts: -2, neg: true, check: f => f.buildersTalking === '4+' },
     ];
@@ -525,14 +569,14 @@
     function calcLabel(f, pts) {
       if (f.budget === 'Under $50K') return { text: 'DQ', cls: 'dq' };
       if (NEW_BUILD.includes(f.projectType) && f.budget === 'Under $100K') return { text: 'DQ', cls: 'dq' };
-      if (f.county === 'Outside Area') return { text: 'Cold', cls: 'cold' };
-      if (['Under $100K','$100K–$200K'].includes(f.budget) && REFERRAL_SRC.includes(f.leadSource))
+      if (f.county === 'Other') return { text: 'Cold', cls: 'cold' };
+      if (['Under $100K','$100K-$200K'].includes(f.budget) && REFERRAL_SRC.includes(f.leadSource))
         return { text: 'Filler', cls: 'filler' };
       if (pts >= 14) return { text: 'Hot',     cls: 'hot' };
       if (pts >= 10) return { text: 'Warm',    cls: 'warm' };
       if (pts >= 6)  return { text: 'Nurture', cls: 'nurture' };
       if (pts >= 1)  return { text: 'Cold',    cls: 'cold' };
-      return { text: '—', cls: 'cold' };
+      return { text: '', cls: 'cold' };
     }
 
     // ─── Auto Flags ──────────────────────────────────────────────────────────
@@ -542,45 +586,46 @@
       const lotShown = LOT_RELEVANT.includes(f.projectType);
 
       if (f.budget === 'Under $50K')
-        out.push({ lvl: 'stop', txt: 'Budget under $50K — disqualified' });
+        out.push({ lvl: 'stop', txt: 'Budget under $50K - disqualified' });
       if (NEW_BUILD.includes(f.projectType) && f.budget === 'Under $100K')
-        out.push({ lvl: 'stop', txt: 'New build under $100K — not buildable' });
-      if (f.county === 'Outside Area')
+        out.push({ lvl: 'stop', txt: 'New build under $100K - not buildable' });
+      if (f.county === 'Other')
         out.push({ lvl: 'stop', txt: 'Outside Weber / Morgan service area' });
 
       if (lotShown) {
         if (f.water === 'None Identified')
-          out.push({ lvl: 'stop', txt: 'No water source identified — verify shares / well permit' });
-        if (f.sewer === 'Septic — No Perc')
-          out.push({ lvl: 'warn', txt: 'Septic with no perc test — schedule before budget' });
+          out.push({ lvl: 'stop', txt: 'No water source - verify shares or well permit' });
+        if (f.sewer === 'Septic - No Perc')
+          out.push({ lvl: 'warn', txt: 'Septic with no perc test - schedule before budget' });
         if (f.sewer === 'None Identified')
           out.push({ lvl: 'stop', txt: 'No sewer or septic plan identified' });
         if (f.power === 'Extension Required')
-          out.push({ lvl: 'warn', txt: 'Power extension required — get utility cost estimate' });
-        if (f.access === 'Seasonal / Winter Limited')
-          out.push({ lvl: 'warn', txt: 'Seasonal access — affects schedule and winter costs' });
+          out.push({ lvl: 'warn', txt: 'Power extension required - get utility estimate' });
+        if (f.access === 'Seasonal - Winter Limited')
+          out.push({ lvl: 'warn', txt: 'Seasonal access - affects schedule and winter cost' });
         if (f.topo === 'Steep Hillside' || f.topo === 'Rock')
-          out.push({ lvl: 'warn', txt: 'Difficult topo — geotech required before hard numbers' });
-        if (f.hoa === 'ARC Required — Not Started')
-          out.push({ lvl: 'warn', txt: 'ARC review required and not started — add to schedule' });
-        if (NEW_BUILD.includes(f.projectType) && f.lotStatus === 'Still Looking' && ['ASAP','Under 6 Months'].includes(f.constStart))
-          out.push({ lvl: 'stop', txt: 'No lot + fast start — expectation mismatch, reset timeline' });
-        if (f.budgetBasis === 'All-In (Land + Build + FF&E)' && ['Still Looking','Identified — Not Under Contract'].includes(f.lotStatus))
-          out.push({ lvl: 'warn', txt: 'All-in budget but lot not secured — land cost is unknown' });
+          out.push({ lvl: 'warn', txt: 'Difficult topo - geotech before hard numbers' });
+        if (f.hoa === 'ARC Required - Not Started')
+          out.push({ lvl: 'warn', txt: 'ARC review not started - add to schedule' });
+        if (NEW_BUILD.includes(f.projectType) && f.lotStatus === 'Still Looking' && NEAR_TL.includes(f.constStart))
+          out.push({ lvl: 'stop', txt: 'No lot + fast start - reset the timeline' });
+        if (f.budgetBasis === 'All-In (Land + Build + FF&E)'
+            && ['Still Looking','Identified - Not Under Contract'].includes(f.lotStatus))
+          out.push({ lvl: 'warn', txt: 'All-in budget but lot not secured - land cost unknown' });
       }
 
       if (f.costPlus === 'Wants Fixed Price')
-        out.push({ lvl: 'stop', txt: 'Wants fixed price — model mismatch, address or walk' });
+        out.push({ lvl: 'stop', txt: 'Wants fixed price - model mismatch, address or walk' });
       if (f.costPlus === 'Needs Explanation')
-        out.push({ lvl: 'warn', txt: 'Cost plus not yet explained — do this before pricing talk' });
+        out.push({ lvl: 'warn', txt: 'Cost plus not explained yet - do before pricing talk' });
       if (f.buildersTalking === '4+')
-        out.push({ lvl: 'warn', txt: '4+ builders in play — low close probability' });
-      if (f.preApproved === 'Not Started' && ['ASAP','Under 6 Months'].includes(f.constStart))
-        out.push({ lvl: 'warn', txt: 'Financing not started but start is near — introduce lender' });
+        out.push({ lvl: 'warn', txt: '4+ builders in play - low close probability' });
+      if (f.preApproved === 'Not Started' && NEAR_TL.includes(f.constStart))
+        out.push({ lvl: 'warn', txt: 'Financing not started but start is near - intro lender' });
       if (f.builderPkg === 'Requested')
-        out.push({ lvl: 'warn', txt: 'Lender requested builder package — send OVB financials + license' });
+        out.push({ lvl: 'warn', txt: 'Lender wants builder package - send financials + license' });
       if (f.budgetBasis === 'Unsure')
-        out.push({ lvl: 'warn', txt: 'Budget basis unclear — confirm all-in vs. construction only' });
+        out.push({ lvl: 'warn', txt: 'Budget basis unclear - confirm all-in vs construction only' });
 
       return out;
     }
@@ -700,6 +745,7 @@
       push('TOP PRIORITY', f.priority);
       push('BUILDERS CONSIDERING', f.buildersTalking);
       push('EXPECTED INVOLVEMENT', f.involvement);
+      push('DM STRUCTURE', f.dm);
       push('FINANCIAL DECISION MAKER', f.dmFinancial);
       push('DESIGN DECISION MAKER', f.dmDesign);
       push('ALL DMs PRESENT', f.allDmPresent);
@@ -822,7 +868,7 @@
         // timeline
         designStart:'', constStart:'', moveIn:'', sellingHome:'', livingDuring:'', deadline:'',
         // fit
-        builtBefore:'', costPlus:'', priority:'', buildersTalking:'', involvement:'',
+        builtBefore:'', costPlus:'', priority:'', buildersTalking:'', involvement:'', dm:'',
         pastIssues:'', dmFinancial:'', dmDesign:'', allDmPresent:'', realtor:'',
         // close
         notes:'', obj:[], objNotes:'', preconPitched:'', next:'', nextDate:'', cadence:'',
@@ -870,56 +916,58 @@
             body: JSON.stringify({
               operation: 'createCustomer',
               params: {
-                // ── v1 params — already mapped in api/jobtread.js ──
-                name:              f.name.trim(),
-                phone:             f.phone.trim(),
-                email:             f.email.trim(),
-                projectType:       f.projectType,
-                budgetRange:       f.budget,
-                leadSource:        f.leadSource,
-                referredBy:        f.referredBy,
-                contactMethod:     f.contact,
-                customerType:      f.customerType,
-                financing:         f.finType,
-                decisionMakers:    f.dmFinancial,
-                competingBids:     f.buildersTalking === 'Just OVB' ? 'No' : f.buildersTalking ? 'Yes' : '',
-                timeline:          f.constStart,
-                county:            f.county,
-                qualificationScore:`${lbl.text}${pts !== 0 ? ` (${pts} pts)` : ''}`,
-                dqFlag:            lbl.text === 'DQ' ? 'Budget' : f.county === 'Outside Area' ? 'Location' : 'None',
-                notes:             summary,
-                // ── v2 params — nested so the current proxy ignores them
-                //    safely until the new JT fields + mappings exist ──
+                // ── CUSTOMER — values match JT picklists exactly ──
+                name:               f.name.trim(),
+                phone:              f.phone.trim(),
+                email:              f.email.trim(),
+                customerType:       f.customerType,
+                leadSource:         f.leadSource,
+                referredBy:         f.referredBy,
+                contactMethod:      f.contact,
+                budgetRange:        f.budget,
+                financing:          f.finType,
+                decisionMakers:     f.dm,
+                timeline:           f.constStart,
+                county:             f.county,
+                qualificationScore: lbl.text,
+                projectType:        f.projectType,
+                notes:              summary,
+                // ── v2 — grouped by JT target type. Proxy must route these. ──
                 extended: {
-                  meetingType:   f.meetingType,
-                  meetingDate:   f.meetingDate,
-                  lotStatus:     f.lotStatus,
-                  lotAddress:    f.lotAddress,
-                  acreage:       f.acreage,
-                  water:         f.water,
-                  sewer:         f.sewer,
-                  power:         f.power,
-                  gas:           f.gas,
-                  siteAccess:    f.access,
-                  topography:    f.topo,
-                  authority:     f.authority,
-                  hoaArc:        f.hoa,
-                  planStage:     f.planStage,
-                  designTeam:    (f.team || []).join(', '),
-                  finishLevel:   f.finishLevel,
-                  targetSf:      f.sfMain,
-                  bedBath:       [f.beds, f.baths].filter(Boolean).join(' / '),
-                  budgetBasis:   f.budgetBasis,
-                  financingType: f.finType,
-                  lender:        f.lender,
-                  preApproved:   f.preApproved,
-                  constStart:    f.constStart,
-                  moveIn:        f.moveIn,
-                  costPlus:      f.costPlus,
-                  builtBefore:   f.builtBefore,
-                  buildersCount: f.buildersTalking,
-                  preconPitched: f.preconPitched,
-                  followUpDate:  f.nextDate,
+                  customer: {
+                    meetingType:         f.meetingType,
+                    meetingDate:         f.meetingDate,
+                    lotStatus:           f.lotStatus,
+                    budgetBasis:         f.budgetBasis,
+                    lender:              f.lender,
+                    preApprovalStatus:   f.preApproved,
+                    costPlusPosition:    f.costPlus,
+                    builderExperience:   f.builtBefore,
+                    buildersConsidering: f.buildersTalking,
+                    preconPitched:       f.preconPitched,
+                    followUpDate:        f.nextDate,
+                  },
+                  location: {
+                    waterSource:        f.water,
+                    sewerSeptic:        f.sewer,
+                    powerToLot:         f.power,
+                    gasService:         f.gas,
+                    siteAccess:         f.access,
+                    topography:         f.topo,
+                    governingAuthority: f.authority,
+                    hoaArcStatus:       f.hoa,
+                    lotSizeAcreage:     f.acreage,
+                  },
+                  job: {
+                    jobType:          f.projectType,
+                    plansStatus:      f.planStage,
+                    finishLevel:      f.finishLevel,
+                    targetFinishedSf: [f.sfMain, f.sfUpper, f.sfBsmtFin]
+                                        .map(x => parseInt(String(x).replace(/[^0-9]/g,''), 10) || 0)
+                                        .reduce((a2, b2) => a2 + b2, 0) || '',
+                    bedBathCount:     [f.beds, f.baths].filter(Boolean).join(' / '),
+                    designTeam:       [(f.team || []).join(', '), f.architectName].filter(Boolean).join(' - '),
+                  },
                 },
               },
             }),
@@ -953,7 +1001,7 @@
               <Sec num="01" title="Meeting Context" hint="Where & who">
                 <F label="Meeting Type">
                   <PillGroup
-                    options={['Phone','In Person — Office','In Person — Their Lot','In Person — Their Home','Video']}
+                    options={MEETING_TYPES}
                     value={f.meetingType} onChange={tog('meetingType')} />
                 </F>
                 <div className="frow">
@@ -969,7 +1017,7 @@
                     options={['Client 1','Spouse / Partner','Architect','Designer','Realtor','Lender','Family / Other']}
                     value={f.present} onChange={setA('present')} />
                 </F>
-                {f.meetingType === 'In Person — Their Lot' && (
+                {f.meetingType === 'In Person - Their Lot' && (
                   <F label="Walked the Lot?">
                     <PillGroup options={['Yes','No']} value={f.lotWalked} onChange={tog('lotWalked')} />
                     {f.lotWalked === 'Yes' && (
@@ -1009,12 +1057,12 @@
                 </F>
                 <F label="Customer Type">
                   <PillGroup
-                    options={['Homeowner — Primary Residence','Homeowner — Second Home','Homeowner — Investment Property','Realtor','Developer','Other']}
+                    options={CUST_TYPES}
                     value={f.customerType} onChange={tog('customerType')} />
                 </F>
                 <F label="Lead Source">
                   <PillGroup
-                    options={['Past Client Referral','Architect Referral','Realtor Referral','Sub / Vendor Referral','Lender Referral','Google Search','Organic Social','Yard Sign / Job Site','Home Show / Event','Website','Drove By / Walk-Up','Other']}
+                    options={LEAD_SRC}
                     value={f.leadSource} onChange={tog('leadSource')} />
                 </F>
                 {f.leadSource.includes('Referral') && (
@@ -1028,14 +1076,14 @@
               <Sec num="03" title="The Project">
                 <F label="Project Type">
                   <PillGroup
-                    options={['New Construction','Addition','Full Remodel','Kitchen Remodel','Bathroom Remodel','Basement Finish','Deck / Outdoor Living','Garage','ADU / In-Law Suite','Other']}
+                    options={JOB_TYPES}
                     value={f.projectType} onChange={tog('projectType')} />
                 </F>
                 <F label="Project Address">
                   <input type="text" placeholder="Address or general area" value={f.address} onChange={setE('address')} />
                 </F>
                 <F label="County">
-                  <PillGroup options={['Weber','Morgan','Outside Area']} value={f.county} onChange={tog('county')} badValue="Outside Area" />
+                  <PillGroup options={COUNTY_OPTS} value={f.county} onChange={tog('county')} badValue="Other" />
                 </F>
                 <F label="What They Described">
                   <textarea placeholder="In their words — what are they trying to build?" value={f.scope} onChange={setE('scope')} />
@@ -1072,7 +1120,7 @@
                   </F>
                   <F label="Finish Level">
                     <PillGroup
-                      options={['Builder','Mid','High','Custom / Luxury']}
+                      options={FINISH_LEVEL}
                       value={f.finishLevel} onChange={tog('finishLevel')} />
                   </F>
                 </Sub>
@@ -1083,11 +1131,11 @@
                 <Sec num="04" title="Land & Lot" hint="No lot · no project">
                   <F label="Lot Status">
                     <PillGroup
-                      options={['Owns Free & Clear','Owns With Loan','Under Contract','Identified — Not Under Contract','Still Looking']}
+                      options={LOT_STATUS}
                       value={f.lotStatus} onChange={tog('lotStatus')}
                       goodValue="Owns Free & Clear" badValue="Still Looking" />
                   </F>
-                  {f.lotStatus && f.lotStatus !== 'Still Looking' && (
+                  {f.lotStatus && !['Still Looking','N/A - Remodel'].includes(f.lotStatus) && (
                     <>
                       <F label="Lot Address / Parcel #">
                         <input type="text" placeholder="Address or parcel number" value={f.lotAddress} onChange={setE('lotAddress')} />
@@ -1102,29 +1150,29 @@
 
                   <Sub label="Utilities">
                     <F label="Water">
-                      <PillGroup options={['Culinary — Connected','Culinary — Available','Well — Existing','Well — To Be Drilled','None Identified']}
+                      <PillGroup options={WATER_OPTS}
                         value={f.water} onChange={tog('water')} badValue="None Identified" />
                     </F>
                     <F label="Sewer / Septic">
-                      <PillGroup options={['Sewer — Connected','Sewer — Available','Septic — Perc Passed','Septic — No Perc','None Identified']}
-                        value={f.sewer} onChange={tog('sewer')} badValue={['Septic — No Perc','None Identified']} />
+                      <PillGroup options={SEWER_OPTS}
+                        value={f.sewer} onChange={tog('sewer')} badValue={['Septic - No Perc','None Identified']} />
                     </F>
                     <F label="Power">
-                      <PillGroup options={['At Lot','Nearby — Short Run','Extension Required','Unknown']}
+                      <PillGroup options={POWER_OPTS}
                         value={f.power} onChange={tog('power')} badValue="Extension Required" />
                     </F>
                     <F label="Gas">
-                      <PillGroup options={['Natural Gas','Propane','All Electric','Unknown']} value={f.gas} onChange={tog('gas')} />
+                      <PillGroup options={GAS_OPTS} value={f.gas} onChange={tog('gas')} />
                     </F>
                   </Sub>
 
                   <Sub label="Site Conditions">
                     <F label="Access">
-                      <PillGroup options={['County Maintained — Paved','Private Drive','Shared Easement','Seasonal / Winter Limited']}
-                        value={f.access} onChange={tog('access')} badValue="Seasonal / Winter Limited" />
+                      <PillGroup options={ACCESS_OPTS}
+                        value={f.access} onChange={tog('access')} badValue="Seasonal - Winter Limited" />
                     </F>
                     <F label="Topography">
-                      <PillGroup options={['Flat','Gentle Slope','Walkout','Steep Hillside','Rock']}
+                      <PillGroup options={TOPO_OPTS}
                         value={f.topo} onChange={tog('topo')} badValue={['Steep Hillside','Rock']} />
                     </F>
                     <F label="Studies Already Done">
@@ -1135,7 +1183,7 @@
 
                   <Sub label="Jurisdiction & Restrictions">
                     <F label="Governing Authority">
-                      <PillGroup options={['Weber County','Morgan County','Ogden City','Huntsville','Eden','Other']}
+                      <PillGroup options={AUTH_OPTS}
                         value={f.authority} onChange={tog('authority')} />
                     </F>
                     <F label="Overlays / Restrictions">
@@ -1143,8 +1191,8 @@
                         value={f.overlays} onChange={setA('overlays')} />
                     </F>
                     <F label="HOA / Architectural Review">
-                      <PillGroup options={['No HOA','HOA — No ARC','ARC Required — Not Started','ARC Required — In Process','ARC Approved']}
-                        value={f.hoa} onChange={tog('hoa')} badValue="ARC Required — Not Started" />
+                      <PillGroup options={HOA_OPTS}
+                        value={f.hoa} onChange={tog('hoa')} badValue="ARC Required - Not Started" />
                     </F>
                     {f.hoa && f.hoa !== 'No HOA' && (
                       <F label="HOA Name / Design Guidelines">
@@ -1159,7 +1207,7 @@
               <Sec num={showLot ? '05' : '04'} title="Design & Plans">
                 <F label="Plan Stage">
                   <PillGroup
-                    options={['No Plans','Idea / Sketch','Stock Plan to Modify','Schematic','Design Development','Construction Docs','Permit Ready']}
+                    options={PLAN_STAGE}
                     value={f.planStage} onChange={tog('planStage')}
                     goodValue={['Construction Docs','Permit Ready']} />
                 </F>
@@ -1174,7 +1222,7 @@
                   </F>
                 )}
                 <F label="Can OVB Be Involved in Design?">
-                  <PillGroup options={['Yes — Open to It','Design Already Locked','Undecided']} value={f.ovbDesign} onChange={tog('ovbDesign')} />
+                  <PillGroup options={['Yes - Open to It','Design Already Locked','Undecided']} value={f.ovbDesign} onChange={tog('ovbDesign')} />
                 </F>
               </Sec>
 
@@ -1185,7 +1233,7 @@
                 </F>
                 <F label="Does That Number Include Land?">
                   <PillGroup
-                    options={['All-In (Land + Build + FF&E)','Construction Only','Unsure']}
+                    options={BUDGET_BASIS}
                     value={f.budgetBasis} onChange={tog('budgetBasis')} badValue="Unsure" />
                   {f.budgetBasis === 'All-In (Land + Build + FF&E)' && (
                     <div className="note">All-in number — back out land, site work, landscaping, and furnishings before quoting a build budget.</div>
@@ -1195,7 +1243,7 @@
                 <Sub label="Financing">
                   <F label="Financing Type">
                     <PillGroup
-                      options={['Cash','Construction-to-Perm (One Close)','Two-Close Construction','HELOC / Land Equity','Private Money','Undecided']}
+                      options={FIN_TYPES}
                       value={f.finType} onChange={tog('finType')} goodValue="Cash" />
                   </F>
                   {f.finType && f.finType !== 'Cash' && (
@@ -1205,7 +1253,7 @@
                         <F label="Loan Officer"><input type="text" placeholder="Name" value={f.loanOfficer} onChange={setE('loanOfficer')} /></F>
                       </div>
                       <F label="Pre-Approval Status">
-                        <PillGroup options={['Pre-Approved','Application In Process','Not Started']}
+                        <PillGroup options={PREAPPROVAL}
                           value={f.preApproved} onChange={tog('preApproved')} badValue="Not Started" goodValue="Pre-Approved" />
                       </F>
                       <div className="frow">
@@ -1229,11 +1277,11 @@
               {/* 07 — TIMELINE */}
               <Sec num={showLot ? '07' : '06'} title="Timeline">
                 <F label="Target Design Start">
-                  <PillGroup options={['Already Underway','ASAP','Under 6 Months','6–12 Months','12+ Months','Undecided']}
+                  <PillGroup options={DESIGN_OPTS}
                     value={f.designStart} onChange={tog('designStart')} />
                 </F>
                 <F label="Target Construction Start">
-                  <PillGroup options={['ASAP','Under 6 Months','6–12 Months','12–18 Months','18+ Months','Undecided']}
+                  <PillGroup options={TIMELINE_OPTS}
                     value={f.constStart} onChange={tog('constStart')} />
                 </F>
                 <F label="Target Move-In">
@@ -1256,13 +1304,13 @@
               {/* 08 — FIT */}
               <Sec num={showLot ? '08' : '07'} title="Fit & Process" hint="Buyer or shopper">
                 <F label="Built a Custom Home Before?">
-                  <PillGroup options={['First-Time Builder','Built Once','Built Multiple']} value={f.builtBefore} onChange={tog('builtBefore')} />
+                  <PillGroup options={BUILT_BEFORE} value={f.builtBefore} onChange={tog('builtBefore')} />
                   {f.builtBefore === 'First-Time Builder' && (
                     <div className="note">First-time builder — budget extra time on process education, allowances, and change order expectations.</div>
                   )}
                 </F>
                 <F label="Cost Plus / Open Book Position">
-                  <PillGroup options={['Prefers It','Understands — Skeptical','Needs Explanation','Wants Fixed Price']}
+                  <PillGroup options={COST_PLUS}
                     value={f.costPlus} onChange={tog('costPlus')} goodValue="Prefers It" badValue="Wants Fixed Price" />
                 </F>
                 <F label="What Matters Most to Them">
@@ -1271,7 +1319,7 @@
                 </F>
                 <div className="frow">
                   <F label="Builders They're Considering">
-                    <PillGroup options={['Just OVB','2','3','4+']} value={f.buildersTalking} onChange={tog('buildersTalking')} badValue="4+" goodValue="Just OVB" />
+                    <PillGroup options={BUILDERS_CONS} value={f.buildersTalking} onChange={tog('buildersTalking')} badValue="4+" goodValue="Just OVB" />
                   </F>
                   <F label="Expected Involvement">
                     <PillGroup options={['Hands-Off','Weekly Updates','Very Hands-On','Will Self-Perform Some']}
@@ -1280,6 +1328,9 @@
                 </div>
 
                 <Sub label="Decision Making">
+                  <F label="Decision Maker Structure">
+                    <PillGroup options={DM_OPTS} value={f.dm} onChange={tog('dm')} goodValue="Solo" />
+                  </F>
                   <div className="frow">
                     <F label="Financial Decision Maker">
                       <input type="text" placeholder="Who signs / funds?" value={f.dmFinancial} onChange={setE('dmFinancial')} />
@@ -1322,15 +1373,15 @@
                   </F>
                 )}
                 <F label="Did You Pitch Preconstruction?">
-                  <PillGroup options={['Yes — Interested','Yes — Hesitant','No — Not Yet','Not Applicable']}
-                    value={f.preconPitched} onChange={tog('preconPitched')} goodValue="Yes — Interested" />
-                  {f.preconPitched === 'No — Not Yet' && (
+                  <PillGroup options={PRECON_OPTS}
+                    value={f.preconPitched} onChange={tog('preconPitched')} goodValue="Yes - Interested" />
+                  {f.preconPitched === 'No - Not Yet' && (
                     <div className="note">Precon is the revenue gate. Make the ask before the second meeting.</div>
                   )}
                 </F>
                 <F label="Next Step">
                   <PillGroup
-                    options={['Site / Lot Visit Scheduled','Send Rough Budget','Send Precon Agreement','Intro to Lender','Intro to Architect','Follow Up — 30 Days','Follow Up — 60 Days','Follow Up — 90 Days','No Fit']}
+                    options={['Site / Lot Visit Scheduled','Send Rough Budget','Send Precon Agreement','Intro to Lender','Intro to Architect','Follow Up - 30 Days','Follow Up - 60 Days','Follow Up - 90 Days','No Fit']}
                     value={f.next} onChange={tog('next')} badValue="No Fit" />
                 </F>
                 <div className="frow">
