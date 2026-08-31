@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Process" />
+  <meta name="theme-color" content="#141210" />
+  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <title>Process Map · OVB Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #141210;
+      --surface: #1A1816;
+      --card:    #1E1C1A;
+      --card2:   #252220;
+      --tan:     #C7AA8B;
+      --tan-d:   rgba(199,170,139,0.07);
+      --tan-m:   rgba(199,170,139,0.18);
+      --border:  rgba(199,170,139,0.08);
+      --border2: rgba(199,170,139,0.16);
+      --smoke:   #F2EFE8;
+      --muted:   rgba(242,239,232,0.38);
+      --green:   #4CAF84;
+      --amber:   #D4A847;
+      --rust:    #C4614A;
+      --mono:    'DM Mono', monospace;
+      --sans:    'DM Sans', sans-serif;
+      --r:       4px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--smoke);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    button { font-family: inherit; color: inherit; background: none; border: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    :focus-visible { outline: 1px solid var(--tan); outline-offset: 2px; }
+
+    /* Topbar */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; gap: 10px;
+      padding: max(10px, env(safe-area-inset-top)) 20px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .topbar-bear { width: 22px; height: 22px; flex-shrink: 0; }
+    .topbar-bear img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
+    .topbar-brand { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); white-space: nowrap; text-decoration: none; }
+    .topbar-sep { width: 1px; height: 12px; background: var(--border2); flex-shrink: 0; }
+    .topbar-sub { font-family: var(--mono); font-size: 8px; color: var(--muted); letter-spacing: 0.03em; white-space: nowrap; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+    .topbar-back { font-family: var(--mono); font-size: 8.5px; color: var(--tan); text-decoration: none; opacity: 0.6; white-space: nowrap; }
+    .topbar-back:hover { opacity: 1; }
+    .topbar-lic { font-family: var(--mono); font-size: 7.5px; color: rgba(242,239,232,0.15); white-space: nowrap; }
+    @media (max-width: 540px) { .topbar-sub, .topbar-sep, .topbar-lic { display: none; } }
+
+    /* Control bar */
+    .ctrlbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; }
+    .ctrl-inner { display: flex; align-items: center; gap: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 8px 0; }
+    .ctrl-inner::-webkit-scrollbar { display: none; }
+    .ctrl-grp { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .ctrl-lbl { font-family: var(--mono); font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(199,170,139,0.32); white-space: nowrap; }
+    .seg { display: flex; gap: 2px; }
+    .seg button {
+      font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 4px 8px; border-radius: var(--r); border: 1px solid var(--border);
+      background: var(--card); color: var(--muted); white-space: nowrap; transition: border-color 0.12s, background 0.12s, color 0.12s;
+    }
+    .seg button:hover { border-color: var(--tan-m); }
+    .seg button[aria-pressed="true"] { background: var(--tan-d); border-color: var(--tan-m); color: var(--tan); }
+    #q {
+      font-family: var(--mono); font-size: 8.5px; background: var(--card);
+      border: 1px solid var(--border); border-radius: var(--r); padding: 5px 9px;
+      color: var(--smoke); width: 180px; flex-shrink: 0;
+    }
+    #q::placeholder { color: rgba(242,239,232,0.2); }
+    #q:focus { border-color: var(--tan-m); outline: none; }
+
+    /* Tabs */
+    .tabbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; }
+    .tabs { display: flex; max-width: 960px; margin: 0 auto; }
+    .tabs button {
+      font-family: var(--mono); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 9px 14px; color: rgba(242,239,232,0.28);
+      border-bottom: 1px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color 0.12s;
+    }
+    .tabs button:hover { color: var(--muted); }
+    .tabs button[aria-pressed="true"] { color: var(--tan); border-bottom-color: var(--tan); }
+
+    .page { max-width: 960px; margin: 0 auto; padding: 20px 20px max(40px, env(safe-area-inset-bottom)); }
+
+    /* Section header */
+    .sec-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .sec-lbl { font-family: var(--mono); font-size: 7px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(199,170,139,0.32); white-space: nowrap; }
+    .sec-rule { flex: 1; height: 1px; background: var(--border); }
+
+    /* Spine */
+    .spine { position: relative; padding-left: 22px; }
+    .spine::before { content: ""; position: absolute; left: 5px; top: 10px; bottom: 10px; width: 1px; background: var(--border2); }
+    .node { position: relative; margin-bottom: 2px; }
+    .node::before {
+      content: ""; position: absolute; left: -20px; top: 14px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--card2); border: 1px solid var(--border2);
+    }
+    .node.g::before { background: var(--amber); border-color: var(--amber); border-radius: 1px; transform: rotate(45deg); }
+    .node.g.hard::before { background: var(--rust); border-color: var(--rust); }
+
+    .phase-row {
+      display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 10px;
+      width: 100%; text-align: left; padding: 9px 11px;
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .phase-row:hover { border-color: var(--tan-m); background: var(--card2); }
+    .phase-row.off { opacity: 0.35; }
+    .p-num { font-family: var(--mono); font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(199,170,139,0.4); }
+    .p-name { font-size: 12.5px; font-weight: 600; line-height: 1.3; margin-top: 1px; }
+    .p-desc { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.4); line-height: 1.5; margin-top: 2px; }
+    .p-count { font-family: var(--mono); font-size: 7px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; padding-top: 3px; }
+
+    .gate-row { padding: 8px 11px; background: rgba(212,168,71,0.04); border: 1px solid rgba(212,168,71,0.14); border-radius: var(--r); margin: 2px 0; }
+    .gate-row.hard { background: rgba(196,97,74,0.05); border-color: rgba(196,97,74,0.18); }
+    .g-id { font-family: var(--mono); font-size: 7px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+    .gate-row.hard .g-id, .gatebox.hard .g-id { color: var(--rust); }
+    .g-name { font-size: 11.5px; font-weight: 600; margin-top: 1px; }
+    .g-art { font-family: var(--mono); font-size: 7px; color: rgba(242,239,232,0.28); line-height: 1.6; margin-top: 3px; }
+
+    /* Detail */
+    .dhead { margin-bottom: 14px; }
+    .dhead h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; margin: 2px 0 4px; }
+    .dhead p { font-family: var(--mono); font-size: 8px; color: rgba(199,170,139,0.45); line-height: 1.6; max-width: 68ch; }
+    .back { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 4px 0 10px; display: inline-block; }
+    .back:hover { color: var(--tan); }
+
+    .steps { display: flex; flex-direction: column; gap: 2px; }
+    .step {
+      display: grid; grid-template-columns: 26px 1fr 18px; gap: 9px; align-items: start;
+      padding: 8px 11px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+    }
+    .step.off { opacity: 0.3; }
+    .step.off .s-text { text-decoration: line-through; text-decoration-thickness: 1px; }
+    .s-id { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.35); padding-top: 2px; }
+    .s-text { font-size: 12px; line-height: 1.4; }
+    .s-note { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.4); line-height: 1.6; margin-top: 3px; }
+    .s-tool {
+      display: inline-flex; align-items: center; margin-top: 5px;
+      font-family: var(--mono); font-size: 7px; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--tan); border: 1px solid var(--border2); border-radius: var(--r);
+      padding: 2px 7px; text-decoration: none; transition: background 0.12s, border-color 0.12s;
+    }
+    .s-tool:hover { background: var(--tan-d); border-color: var(--tan); }
+    .role {
+      font-family: var(--mono); font-size: 7px; font-weight: 500; text-align: center;
+      width: 16px; padding: 2px 0; border-radius: var(--r); margin-top: 1px;
+    }
+    .role.J { background: rgba(212,168,71,0.08); color: var(--amber); border: 1px solid rgba(212,168,71,0.16); }
+    .role.C { background: rgba(76,175,132,0.08); color: var(--green); border: 1px solid rgba(76,175,132,0.16); }
+    .role.A { background: rgba(199,170,139,0.06); color: rgba(199,170,139,0.6); border: 1px solid var(--border2); }
+
+    /* Gate box */
+    .gatebox { margin-top: 16px; padding: 12px 13px; background: rgba(212,168,71,0.04); border: 1px solid rgba(212,168,71,0.14); border-radius: var(--r); }
+    .gatebox.hard { background: rgba(196,97,74,0.05); border-color: rgba(196,97,74,0.18); }
+    .gatebox h3 { font-size: 13.5px; font-weight: 600; margin: 1px 0 8px; }
+    .chk { display: grid; grid-template-columns: 11px 1fr; gap: 8px; padding: 4px 0; font-size: 11.5px; line-height: 1.4; align-items: start; }
+    .chk i { font-style: normal; color: var(--amber); font-size: 9px; padding-top: 2px; }
+    .gatebox.hard .chk i { color: var(--rust); }
+    .absolute { margin-top: 10px; padding: 8px 10px; background: rgba(196,97,74,0.08); border-radius: var(--r); font-family: var(--mono); font-size: 7.5px; color: #E0A08C; line-height: 1.7; }
+    .branch { margin-top: 11px; padding-top: 9px; border-top: 1px solid var(--border); }
+    .br { font-size: 11.5px; line-height: 1.45; padding: 3px 0; color: var(--muted); }
+    .br b { font-weight: 600; color: var(--smoke); }
+    .br.go b { color: var(--green); }
+    .br.stop b { color: var(--rust); }
+
+    .note { margin-top: 14px; padding: 11px 13px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r); font-size: 11.5px; line-height: 1.6; color: var(--muted); }
+    .note b { color: var(--smoke); font-weight: 600; }
+    .note.accent { border-left: 2px solid var(--tan); }
+
+    /* Loops */
+    .loop { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 2px; }
+    .loop summary { padding: 9px 11px; cursor: pointer; list-style: none; display: grid; grid-template-columns: 1fr 18px; gap: 10px; align-items: start; }
+    .loop summary::-webkit-details-marker { display: none; }
+    .loop[open] { border-color: var(--tan-m); }
+    .l-name { font-size: 12.5px; font-weight: 600; }
+    .l-when { font-family: var(--mono); font-size: 7.5px; color: rgba(199,170,139,0.4); margin-top: 2px; line-height: 1.5; }
+    .l-body { padding: 2px 11px 12px; }
+
+    /* Tiers */
+    .tier { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 11px 13px; margin-bottom: 2px; }
+    .tier h4 { font-size: 13px; font-weight: 600; }
+    .tier .cap { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); margin: 3px 0 7px; }
+    .tier ul { margin: 0; padding-left: 15px; }
+    .tier li { font-size: 11.5px; line-height: 1.55; color: var(--muted); margin-bottom: 2px; }
+
+    .legend { margin-top: 22px; padding-top: 12px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 7.5px; color: rgba(242,239,232,0.28); line-height: 2.2; }
+    .legend b { color: rgba(199,170,139,0.6); font-weight: 500; }
+    .legend .role { display: inline-block; vertical-align: -3px; margin-right: 3px; }
+    .empty { font-family: var(--mono); font-size: 8px; color: rgba(242,239,232,0.2); padding: 40px 0; text-align: center; }
+    .hit { background: rgba(212,168,71,0.22); border-radius: 2px; }
+
+    @media print {
+      .topbar, .ctrlbar, .tabbar, .back, .s-tool { display: none; }
+      body { background: #fff; color: #000; }
+      .phase-row, .gate-row, .step, .note, .loop, .tier, .gatebox { background: none; border-color: #ccc; }
+      .node { break-inside: avoid; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-bear">
+    <img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="" />
+  </div>
+  <a href="/" class="topbar-brand">Process Map</a>
+  <div class="topbar-sep"></div>
+  <span class="topbar-sub">Qualified job → commissioning</span>
+  <div class="topbar-right">
+    <a href="/" class="topbar-back">← All tools</a>
+    <span class="topbar-lic">GC #14219939-5501</span>
+  </div>
+</div>
+
+<div class="ctrlbar">
+  <div class="ctrl-inner">
+    <div class="ctrl-grp">
+      <span class="ctrl-lbl">Job type</span>
+      <div class="seg" id="jt">
+        <button data-jt="nb" aria-pressed="true">New Build</button>
+        <button data-jt="add" aria-pressed="false">Addition</button>
+        <button data-jt="rem" aria-pressed="false">Remodel</button>
+        <button data-jt="spec" aria-pressed="false">Spec</button>
+      </div>
+    </div>
+    <div class="ctrl-grp">
+      <span class="ctrl-lbl">Role</span>
+      <div class="seg" id="rf">
+        <button data-rf="all" aria-pressed="true">All</button>
+        <button data-rf="J" aria-pressed="false">Mine</button>
+        <button data-rf="C" aria-pressed="false">Claude</button>
+        <button data-rf="A" aria-pressed="false">Admin</button>
+      </div>
+    </div>
+    <input id="q" type="search" placeholder="Search steps, gates, artifacts" autocomplete="off" />
+  </div>
+</div>
+
+<div class="tabbar">
+  <div class="tabs">
+    <button data-tab="flow" aria-pressed="true">Flow</button>
+    <button data-tab="loops" aria-pressed="false">Ongoing loops</button>
+    <button data-tab="co" aria-pressed="false">Change orders</button>
+  </div>
+</div>
+
+<div class="page" id="main"></div>
+
+<script>
+const ALL=['nb','add','rem','spec'], NOSPEC=['nb','add','rem'], EXIST=['add','rem'], SPEC=['spec'];
+
+const PHASES=[
+{n:1,name:'Job Qualification',desc:'Decide whether this is a job we want before spending real hours on it.',jt:ALL,
+ steps:[
+  {id:'1.1',t:'Lead intake — source, scope description, timeline, budget range',r:'A'},
+  {id:'1.2',t:'Qualification call — budget realism, decision-maker, financing, timeline',r:'J',tool:['Discovery Call','/OVB-Discovery-Call.html']},
+  {id:'1.3',t:'Site or lot visit — access, utilities, topography, setbacks',r:'J',tool:['Site Visit','/OVB-Site-Visit-Worksheet.html']},
+  {id:'1.4',t:'Create job in JobTread from the correct template',r:'C',note:'New Build / Addition / Remodel / Spec. Never build a job from scratch.'},
+  {id:'1.5',t:'Set custom fields, areas, QBO class, job number',r:'C',note:'Naming stays Client - TYPE - CITY.'},
+  {id:'1.6',t:'Existing conditions noted — age, prior work, obvious problems',r:'J',jt:EXIST}],
+ gate:{id:'G1',name:'Job Qualified',art:['Qualification summary','Site notes and photos','Job created from template with fields set'],
+  br:[['go','Proceed','plans exist or are in progress'],
+      ['','Feasibility first','no plans or unclear scope — paid precon agreement, then Phase 2'],
+      ['stop','Decline','budget unrealistic, bad fit, or outside service area. Log the reason.']],
+  tool:['Precon Agreement','/OVB-Precon-Agreement.html']}},
+
+{n:2,name:'Plan Intake & Scope',desc:'Read the plans, find what is missing, and decide whether it can be priced.',jt:ALL,
+ steps:[
+  {id:'2.1',t:'Receive and file plan set — version and date stamped',r:'A'},
+  {id:'2.2',t:'Completeness check — architectural, structural, MEP, site, specs, truss',r:'C'},
+  {id:'2.3',t:'Plan read — full takeoff and scope extraction',r:'C'},
+  {id:'2.4',t:'Trade routing — every scope item assigned to a bid package',r:'C',tool:['Scope Library','/OVB-Scope-Library.html']},
+  {id:'2.5',t:'Orphan scope report — work that falls between two trades',r:'C',note:'This is where money leaks. Nobody bids it, everybody assumes someone else did.'},
+  {id:'2.6',t:'Plan defect log — contradictions, missing dimensions, code conflicts',r:'C'},
+  {id:'2.7',t:'Unaccounted area check — every square foot assigned',r:'C'},
+  {id:'2.8',t:'RFI list drafted, then issued to architect or owner',r:'J'},
+  {id:'2.9',t:'Existing conditions survey',r:'J',jt:EXIST},
+  {id:'2.10',t:'Hazmat screen if built before 1978',r:'J',jt:EXIST}],
+ gate:{id:'G2',name:'Bid or No-Bid',art:['Scope & Gap Report','Issued RFI list'],
+  br:[['go','Bid','scope is clear enough to price'],
+      ['stop','Hold','critical RFIs unanswered — do not build a budget on assumptions'],
+      ['stop','No-bid','scope, schedule, or risk does not fit. Log the reason.']]}},
+
+{n:3,name:'Budget Build',desc:'Price it honestly, and mark clearly what is firm and what is soft.',jt:ALL,
+ steps:[
+  {id:'3.1',t:'Budget structure created from template, by area and cost code',r:'C'},
+  {id:'3.2',t:'Lines priced against historical cost library, then regional data',r:'C'},
+  {id:'3.3',t:'Every line coded: Included, Allowance, Assumption, Selection, Excluded',r:'C',note:'Scope Status field. Real allowances also carry allowanceType so they bill correctly.'},
+  {id:'3.4',t:'Assumption register — anything priced without confirmed scope',r:'C'},
+  {id:'3.5',t:'Contingency applied by job type and risk profile',r:'J'},
+  {id:'3.6',t:'Overhead and fee applied per contract type',r:'J'},
+  {id:'3.7',t:'Review and override',r:'J'},
+  {id:'3.8',t:'Preliminary schedule — duration and season check',r:'C',tool:['Rough Budget Calculator','/OVB-Rough-Budget-Calculator.html']}],
+ gate:{id:'G3',name:'Budget Complete',art:['Coded budget','Assumption register','Preliminary schedule'],
+  br:[['go','In range','proceed to bidding'],
+      ['','Over the client number','value engineering conversation before bids go out, not after'],
+      ['stop','Far over','re-scope with the client or no-bid']]}},
+
+{n:4,name:'Bid & Level',desc:'Buy the same scope from everyone so the prices actually compare.',jt:ALL,tier:true,
+ steps:[
+  {id:'4.1',t:'Written scope sheet per trade — inclusions, exclusions, responsibilities',r:'C',tool:['Scope Library','/OVB-Scope-Library.html']},
+  {id:'4.2',t:'Bid package assembled — plans, scope sheet, schedule window, terms, unit-price form',r:'C'},
+  {id:'4.3',t:'Sub selection per trade',r:'J',note:'High-risk trades run the tier bench. Standard trades get 2 to 3 bids.'},
+  {id:'4.4',t:'Bid packages issued from JobTread',r:'A'},
+  {id:'4.5',t:'Follow-up at day 3, day 7, day 10',r:'A'},
+  {id:'4.6',t:'Bids received and logged',r:'A'},
+  {id:'4.7',t:'Bid leveling — normalize to the scope sheet, flag every exclusion',r:'C'},
+  {id:'4.8',t:'Unit pricing captured for known unknowns',r:'C',note:'Excavation: rock removal, import fill, over-excavation, haul-off. Concrete: overpour, added footing depth.'},
+  {id:'4.9',t:'Budget updated with actual bid numbers',r:'C'}],
+ gate:{id:'G4',name:'Buyout Ready',art:['Bid leveling sheet per trade','Written scope sheets','Budget reflecting real bids'],
+  br:[['go','Coverage complete','proceed to proposal'],
+      ['','No responses on a trade','widen the list, self-perform, or carry an allowance and flag the risk'],
+      ['','All bids over budget','re-scope, value engineer, or reprice contingency']]}},
+
+{n:5,name:'Proposal & Contract',desc:'Put every soft spot in writing before anyone picks up a hammer.',jt:NOSPEC,
+ steps:[
+  {id:'5.1',t:'Proposal assembled — scope, allowances, selections, assumptions, exclusions',r:'C',note:'Six-section scope summary in plain language. Exclusions are narrative, never line items.'},
+  {id:'5.2',t:'Contract type confirmed — fixed price or cost-plus',r:'J'},
+  {id:'5.3',t:'Contract terms verified present',r:'J',note:'Billing cycle, net 10 client terms, suspension right, working capital deposit, markup basis, CO tiers, selections schedule, retainage.'},
+  {id:'5.4',t:'Proposal presented',r:'J',tool:['Finish Guide','/OVB-Finish-Guide.html']},
+  {id:'5.5',t:'Negotiation and revision',r:'J'},
+  {id:'5.6',t:'Contract executed, deposit received',r:'J'}],
+ gate:{id:'G5',name:'Contract Executed',hard:true,art:['Signed agreement','Deposit received and recorded in QBO'],
+  abs:'Zero preconstruction hours before this gate closes. No exceptions.',
+  br:[['go','Signed and funded','proceed to preconstruction'],
+      ['stop','Not signed','no work of any kind'],
+      ['','Lost','log the reason and the competitor price into the cost library']]}},
+
+{n:6,name:'Preconstruction',desc:'Get permitted, get decided, and publish a schedule people can build to.',jt:ALL,
+ steps:[
+  {id:'6.1',t:'Permit package assembled and submitted',r:'A',note:'Weber, Morgan, or Ogden City — each portal behaves differently.',tool:['Weber Permits','https://frontier.co.weber.ut.us/Home']},
+  {id:'6.2',t:'Engineering and truss orders released',r:'A'},
+  {id:'6.3',t:'Selections schedule built — dates backed into from the construction schedule',r:'C',tool:['Materials & Selections','/OVB-Materials-Selections.html']},
+  {id:'6.4',t:'Selections schedule signed by client',r:'J',jt:NOSPEC},
+  {id:'6.4s',t:'Internal spec sheet locked',r:'J',jt:SPEC},
+  {id:'6.5',t:'Baseline construction schedule published and approved',r:'C',tool:['JT Schedule Builder','/OVB-Schedule-Builder.html']},
+  {id:'6.6',t:'Long-lead items identified and ordered',r:'J'},
+  {id:'6.7',t:'Builders risk, temp power, dumpster, portable toilet',r:'A',tool:['Builders Risk','/OVB-Builders-Risk-Worksheet.html']},
+  {id:'6.8',t:'Lender draw schedule confirmed',r:'J',jt:SPEC}],
+ gate:{id:'G6',name:'Notice to Proceed',art:['Permit issued','Signed selections schedule or locked spec sheet','Published baseline schedule'],
+  abs:'No mobilization until all three exist.',
+  br:[['go','All three complete','mobilize'],
+      ['','Permit delayed','re-baseline the schedule, notify subs, document the impact']]}},
+
+{n:7,name:'Buyout',desc:'Nobody works on our site until all four documents are on file.',jt:ALL,
+ steps:[
+  {id:'7.1',t:'Subcontract issued with scope sheet attached as an exhibit',r:'A',tool:['Master Sub Agreement','/OVB-Master-Sub-Agreement.html']},
+  {id:'7.2',t:'Pay-when-paid and retainage clauses confirmed present',r:'J'},
+  {id:'7.3',t:'Executed subcontract returned',r:'A'},
+  {id:'7.4',t:'Current COI collected, OVB named as additional insured',r:'A',note:'Jason Call at SentryWest handles COI requests.'},
+  {id:'7.5',t:'W-9 collected',r:'A'},
+  {id:'7.6',t:'License and registration verified',r:'A',tool:['UT Sub Registry','https://secure.utah.gov/scr/']},
+  {id:'7.7',t:'Vendor record created in JobTread and QBO',r:'A'},
+  {id:'7.8',t:'PO issued against the budget line',r:'C',note:'Every line carries a jobCostItemId. No floating lines, ever.'},
+  {id:'7.9',t:'Schedule dates confirmed with the sub',r:'A'},
+  {id:'7.10',t:'Preconstruction meeting — high-risk trades only',r:'J'}],
+ gate:{id:'G7',name:'Sub Clearance',hard:true,note:'Runs once per subcontractor.',
+  art:['Executed subcontract','Current COI','W-9','PO tied to a budget line'],
+  abs:'A sub with three of four does not set foot on site. No verbal waivers, no "they will send it Monday."',
+  br:[['go','All four on file','cleared to mobilize'],
+      ['stop','Anything missing','sub does not start']]}},
+
+{n:8,name:'Construction',desc:'Run the job, and run the five loops that keep it from drifting.',jt:ALL,loops:true,
+ steps:[
+  {id:'8.1',t:'Mobilization and site setup',r:'A',note:'Blue Stakes required 2+ business days before any excavation.'},
+  {id:'8.2',t:'Weekly schedule update and three-week lookahead',r:'A'},
+  {id:'8.3',t:'Daily logs — crew, weather, deliveries, issues',r:'A'},
+  {id:'8.4',t:'Photo documentation',r:'A'},
+  {id:'8.5',t:'Inspection scheduling and results',r:'A'},
+  {id:'8.6',t:'Sub coordination and sequencing',r:'J'},
+  {id:'8.7',t:'Material deliveries and staging',r:'A'}],
+ gate:null},
+
+{n:9,name:'Closeout & Commissioning',desc:'Finish it, hand it over, and write down what it actually cost.',jt:ALL,
+ steps:[
+  {id:'9.1',t:'Substantial completion walk — punch list generated',r:'J',tool:['Closeout Tracker','/OVB-Closeout-Tracker.html']},
+  {id:'9.2',t:'Punch items assigned by sub in JobTread',r:'C'},
+  {id:'9.3',t:'Final inspections scheduled and passed',r:'A'},
+  {id:'9.4',t:'Certificate of Occupancy obtained',r:'A'}],
+ gate:{id:'G8',name:'Substantial Completion',art:['Punch list issued','Final inspections passed','Certificate of Occupancy'],
+  abs:'This triggers the retainage hold. It does not release final payment to anyone.',
+  br:[['go','Complete','continue closeout']]},
+ steps2:[
+  {id:'9.5',t:'Sub punch completion verified and signed off',r:'J'},
+  {id:'9.6',t:'Sub retainage released — only after 9.5',r:'J',note:'Retainage is the only leverage that brings a sub back for punch.'},
+  {id:'9.7',t:'Systems commissioning — HVAC, plumbing, electrical, controls',r:'J'},
+  {id:'9.8',t:'Owner walkthrough and systems orientation',r:'J',jt:NOSPEC},
+  {id:'9.9',t:'Warranty package — manuals, warranties, as-builts, sub list, final lien waivers',r:'C'},
+  {id:'9.10',t:'Final client invoice, deposit applied',r:'C'},
+  {id:'9.11',t:'Final payment collected',r:'A'},
+  {id:'9.12',t:'Warranty period start date logged',r:'A'},
+  {id:'9.13',t:'Job post-mortem — actual vs. original by cost code, cause codes, sub ratings',r:'C'},
+  {id:'9.14',t:'Sub tier promotions and demotions applied',r:'J',note:'Two clean jobs promotes. One schedule blow-up, callback, or warranty failure demotes.'},
+  {id:'9.15',t:'Historical cost library updated',r:'C',note:'This is the loop that makes the next estimate better. Skip it and the system stops compounding.'},
+  {id:'9.16',t:'Listing and sale process',r:'J',jt:SPEC}],
+ gate2:{id:'G9',name:'Job Closed',hard:true,art:['Warranty package delivered','Final invoice paid','Post-mortem written to the cost library'],
+  abs:'No job closes in JobTread without a post-mortem. Without it the cost library never improves and every future estimate stays a guess.',
+  br:[['go','Closed','feeds back into step 3.2 on the next job']]}},
+
+{n:10,name:'Warranty',desc:'Track it as its own job so it costs out against the original.',jt:ALL,
+ steps:[
+  {id:'10.1',t:'Warranty call received and logged',r:'A'},
+  {id:'10.2',t:'Triage — warranty, maintenance, or not covered',r:'J'},
+  {id:'10.3',t:'Warranty job created and referenced to the original',r:'C',note:'Named [ORIGINAL #]-W1. No-customer price type so pricing documents stay hidden.'},
+  {id:'10.4',t:'Responsible sub identified from the original PO or subcontract',r:'C'},
+  {id:'10.5',t:'Sub warranty obligation enforced, or self-perform',r:'J'},
+  {id:'10.6',t:'Resolution documented, client confirms',r:'A'},
+  {id:'10.7',t:'Cost recorded against the original job in the cost library',r:'C',note:'True job margin is not known at closeout. It is known at warranty expiration.'},
+  {id:'10.8',t:'Root cause coded — feeds sub tier ratings and estimate accuracy',r:'C'}],
+ gate:null}
+];
+
+const LOOPS=[
+{name:'Selections',when:'From Notice to Proceed until the last finish is ordered',role:'A',
+ steps:['Reminder at 14 days before the required-by date','Reminder at 7 days','Deadline missed — Selection Deadline Notice issued, 5-day clock starts','Still missed — builder selects from the allowance-priced default','Schedule and cost impact documented as a change order'],
+ note:'The contract language is what gives this teeth. Without it you are just sending nagging emails.',
+ tool:['Materials & Selections','/OVB-Materials-Selections.html']},
+{name:'Billing',when:'Bi-weekly. Cutoff on the 15th and the last day, invoices out within 48 hours',role:'A',
+ steps:['Sub invoices collected and coded to budget lines','Costs verified against POs and actual field completion','Client invoice generated per contract type','Invoice issued within 48 hours of cutoff','Collection tracked — client terms net 10','Sub payments released — sub terms net 30, retainage withheld','Conditional lien waiver collected with every payment','QBO reconciliation'],
+ note:'Client terms must be shorter than sub terms or you finance the gap every cycle. Net 10 in, net 30 out.',
+ tool:['LOC Manager','/OVB-LOC-Manager.html']},
+{name:'Variance',when:'Same bi-weekly cycle as billing — you are already touching every cost',role:'C',
+ steps:['Budget vs. actual by cost code','Any line over by 10% or $2,500, whichever is less, gets a cause code','Cause codes: estimate error, scope gap, field condition, client change, execution','Client-change codes cross-checked against issued change orders','Contingency drawdown tracked'],
+ note:'The cross-check in step four is how you catch work you did and never billed.'},
+{name:'RFI & Field Issue',when:'Whenever the drawings and the field disagree',role:'J',
+ steps:['Issue identified in the field','RFI drafted and issued','Response tracked, schedule impact assessed','Resolution documented — routes to the change order loop if there is cost']},
+{name:'Change Order',when:'See the Change Orders tab for the full tier rules',role:'J',jump:'co',
+ steps:['Three tiers depending on cost, urgency, and schedule impact']}
+];
+
+const TIERS=[
+{name:'Tier 1 — Standard',cap:'Written approval before any work begins',
+ req:['The change is discretionary, or','Cost exceeds $2,500, or','Schedule impact is 5 days or more, or','It affects the next scheduled trade or inspection in any way'],
+ note:'The schedule trigger matters as much as the dollar trigger. A $400 change that pushes an inspection cascades into every trade behind it.'},
+{name:'Tier 2 — Field Authorization',cap:'Verbal approval · under $2,500',
+ req:['Work is required to maintain schedule or comply with code','Delay would cause measurable cost','Verbal approval obtained from the client','Documented in writing the same day — email or daily log, with the time','Formal change order issued within 48 hours for signature']},
+{name:'Tier 3 — Emergency',cap:'Client unreachable · under $1,500',
+ req:['Genuine trigger: life safety, code, water intrusion, structural, or a trade on site and idle','Two documented contact attempts across two different channels','Photo documentation before, during, and after','Written notice to the client within 24 hours','Formal change order follows']}
+];
+
+let jt='nb', rf='all', tab='flow', q='', open=null;
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const applies=i=>!i.jt||i.jt.includes(jt);
+const roleOk=s=>rf==='all'||s.r===rf;
+const inQ=t=>!q||String(t).toLowerCase().indexOf(q)>-1;
+function mark(t){
+  if(!q) return esc(t);
+  const s=String(t), i=s.toLowerCase().indexOf(q);
+  if(i<0) return esc(s);
+  return esc(s.slice(0,i))+'<span class="hit">'+esc(s.slice(i,i+q.length))+'</span>'+esc(s.slice(i+q.length));
+}
+const tool=t=>`<a class="s-tool" href="${t[1]}"${t[1].startsWith('http')?' target="_blank" rel="noopener noreferrer"':''}>${esc(t[0])}</a>`;
+const sechdr=l=>`<div class="sec-hdr"><span class="sec-lbl">${esc(l)}</span><div class="sec-rule"></div></div>`;
+const jtName=()=>({nb:'new build',add:'addition',rem:'remodel',spec:'spec'})[jt];
+
+function stepHTML(s){
+  const off=!applies(s);
+  if(!off&&!roleOk(s)) return '';
+  if(q&&!inQ(s.id+' '+s.t+' '+(s.note||''))) return '';
+  return `<div class="step${off?' off':''}">
+    <div class="s-id">${esc(s.id)}</div>
+    <div><div class="s-text">${mark(s.t)}</div>${s.note?`<div class="s-note">${mark(s.note)}</div>`:''}${s.tool&&!off?tool(s.tool):''}</div>
+    <div class="role ${s.r}" title="${s.r==='J'?'Your judgment':s.r==='C'?'Claude':'Admin'}">${s.r}</div>
+  </div>`;
+}
+
+function gateBox(g){
+  if(!g) return '';
+  return `<div class="gatebox${g.hard?' hard':''}">
+    <div class="g-id">${esc(g.id)}</div><h3>${esc(g.name)}</h3>
+    ${g.note?`<div class="s-note" style="margin:-4px 0 8px">${esc(g.note)}</div>`:''}
+    ${g.art.map(a=>`<div class="chk"><i>&#9634;</i><span>${mark(a)}</span></div>`).join('')}
+    ${g.abs?`<div class="absolute">${esc(g.abs)}</div>`:''}
+    ${g.br?`<div class="branch">${g.br.map(b=>`<div class="br ${b[0]}"><b>${esc(b[1])}</b> — ${esc(b[2])}</div>`).join('')}</div>`:''}
+    ${g.tool?`<div style="margin-top:9px">${tool(g.tool)}</div>`:''}
+  </div>`;
+}
+
+function gateRow(g){
+  return `<div class="node g${g.hard?' hard':''}"><div class="gate-row${g.hard?' hard':''}">
+    <div class="g-id">${esc(g.id)}</div><div class="g-name">${esc(g.name)}</div>
+    <div class="g-art">${g.art.map(esc).join(' · ')}</div></div></div>`;
+}
+
+function spineView(){
+  let h=sechdr('Nine gates · qualified job to commissioning')+'<div class="spine">';
+  PHASES.forEach(p=>{
+    const on=applies(p);
+    const n=p.steps.concat(p.steps2||[]).filter(s=>applies(s)&&roleOk(s)).length;
+    if(rf!=='all'&&n===0) return;
+    h+=`<div class="node"><button class="phase-row${on?'':' off'}" data-p="${p.n}">
+      <div><div class="p-num">Phase ${p.n}</div><div class="p-name">${esc(p.name)}</div>
+      <div class="p-desc">${esc(p.desc)}</div></div>
+      <div class="p-count">${n} step${n===1?'':'s'}${p.loops?' · 5 loops':''}${on?'':' · n/a'}</div>
+    </button></div>`;
+    if(p.gate) h+=gateRow(p.gate);
+    if(p.gate2) h+=gateRow(p.gate2);
+  });
+  h+='</div><div class="legend">'
+   +'<b>Gates</b> are checkpoints. Work does not advance until the artifact exists.<br>'
+   +'<span class="role J">J</span><b>Yours</b> — judgment, never delegated. &nbsp; '
+   +'<span class="role C">C</span><b>Claude</b> — document in, document out. &nbsp; '
+   +'<span class="role A">A</span><b>Admin</b> — yours today, coordinator when you hire.<br>'
+   +'Tap any phase for steps, branches, and the gate checklist.</div>';
+  return h;
+}
+
+function detailView(n){
+  const p=PHASES.find(x=>x.n===n);
+  let h=`<button class="back" data-back>← All phases</button>
+    <div class="dhead"><div class="p-num">Phase ${p.n}</div><h2>${esc(p.name)}</h2><p>${esc(p.desc)}</p></div>`;
+  if(!applies(p)) h+=`<div class="note">Not used on ${jtName()} jobs.</div>`;
+  h+='<div class="steps">'+p.steps.map(stepHTML).join('')+'</div>';
+  if(p.tier) h+=`<div class="note accent"><b>High-risk trade bench.</b> Excavation, concrete, framing, plumbing, electrical, HVAC — bought on reliability, not price.<br><br>
+    <b>Excavation:</b> A — Rockstructures · B — Dig Daddy · C — Silverstone<br><br>
+    <b>A available in the window?</b> Single-source it and negotiate to unit pricing.<br>
+    <b>A unavailable?</b> Go to B, and still get A's price for comparison.<br>
+    <b>Only C available?</b> Re-baseline the schedule and add contingency. C is a different risk profile, not just a different price.</div>`;
+  h+=gateBox(p.gate);
+  if(p.steps2) h+='<div class="steps" style="margin-top:16px">'+p.steps2.map(stepHTML).join('')+'</div>';
+  h+=gateBox(p.gate2);
+  if(p.loops) h+=`<div class="note"><b>Five loops run continuously through this phase.</b> They are not steps you finish — they are cycles you maintain until closeout. See the Ongoing loops tab.</div>`;
+  return h;
+}
+
+function loopsView(){
+  let h=`<div class="dhead"><h2>Ongoing loops</h2><p>These run continuously during construction. They do not complete — they cycle until closeout.</p></div>`;
+  let any=false;
+  LOOPS.forEach(l=>{
+    if(rf!=='all'&&l.role!==rf) return;
+    if(q&&!inQ(l.name+' '+l.when+' '+l.steps.join(' ')+' '+(l.note||''))) return;
+    any=true;
+    h+=`<details class="loop"${q?' open':''}><summary>
+      <div><div class="l-name">${mark(l.name)}</div><div class="l-when">${esc(l.when)}</div></div>
+      <div class="role ${l.role}">${l.role}</div></summary>
+      <div class="l-body"><div class="steps">${l.steps.map((s,i)=>`<div class="step"><div class="s-id">${i+1}</div><div><div class="s-text">${mark(s)}</div></div><div></div></div>`).join('')}</div>
+      ${l.note?`<div class="note">${mark(l.note)}</div>`:''}
+      ${l.tool?`<div style="margin-top:9px">${tool(l.tool)}</div>`:''}
+      ${l.jump?`<div style="margin-top:9px"><button class="s-tool" data-jump="co">Open tier rules</button></div>`:''}
+      </div></details>`;
+  });
+  return any?h:h+'<div class="empty">Nothing matches that filter</div>';
+}
+
+function coView(){
+  let h=`<div class="dhead"><h2>Change orders</h2><p>The highest-frequency money leak on a cost-plus job. Which tier applies is decided before the work happens, not after.</p></div>`;
+  TIERS.forEach(t=>{
+    if(q&&!inQ(t.name+' '+t.cap+' '+t.req.join(' ')+' '+(t.note||''))) return;
+    h+=`<div class="tier"><h4>${mark(t.name)}</h4><div class="cap">${esc(t.cap)}</div>
+      <ul>${t.req.map(r=>`<li>${mark(r)}</li>`).join('')}</ul>
+      ${t.note?`<div class="s-note" style="margin-top:8px">${mark(t.note)}</div>`:''}</div>`;
+  });
+  h+=`<div class="gatebox hard"><h3>Rules that apply to every tier</h3>
+    <div class="chk"><i>&#9634;</i><span>Aggregate cap — Tier 2 and Tier 3 combined may not exceed 2% of contract value</span></div>
+    <div class="chk"><i>&#9634;</i><span>Nothing is billed until a signed change order record exists in JobTread</span></div>
+    <div class="chk"><i>&#9634;</i><span>Every change order line ties to a budget line item</span></div>
+    <div class="absolute">Pending signature audit — if more than two change orders await signature, or any is older than seven days, stop issuing Tier 2 and Tier 3 authorizations until they clear. That backlog is how the process gets abused.</div></div>
+    <div class="note"><b>Why Tier 2 and 3 exist.</b> A rigid written-only policy costs real money — a framing crew standing idle while an email gets answered is worse than the exposure. The tiers keep the flexibility and put a fence around it. They defer the signature. They never eliminate it.</div>`;
+  return h;
+}
+
+function render(){
+  const m=document.getElementById('main');
+  m.innerHTML = tab==='loops'?loopsView() : tab==='co'?coView() : (open?detailView(open):spineView());
+  window.scrollTo(0,0);
+}
+
+function press(scope,el){ scope.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false')); el.setAttribute('aria-pressed','true'); }
+
+document.addEventListener('click',e=>{
+  const p=e.target.closest('[data-p]');   if(p){ open=+p.dataset.p; render(); return; }
+  if(e.target.closest('[data-back]')){ open=null; render(); return; }
+  const j=e.target.closest('[data-jt]'); if(j){ jt=j.dataset.jt; press(document.getElementById('jt'),j); render(); return; }
+  const r=e.target.closest('[data-rf]'); if(r){ rf=r.dataset.rf; press(document.getElementById('rf'),r); render(); return; }
+  const t=e.target.closest('[data-tab]');if(t){ tab=t.dataset.tab; open=null; press(document.querySelector('.tabs'),t); render(); return; }
+  const u=e.target.closest('[data-jump]');
+  if(u){ tab=u.dataset.jump; open=null;
+    document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===tab)));
+    render(); }
+});
+
+document.getElementById('q').addEventListener('input',e=>{
+  q=e.target.value.trim().toLowerCase();
+  if(q&&tab==='flow') open=null;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
