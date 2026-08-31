@@ -196,6 +196,8 @@
       -webkit-tap-highlight-color: transparent;
     }
     .tool-row:hover { border-color: var(--tan-m); background: var(--card2); }
+    .tool-row.primary { border-color: var(--tan-m); }
+    .tool-row.primary:hover { border-color: var(--tan); }
     .tool-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
     .dot-live { background: var(--green); box-shadow: 0 0 4px rgba(76,175,132,0.35); }
     .dot-ext  { background: rgba(242,239,232,0.1); }
@@ -269,6 +271,10 @@
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
     </symbol>
+    <symbol id="ico-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"/>
+      <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -308,6 +314,21 @@
 
     <!-- ══ LEFT COLUMN ══ -->
     <div class="col">
+
+      <!-- Process -->
+      <div class="sec">
+        <div class="sec-hdr"><span class="sec-lbl">Process</span><div class="sec-rule"></div></div>
+        <div class="tool-list">
+          <a class="tool-row primary" href="/OVB-Process-Map.html">
+            <div class="tool-dot dot-live"></div>
+            <div class="tool-body">
+              <span class="tool-name">Process Map</span>
+              <span class="tool-trigger">When: Any project · what happens next and what closes the gate</span>
+            </div>
+            <span class="tool-badge badge-live">Live</span>
+          </a>
+        </div>
+      </div>
 
       <!-- Lead → Close -->
       <div class="sec">
@@ -603,6 +624,27 @@
 </div><!-- /page -->
 
 <script>
+  /* ══════════════════════════════════════════════════════════════
+     LIVE STRIP CONFIGURATION
+
+     LIVE_ENDPOINT must point at a server-side proxy that holds the
+     API key. Calling api.anthropic.com directly from this page will
+     fail: the browser sends no credentials, and CORS blocks it.
+
+     Putting a key in this file would expose it to anyone who views
+     source — never do that on a public page.
+
+     Until a proxy exists, leave LIVE_ENDPOINT as null. The strip
+     hides itself cleanly instead of showing a permanent error.
+
+     To enable: deploy a Cloudflare Worker / Netlify Function that
+     holds ANTHROPIC_API_KEY and the JobTread grant key, forwards the
+     request body below, and returns the JSON response. Then set
+     LIVE_ENDPOINT to that URL.
+     ══════════════════════════════════════════════════════════════ */
+  var LIVE_ENDPOINT = null;              // e.g. '/api/jobtread-live'
+  var LIVE_MODEL    = 'claude-sonnet-5'; // current model ID
+
   /* ── Clock ── */
   function updateClock() {
     var now = new Date();
@@ -626,14 +668,22 @@
   /* ── JobTread Live Strip ── */
   async function loadLiveStrip() {
     var container = document.getElementById('live-content');
+
+    /* No proxy configured — hide the strip rather than show a broken state. */
+    if (!LIVE_ENDPOINT) {
+      var strip = document.querySelector('.live-strip');
+      if (strip) strip.style.display = 'none';
+      return;
+    }
+
     try {
-      var res = await fetch('https://api.anthropic.com/v1/messages', {
+      var res = await fetch(LIVE_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: LIVE_MODEL,
           max_tokens: 1000,
-          mcp_servers: [{ type: 'url', url: 'https://api.jobtread.com/mcp?', name: 'jobtread' }],
+          mcp_servers: [{ type: 'url', url: 'https://api.jobtread.com/mcp', name: 'jobtread' }],
           messages: [{
             role: 'user',
             content: 'Query JobTread for: (1) all active jobs — return name and updatedDate, (2) all open/pending estimates — return name and totalAmount. Return ONLY a valid JSON object, no markdown, no explanation. Format: {"projects":[{"name":"...","updated":"..."}],"estimates":[{"name":"...","amount":0}]}'
@@ -641,23 +691,19 @@
         })
       });
 
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       var data = await res.json();
 
-      /* Extract JSON from response */
+      /* Collect text from every block type, not by position */
       var raw = '';
-      if (data.content) {
-        for (var i = 0; i < data.content.length; i++) {
-          if (data.content[i].type === 'text') { raw += data.content[i].text; }
-          if (data.content[i].type === 'mcp_tool_result') {
-            var tc = data.content[i].content;
-            if (tc && tc[0] && tc[0].text) raw += tc[0].text;
-          }
+      (data.content || []).forEach(function (block) {
+        if (block.type === 'text') raw += block.text;
+        if (block.type === 'mcp_tool_result' && block.content && block.content[0] && block.content[0].text) {
+          raw += block.content[0].text;
         }
-      }
+      });
 
-      /* Strip markdown fences if present */
       raw = raw.replace(/```json|```/g, '').trim();
-      /* Find the JSON object */
       var match = raw.match(/\{[\s\S]*\}/);
       if (!match) throw new Error('no json');
       var parsed = JSON.parse(match[0]);
@@ -673,7 +719,7 @@
 
       var html = '<div class="live-cards">';
 
-      projects.forEach(function(p) {
+      projects.forEach(function (p) {
         var updated = p.updated ? new Date(p.updated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : '';
         html += '<a class="live-card" href="javascript:void(0)" onclick="openApp(\'jobtread://\', \'https://app.jobtread.com\')">'
           + '<span class="live-card-type">Active Project</span>'
@@ -682,7 +728,7 @@
           + '</a>';
       });
 
-      estimates.forEach(function(e) {
+      estimates.forEach(function (e) {
         var amt = e.amount ? '$' + Number(e.amount).toLocaleString() : '';
         html += '<a class="live-card estimate" href="javascript:void(0)" onclick="openApp(\'jobtread://\', \'https://app.jobtread.com\')">'
           + '<span class="live-card-type">Open Estimate</span>'
@@ -698,7 +744,7 @@
     } catch (err) {
       container.className = 'live-error';
       container.textContent = '⚠ Could not load JobTread data — tap to retry';
-      container.onclick = function() {
+      container.onclick = function () {
         container.className = 'live-skeleton';
         container.innerHTML = '<div class="skel-card"></div><div class="skel-card"></div><div class="skel-card"></div>';
         container.onclick = null;
