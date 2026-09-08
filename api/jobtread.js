@@ -2,34 +2,91 @@
 // Deploy at /api/jobtread.js in repo root.
 // Set JOBTREAD_GRANT_KEY in Vercel -> Settings -> Environment Variables.
 
+// Only these origins may call this proxy. Anything else gets a 403.
+var ALLOWED_ORIGINS = [
+  'https://tools.ogdenvalleybuilders.com',
+  'https://www.ogdenvalleybuilders.com',
+  'https://ogdenvalleybuilders.com',
+  'http://localhost:3000',
+];
+
+// Read operations are safe. Write operations change data in JobTread and
+// require the WRITE_TOKEN header on top of the origin check.
+var READ_OPS = {
+  getOrgInfo: 1, getContact: 1, discoverFields: 1,
+  discoverLocationFields: 1, discoverJobFields: 1,
+  dashboard: 1, activeJobs: 1, pipeline: 1, receivables: 1, payables: 1,
+};
+var WRITE_OPS = { createCustomer: 1, updateJobSiteVisit: 1 };
+
+function resolveOrigin(req) {
+  var origin = req.headers.origin || '';
+  if (ALLOWED_ORIGINS.indexOf(origin) !== -1) return origin;
+  // Vercel preview deployments
+  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin)) return origin;
+  return null;
+}
+
 module.exports = async function handler(req, res) {
+  var allowed = resolveOrigin(req);
+
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (!allowed) return res.status(403).end();
+    res.setHeader('Access-Control-Allow-Origin', allowed);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-OVB-Write-Token');
+    res.setHeader('Vary', 'Origin');
     return res.status(200).end();
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Same-origin calls from the tools site send no Origin header. Browser calls
+  // from anywhere else do, and must be on the list.
+  if (req.headers.origin && !allowed) {
+    return res.status(403).json({ error: 'Origin not allowed' });
+  }
 
   const grantKey = process.env.JOBTREAD_GRANT_KEY;
   if (!grantKey) return res.status(500).json({ error: 'JOBTREAD_GRANT_KEY not set in Vercel env vars' });
 
   const { operation, params = {} } = req.body || {};
   if (!operation) return res.status(400).json({ error: 'Missing operation' });
+  if (!READ_OPS[operation] && !WRITE_OPS[operation]) {
+    return res.status(400).json({ error: 'Unknown operation: ' + operation });
+  }
+
+  // Writes need a shared secret. Set OVB_WRITE_TOKEN in Vercel and send it as
+  // the X-OVB-Write-Token header from any tool that creates or updates records.
+  if (WRITE_OPS[operation]) {
+    var expected = process.env.OVB_WRITE_TOKEN;
+    if (expected && req.headers['x-ovb-write-token'] !== expected) {
+      return res.status(403).json({ error: 'Write token missing or invalid' });
+    }
+  }
 
   try {
     let result;
     switch (operation) {
-      case 'createCustomer':      result = await createCustomer(grantKey, params);      break;
-      case 'getOrgInfo':          result = await getOrgInfo(grantKey);                   break;
-      case 'getContact':          result = await getContact(grantKey, params);           break;
-      case 'updateJobSiteVisit':      result = await updateJobSiteVisit(grantKey, params);      break;
+      // ── reads ──
+      case 'dashboard':               result = await dashboard(grantKey, params);                break;
+      case 'activeJobs':              result = await activeJobs(grantKey, params);               break;
+      case 'pipeline':                result = await pipeline(grantKey, params);                 break;
+      case 'receivables':             result = await receivables(grantKey, params);              break;
+      case 'payables':                result = await payables(grantKey, params);                 break;
+      case 'getOrgInfo':              result = await getOrgInfo(grantKey);                       break;
+      case 'getContact':              result = await getContact(grantKey, params);               break;
       case 'discoverFields':          result = await discoverFields(grantKey);                   break;
-      case 'discoverLocationFields':  result = await discoverLocationFields(grantKey, params);  break;
+      case 'discoverLocationFields':  result = await discoverLocationFields(grantKey, params);   break;
       case 'discoverJobFields':       result = await discoverJobFields(grantKey, params);        break;
-      default: return res.status(400).json({ error: 'Unknown operation: ' + operation });
+      // ── writes ──
+      case 'createCustomer':          result = await createCustomer(grantKey, params);           break;
+      case 'updateJobSiteVisit':      result = await updateJobSiteVisit(grantKey, params);       break;
     }
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (allowed) {
+      res.setHeader('Access-Control-Allow-Origin', allowed);
+      res.setHeader('Vary', 'Origin');
+    }
+    res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json(result);
   } catch (err) {
     console.error('[jobtread proxy] ' + operation + ' error:', err.message);
@@ -574,4 +631,234 @@ async function getContact(grantKey, params) {
       },
     },
   });
+}
+
+// ─── Dashboard read operations ────────────────────────────────────────────────
+// Job Status custom field: 22P93aBUAE5W
+// Values in use: Pending Site Visit · Estimating · Contract Pending ·
+//                Construction - In Progress · Commissioning · On Hold ·
+//                Lost · Cancelled
+
+var JOB_STATUS_FIELD = '22P93aBUAE5W';
+var BUILD_STATUSES    = ['Construction - In Progress', 'Commissioning'];
+var PIPELINE_STATUSES = ['Pending Site Visit', 'Estimating', 'Contract Pending'];
+
+// Jobs whose name matches this are excluded from every dashboard read.
+var EXCLUDE_NAME = /^(ZZ|TEST|PRACTICE)/i;
+
+function unwrap(data, key) {
+  return (data && data.query && data.query[key]) || (data && data[key]) || null;
+}
+
+function statusOf(node) {
+  var n = node && node.customFieldValues && node.customFieldValues.nodes;
+  return (n && n.length && n[0].value) || null;
+}
+
+function round2(n) {
+  return typeof n === 'number' ? Math.round(n * 100) / 100 : n;
+}
+
+// Pull open jobs once, tagged with status, so callers can slice them.
+async function fetchJobsByStatus(grantKey, statuses, size) {
+  var org = await getOrgInfo(grantKey);
+  var data = await pave(grantKey, {
+    organization: {
+      $: { id: org.id },
+      jobs: {
+        $: { where: ['closedOn', null], size: size || 100 },
+        nodes: {
+          id: {}, number: {}, name: {}, priceType: {}, createdAt: {},
+          projectedPriceWithTax: {}, actualCost: {},
+          taskSummary: { progress: {}, endDate: {}, startDate: {} },
+          location: { formattedAddress: {} },
+          customFieldValues: {
+            $: { where: [['customField', 'id'], JOB_STATUS_FIELD], size: 1 },
+            nodes: { value: {} },
+          },
+        },
+      },
+    },
+  });
+
+  var nodes = (unwrap(data, 'organization') || {}).jobs;
+  nodes = (nodes && nodes.nodes) || [];
+
+  return nodes
+    .filter(function (j) { return !EXCLUDE_NAME.test(j.name || ''); })
+    .map(function (j) {
+      var price = j.projectedPriceWithTax;
+      var cost  = j.actualCost;
+      return {
+        id: j.id,
+        number: j.number,
+        name: j.name,
+        status: statusOf(j),
+        priceType: j.priceType,
+        projectedPrice: round2(price),
+        actualCost: round2(cost),
+        percentSpent: (price && cost) ? Math.round((cost / price) * 100) : null,
+        progress: j.taskSummary && typeof j.taskSummary.progress === 'number'
+          ? Math.round(j.taskSummary.progress * 100) : null,
+        endDate: j.taskSummary && j.taskSummary.endDate,
+        address: j.location && j.location.formattedAddress,
+        createdAt: j.createdAt,
+        url: 'https://app.jobtread.com/jobs/' + j.id,
+      };
+    })
+    .filter(function (j) { return !statuses || statuses.indexOf(j.status) !== -1; });
+}
+
+// Jobs actually under construction or in commissioning.
+async function activeJobs(grantKey) {
+  var jobs = await fetchJobsByStatus(grantKey, BUILD_STATUSES);
+  jobs.sort(function (a, b) { return (b.progress || 0) - (a.progress || 0); });
+  return { count: jobs.length, jobs: jobs };
+}
+
+// Leads and estimates still in play. Excludes On Hold, Lost, Cancelled.
+async function pipeline(grantKey) {
+  var jobs = await fetchJobsByStatus(grantKey, PIPELINE_STATUSES);
+  jobs.sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); });
+  return { count: jobs.length, jobs: jobs };
+}
+
+// Unpaid customer invoices. NOTE: reflects JobTread only — a payment recorded
+// in QuickBooks but not in JT will still show as open here.
+async function receivables(grantKey) {
+  var org = await getOrgInfo(grantKey);
+  var today = new Date().toISOString().slice(0, 10);
+  var data = await pave(grantKey, {
+    organization: {
+      $: { id: org.id },
+      documents: {
+        $: {
+          where: { and: [['type', 'customerInvoice'], ['balance', '!=', 0]] },
+          size: 50,
+          sortBy: [{ field: 'dueDate', order: 'asc' }],
+        },
+        count: {},
+        sum: { $: 'balance' },
+        nodes: {
+          id: {}, fullName: {}, status: {}, issueDate: {}, dueDate: {},
+          priceWithTax: {}, amountPaid: {}, balance: {},
+          job: { number: {}, name: {} },
+        },
+      },
+    },
+  });
+
+  var docs = (unwrap(data, 'organization') || {}).documents || {};
+  var nodes = (docs.nodes || []).map(function (d) {
+    var overdue = d.dueDate && d.dueDate < today;
+    return {
+      id: d.id,
+      name: d.fullName,
+      status: d.status,
+      jobNumber: d.job && d.job.number,
+      jobName: d.job && d.job.name,
+      issueDate: d.issueDate,
+      dueDate: d.dueDate,
+      balance: round2(d.balance),
+      overdue: !!overdue,
+      daysOverdue: overdue
+        ? Math.round((new Date(today) - new Date(d.dueDate)) / 86400000) : 0,
+      url: 'https://app.jobtread.com/documents/' + d.id,
+    };
+  });
+
+  return {
+    count: docs.count || nodes.length,
+    total: round2(docs.sum || 0),
+    overdueTotal: round2(nodes.reduce(function (s, d) { return s + (d.overdue ? d.balance : 0); }, 0)),
+    invoices: nodes,
+  };
+}
+
+// Unpaid vendor bills. Same JobTread-only caveat as receivables.
+async function payables(grantKey) {
+  var org = await getOrgInfo(grantKey);
+  var today = new Date().toISOString().slice(0, 10);
+  var data = await pave(grantKey, {
+    organization: {
+      $: { id: org.id },
+      documents: {
+        $: {
+          where: { and: [['type', 'vendorBill'], ['balance', '!=', 0]] },
+          size: 50,
+          sortBy: [{ field: 'dueDate', order: 'asc' }],
+        },
+        count: {},
+        sum: { $: 'balance' },
+        nodes: {
+          id: {}, fullName: {}, status: {}, dueDate: {}, balance: {},
+          toName: {}, job: { number: {}, name: {} },
+        },
+      },
+    },
+  });
+
+  var docs = (unwrap(data, 'organization') || {}).documents || {};
+  var nodes = (docs.nodes || []).map(function (d) {
+    var overdue = d.dueDate && d.dueDate < today;
+    return {
+      id: d.id,
+      name: d.fullName,
+      vendor: d.toName,
+      status: d.status,
+      jobNumber: d.job && d.job.number,
+      dueDate: d.dueDate,
+      balance: round2(d.balance),
+      overdue: !!overdue,
+      url: 'https://app.jobtread.com/documents/' + d.id,
+    };
+  });
+
+  return {
+    count: docs.count || nodes.length,
+    total: round2(docs.sum || 0),
+    overdueTotal: round2(nodes.reduce(function (s, d) { return s + (d.overdue ? d.balance : 0); }, 0)),
+    bills: nodes,
+  };
+}
+
+// One call for the whole dashboard. Each section fails independently so a
+// single bad query cannot blank the page.
+async function dashboard(grantKey) {
+  var out = { generatedAt: new Date().toISOString(), errors: {} };
+
+  var all = [];
+  try {
+    all = await fetchJobsByStatus(grantKey, null);
+  } catch (err) {
+    out.errors.jobs = err.message;
+  }
+
+  var build = all.filter(function (j) { return BUILD_STATUSES.indexOf(j.status) !== -1; });
+  var leads = all.filter(function (j) { return PIPELINE_STATUSES.indexOf(j.status) !== -1; });
+  var held  = all.filter(function (j) { return j.status === 'On Hold'; });
+
+  build.sort(function (a, b) { return (b.progress || 0) - (a.progress || 0); });
+  leads.sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); });
+
+  out.activeJobs = { count: build.length, jobs: build };
+  out.pipeline   = { count: leads.length, jobs: leads };
+  out.onHold     = { count: held.length, jobs: held };
+
+  out.backlog = round2(build.reduce(function (s, j) {
+    return s + ((j.projectedPrice || 0) - (j.actualCost || 0));
+  }, 0));
+
+  try { out.receivables = await receivables(grantKey); }
+  catch (err) { out.errors.receivables = err.message; }
+
+  try { out.payables = await payables(grantKey); }
+  catch (err) { out.errors.payables = err.message; }
+
+  if (out.receivables && out.payables) {
+    out.netPosition = round2(out.receivables.total - out.payables.total);
+  }
+
+  if (!Object.keys(out.errors).length) delete out.errors;
+  return out;
 }
