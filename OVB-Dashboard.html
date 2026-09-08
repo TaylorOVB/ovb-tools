@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OVB Dashboard" />
+  <meta name="theme-color" content="#141210" />
+  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" />
+  <title>OVB Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #141210;
+      --surface: #1A1816;
+      --card:    #1E1C1A;
+      --card2:   #252220;
+      --tan:     #C7AA8B;
+      --tan-d:   rgba(199,170,139,0.07);
+      --tan-m:   rgba(199,170,139,0.18);
+      --border:  rgba(199,170,139,0.08);
+      --border2: rgba(199,170,139,0.16);
+      --smoke:   #F2EFE8;
+      --muted:   rgba(242,239,232,0.38);
+      --faint:   rgba(242,239,232,0.16);
+      --green:   #4CAF84;
+      --amber:   #D4A847;
+      --red:     #C9614F;
+      --mono:    'DM Mono', monospace;
+      --sans:    'DM Sans', sans-serif;
+      --r:       4px;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--smoke);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; gap: 10px;
+      padding: max(10px, env(safe-area-inset-top)) 20px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .topbar-bear { width: 22px; height: 22px; flex-shrink: 0; }
+    .topbar-bear img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
+    .topbar-brand { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); white-space: nowrap; }
+    .topbar-sep { width: 1px; height: 12px; background: var(--border2); flex-shrink: 0; }
+    .topbar-sub { font-family: var(--mono); font-size: 8px; color: var(--muted); letter-spacing: 0.03em; white-space: nowrap; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+    .topbar-clock { font-family: var(--mono); font-size: 8px; color: rgba(199,170,139,0.35); white-space: nowrap; }
+    .topbar-link { font-family: var(--mono); font-size: 8.5px; color: var(--tan); text-decoration: none; opacity: 0.6; white-space: nowrap; }
+    .topbar-link:hover { opacity: 1; }
+    .refresh-btn {
+      font-family: var(--mono); font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--tan); background: transparent; border: 1px solid var(--border2);
+      border-radius: var(--r); padding: 4px 9px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .refresh-btn:hover { background: var(--tan-d); border-color: var(--tan); }
+    .refresh-btn[disabled] { opacity: 0.4; cursor: default; }
+    @media (max-width: 620px) { .topbar-sub, .topbar-sep, .topbar-clock { display: none; } }
+
+    /* ── Quick links strip ── */
+    .links { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; }
+    .links-inner { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0; scrollbar-width: none; }
+    .links-inner::-webkit-scrollbar { display: none; }
+    .qlink {
+      font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; white-space: nowrap;
+      padding: 5px 11px; border: 1px solid var(--border); border-radius: var(--r); background: var(--card);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .qlink:hover { color: var(--tan); border-color: var(--tan-m); background: var(--card2); }
+
+    /* ── Page ── */
+    .page { max-width: 1400px; margin: 0 auto; padding: 18px 20px max(28px, env(safe-area-inset-bottom)); }
+    .banner {
+      font-family: var(--mono); font-size: 9px; line-height: 1.6; color: var(--amber);
+      border: 1px solid rgba(212,168,71,0.2); background: rgba(212,168,71,0.05);
+      border-radius: var(--r); padding: 9px 12px; margin-bottom: 14px;
+    }
+    .banner[hidden] { display: none; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; align-items: start; }
+    @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 720px)  { .grid { grid-template-columns: 1fr; } }
+
+    .col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 13px 15px;
+    }
+    .card-hdr { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+    .card-title { font-family: var(--mono); font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(199,170,139,0.5); }
+    .card-meta { font-family: var(--mono); font-size: 8px; color: var(--faint); }
+
+    .row { border-top: 1px solid var(--border); padding: 10px 0; display: block; text-decoration: none; color: inherit; }
+    .row:first-of-type { border-top: none; }
+    a.row:hover { background: var(--card2); margin: 0 -15px; padding-left: 15px; padding-right: 15px; }
+    .row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .row-name { font-size: 12.5px; font-weight: 600; color: var(--smoke); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .row-val { font-family: var(--mono); font-size: 11px; color: var(--smoke); white-space: nowrap; flex-shrink: 0; }
+    .row-sub { font-family: var(--mono); font-size: 8.5px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+    .flag-red   { color: var(--red); }
+    .flag-amber { color: var(--amber); }
+    .flag-green { color: var(--green); }
+
+    .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+    .d-red { background: var(--red); } .d-amber { background: var(--amber); } .d-green { background: var(--green); } .d-mute { background: rgba(242,239,232,0.2); }
+
+    .metrics { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 8px; }
+    .metric { background: var(--surface); border-radius: var(--r); padding: 9px 11px; }
+    .metric-lbl { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+    .metric-val { font-family: var(--mono); font-size: 15px; margin-top: 3px; color: var(--smoke); }
+
+    .bar-track { height: 3px; background: rgba(242,239,232,0.06); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--tan); border-radius: 2px; }
+    .bar-fill.over { background: var(--red); }
+
+    .empty { font-family: var(--mono); font-size: 9px; color: var(--faint); padding: 12px 0; }
+    .skel { height: 14px; background: var(--card2); border-radius: 3px; margin: 11px 0; animation: sh 1.6s ease-in-out infinite; }
+    @keyframes sh { 0%,100% { opacity: 0.35; } 50% { opacity: 0.7; } }
+    .err { font-family: var(--mono); font-size: 9px; color: var(--red); line-height: 1.6; padding: 10px 0; }
+
+    .pill { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--r); white-space: nowrap; }
+    .p-build { background: rgba(76,175,132,0.08); color: var(--green); border: 1px solid rgba(76,175,132,0.16); }
+    .p-comm  { background: rgba(199,170,139,0.06); color: var(--tan); border: 1px solid var(--border2); }
+    .p-est   { background: rgba(212,168,71,0.07); color: var(--amber); border: 1px solid rgba(212,168,71,0.16); }
+    .p-mute  { background: rgba(242,239,232,0.03); color: var(--muted); border: 1px solid rgba(242,239,232,0.07); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-bear"><img src="https://cdn.prod.website-files.com/680c4e282fbc1c583a3a7cc2/69a4a9e940d2f6303215cd3e_OVBear%20(1).png" alt="" /></div>
+  <span class="topbar-brand">Dashboard</span>
+  <div class="topbar-sep"></div>
+  <span class="topbar-sub" id="today"></span>
+  <div class="topbar-right">
+    <span class="topbar-clock" id="clock"></span>
+    <a class="topbar-link" href="/index.html">Tools</a>
+    <button class="refresh-btn" id="refresh">Refresh</button>
+  </div>
+</div>
+
+<div class="links">
+  <div class="links-inner">
+    <a class="qlink" href="https://app.jobtread.com" target="_blank" rel="noopener">JobTread</a>
+    <a class="qlink" href="https://mail.google.com" target="_blank" rel="noopener">Gmail</a>
+    <a class="qlink" href="https://calendar.google.com" target="_blank" rel="noopener">Calendar</a>
+    <a class="qlink" href="https://app.qbo.intuit.com" target="_blank" rel="noopener">QuickBooks</a>
+    <a class="qlink" href="https://drive.google.com" target="_blank" rel="noopener">Drive</a>
+    <a class="qlink" href="/OVB-LOC-Manager.html">LOC</a>
+    <a class="qlink" href="/OVB-Process-Map.html">Process</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="banner" id="banner" hidden></div>
+
+  <div class="grid">
+
+    <div class="col">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Needs you</span><span class="card-meta" id="needs-count"></span></div>
+        <div id="needs"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Active jobs</span><span class="card-meta" id="jobs-count"></span></div>
+        <div id="jobs"><div class="skel"></div><div class="skel"></div></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Money</span><span class="card-meta">JobTread</span></div>
+        <div class="metrics" id="metrics">
+          <div class="metric"><div class="metric-lbl">Owed to you</div><div class="metric-val" id="m-ar">—</div></div>
+          <div class="metric"><div class="metric-lbl">You owe</div><div class="metric-val" id="m-ap">—</div></div>
+          <div class="metric"><div class="metric-lbl">Backlog left</div><div class="metric-val" id="m-backlog">—</div></div>
+          <div class="metric"><div class="metric-lbl">Net position</div><div class="metric-val" id="m-net">—</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Bills due</span><span class="card-meta" id="ap-count"></span></div>
+        <div id="payables"><div class="skel"></div><div class="skel"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Invoices out</span><span class="card-meta" id="ar-count"></span></div>
+        <div id="receivables"><div class="skel"></div></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Pipeline</span><span class="card-meta" id="pipe-count"></span></div>
+        <div id="pipeline"><div class="skel"></div><div class="skel"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Goals</span><span class="card-meta" id="goals-meta"></span></div>
+        <div id="goals"><div class="skel"></div><div class="skel"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">On hold</span><span class="card-meta" id="hold-count"></span></div>
+        <div id="onhold"><div class="skel"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* ════════════════════════════════════════════════════════════════
+     CONFIG
+
+     API — the JobTread proxy in this repo at api/jobtread.js.
+     If your deploy serves it at /api/jobtread.js, change API below.
+
+     GOALS_CSV — a Google Sheet published to the web as CSV.
+     In the sheet: File > Share > Publish to web > pick the tab >
+     Comma-separated values (.csv) > Publish. Paste the URL here.
+     Leave null and the Goals card explains how to turn it on.
+
+     Expected columns (header row required, order does not matter):
+       Item | Target date | Status | Next step | Waiting on
+     ════════════════════════════════════════════════════════════════ */
+  var API = '/api/jobtread';
+  var GOALS_CSV = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  };
+  var money = function (n) {
+    if (typeof n !== 'number' || !isFinite(n)) return '—';
+    var neg = n < 0, a = Math.abs(n);
+    var s = a >= 10000 ? '$' + Math.round(a / 1000) + 'k'
+                       : '$' + Math.round(a).toLocaleString();
+    return (neg ? '-' : '') + s;
+  };
+  var todayISO = function () { return new Date().toISOString().slice(0, 10); };
+  var daysBetween = function (a, b) { return Math.round((new Date(a) - new Date(b)) / 86400000); };
+
+  function clock() {
+    var now = new Date();
+    $('clock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    $('today').textContent = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+  }
+  clock(); setInterval(clock, 30000);
+
+  function render(id, html, emptyMsg) {
+    $(id).innerHTML = html || '<div class="empty">' + esc(emptyMsg || 'Nothing here') + '</div>';
+  }
+  function fail(id, msg) {
+    $(id).innerHTML = '<div class="err">' + esc(msg) + '</div>';
+  }
+
+  /* ── Needs you: derived from the data, not a separate list ── */
+  function buildNeeds(d) {
+    var items = [], today = todayISO();
+
+    (d.payables && d.payables.bills || []).forEach(function (b) {
+      if (!b.overdue) return;
+      items.push({
+        sev: 2,
+        name: (b.vendor || b.name) + (b.jobNumber ? ' · ' + b.jobNumber : ''),
+        sub: 'Bill past due ' + daysBetween(today, b.dueDate) + ' days · ' + money(b.balance),
+        url: b.url,
+      });
+    });
+
+    (d.receivables && d.receivables.invoices || []).forEach(function (v) {
+      if (!v.overdue) return;
+      items.push({
+        sev: 2,
+        name: (v.jobName || v.name),
+        sub: 'Invoice unpaid ' + v.daysOverdue + ' days · ' + money(v.balance),
+        url: v.url,
+      });
+    });
+
+    (d.activeJobs && d.activeJobs.jobs || []).forEach(function (j) {
+      if (j.progress === 100 && j.status === 'Construction - In Progress') {
+        items.push({ sev: 1, name: j.name, sub: 'Schedule complete — move to commissioning or bill it', url: j.url });
+      }
+      if (j.percentSpent != null && j.percentSpent > 100) {
+        items.push({ sev: 2, name: j.name, sub: 'Cost is ' + j.percentSpent + '% of projected price', url: j.url });
+      }
+    });
+
+    (d.pipeline && d.pipeline.jobs || []).forEach(function (j) {
+      var age = daysBetween(today, j.createdAt);
+      if (age > 21) {
+        items.push({ sev: 1, name: j.name, sub: j.status + ' · no movement in ' + age + ' days', url: j.url });
+      }
+    });
+
+    items.sort(function (a, b) { return b.sev - a.sev; });
+    $('needs-count').textContent = items.length ? items.length : '';
+
+    render('needs', items.slice(0, 10).map(function (i) {
+      return '<a class="row" href="' + esc(i.url) + '" target="_blank" rel="noopener">'
+        + '<div class="row-top"><span class="row-name"><span class="dot ' + (i.sev === 2 ? 'd-red' : 'd-amber') + '"></span>'
+        + esc(i.name) + '</span></div>'
+        + '<div class="row-sub">' + esc(i.sub) + '</div></a>';
+    }).join(''), 'Nothing waiting on you');
+  }
+
+  function buildJobs(d) {
+    var jobs = (d.activeJobs && d.activeJobs.jobs) || [];
+    $('jobs-count').textContent = jobs.length || '';
+    render('jobs', jobs.map(function (j) {
+      var pill = j.status === 'Commissioning' ? 'p-comm' : 'p-build';
+      var pct = j.percentSpent;
+      var bar = pct != null
+        ? '<div class="bar-track"><div class="bar-fill' + (pct > 100 ? ' over' : '') + '" style="width:' + Math.min(pct, 100) + '%"></div></div>'
+        : '';
+      var sub = [];
+      if (j.progress != null) sub.push(j.progress + '% of schedule');
+      if (pct != null) sub.push(money(j.actualCost) + ' of ' + money(j.projectedPrice));
+      if (j.endDate) sub.push('ends ' + j.endDate);
+      return '<a class="row" href="' + esc(j.url) + '" target="_blank" rel="noopener">'
+        + '<div class="row-top"><span class="row-name">' + esc(j.name) + '</span>'
+        + '<span class="pill ' + pill + '">' + esc(j.status === 'Commissioning' ? 'Comm' : 'Build') + '</span></div>'
+        + '<div class="row-sub">' + esc(sub.join(' · ')) + '</div>' + bar + '</a>';
+    }).join(''), 'No jobs in construction');
+  }
+
+  function buildMoney(d) {
+    var ar = d.receivables || {}, ap = d.payables || {};
+    $('m-ar').textContent = money(ar.total);
+    $('m-ap').textContent = money(ap.total);
+    $('m-backlog').textContent = money(d.backlog);
+    $('m-net').textContent = money(d.netPosition);
+    $('m-net').className = 'metric-val ' + (d.netPosition < 0 ? 'flag-red' : 'flag-green');
+
+    $('ap-count').textContent = ap.count ? money(ap.total) : '';
+    render('payables', (ap.bills || []).slice(0, 8).map(function (b) {
+      return '<a class="row" href="' + esc(b.url) + '" target="_blank" rel="noopener">'
+        + '<div class="row-top"><span class="row-name">' + esc(b.vendor || b.name) + '</span>'
+        + '<span class="row-val">' + money(b.balance) + '</span></div>'
+        + '<div class="row-sub' + (b.overdue ? ' flag-red' : '') + '">'
+        + esc((b.jobNumber ? 'Job ' + b.jobNumber + ' · ' : '') + (b.dueDate ? (b.overdue ? 'past due ' : 'due ') + b.dueDate : 'no due date'))
+        + '</div></a>';
+    }).join(''), 'No open bills');
+
+    $('ar-count').textContent = ar.count ? money(ar.total) : '';
+    render('receivables', (ar.invoices || []).slice(0, 8).map(function (v) {
+      return '<a class="row" href="' + esc(v.url) + '" target="_blank" rel="noopener">'
+        + '<div class="row-top"><span class="row-name">' + esc(v.jobName || v.name) + '</span>'
+        + '<span class="row-val">' + money(v.balance) + '</span></div>'
+        + '<div class="row-sub' + (v.overdue ? ' flag-red' : '') + '">'
+        + esc(v.overdue ? v.daysOverdue + ' days past due' : 'due ' + (v.dueDate || '—'))
+        + '</div></a>';
+    }).join(''), 'Nothing outstanding');
+  }
+
+  function buildPipeline(d) {
+    var jobs = (d.pipeline && d.pipeline.jobs) || [];
+    $('pipe-count').textContent = jobs.length || '';
+    render('pipeline', jobs.map(function (j) {
+      var age = daysBetween(todayISO(), j.createdAt);
+      var cls = age > 21 ? 'flag-red' : age > 10 ? 'flag-amber' : '';
+      return '<a class="row" href="' + esc(j.url) + '" target="_blank" rel="noopener">'
+        + '<div class="row-top"><span class="row-name">' + esc(j.name) + '</span>'
+        + '<span class="pill p-est">' + esc(j.status.replace('Pending Site Visit','Site Visit').replace('Contract Pending','Contract')) + '</span></div>'
+        + '<div class="row-sub ' + cls + '">' + age + ' days old</div></a>';
+    }).join(''), 'Pipeline is empty');
+  }
+
+  function buildOnHold(d) {
+    var jobs = (d.onHold && d.onHold.jobs) || [];
+    $('hold-count').textContent = jobs.length || '';
+    render('onhold', jobs.map(function (j) {
+      return '<a class="row" href="' + esc(j.url) + '" target="_blank" rel="noopener">'
+        + '<div class="row-top"><span class="row-name">' + esc(j.name) + '</span>'
+        + '<span class="pill p-mute">Hold</span></div></a>';
+    }).join(''), 'Nothing on hold');
+  }
+
+  /* ── Goals: read-only from a published Google Sheet ── */
+  function parseCSV(text) {
+    var rows = [], row = [], val = '', q = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (q) {
+        if (c === '"' && text[i+1] === '"') { val += '"'; i++; }
+        else if (c === '"') q = false;
+        else val += c;
+      } else if (c === '"') q = true;
+      else if (c === ',') { row.push(val); val = ''; }
+      else if (c === '\n') { row.push(val); rows.push(row); row = []; val = ''; }
+      else if (c !== '\r') val += c;
+    }
+    if (val !== '' || row.length) { row.push(val); rows.push(row); }
+    return rows;
+  }
+
+  function buildGoals() {
+    if (!GOALS_CSV) {
+      $('goals-meta').textContent = 'not connected';
+      render('goals', '', 'Publish the tracker sheet to the web as CSV, then set GOALS_CSV in this file.');
+      return;
+    }
+    fetch(GOALS_CSV).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    }).then(function (text) {
+      var rows = parseCSV(text).filter(function (r) { return r.some(function (c) { return c.trim(); }); });
+      if (!rows.length) return render('goals', '', 'Sheet is empty');
+      var head = rows[0].map(function (h) { return h.trim().toLowerCase(); });
+      var col = function (name) { return head.indexOf(name); };
+      var iItem = col('item'), iDate = col('target date'), iStat = col('status'),
+          iNext = col('next step'), iWait = col('waiting on');
+
+      var today = todayISO();
+      var goals = rows.slice(1).map(function (r) {
+        return {
+          item: (r[iItem] || '').trim(),
+          date: (r[iDate] || '').trim(),
+          status: (r[iStat] || '').trim(),
+          next: (r[iNext] || '').trim(),
+          wait: (r[iWait] || '').trim(),
+        };
+      }).filter(function (g) {
+        return g.item && !/^(done|parked)$/i.test(g.status);
+      });
+
+      goals.sort(function (a, b) {
+        if (a.date && b.date) return a.date.localeCompare(b.date);
+        return a.date ? -1 : b.date ? 1 : 0;
+      });
+
+      $('goals-meta').textContent = goals.length || '';
+      render('goals', goals.map(function (g) {
+        var late = g.date && g.date < today;
+        var pill = /in motion|next up/i.test(g.status) ? 'p-build'
+                 : /waiting/i.test(g.status) ? 'p-est' : 'p-mute';
+        var sub = [];
+        if (g.date) sub.push(late ? 'past ' + g.date : 'by ' + g.date);
+        if (g.next) sub.push(g.next);
+        if (g.wait) sub.push('waiting on ' + g.wait);
+        return '<div class="row">'
+          + '<div class="row-top"><span class="row-name">' + esc(g.item) + '</span>'
+          + '<span class="pill ' + pill + '">' + esc(g.status || '—') + '</span></div>'
+          + (sub.length ? '<div class="row-sub' + (late ? ' flag-red' : '') + '">' + esc(sub.join(' · ')) + '</div>' : '')
+          + '</div>';
+      }).join(''), 'Nothing open');
+    }).catch(function (err) {
+      $('goals-meta').textContent = '';
+      fail('goals', 'Could not load the goals sheet: ' + err.message);
+    });
+  }
+
+  /* ── Load ── */
+  var loading = false;
+  async function load() {
+    if (loading) return;
+    loading = true;
+    $('refresh').disabled = true;
+    $('banner').hidden = true;
+
+    try {
+      var res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operation: 'dashboard' }),
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' from ' + API);
+      var d = await res.json();
+      if (d.error) throw new Error(d.error);
+
+      buildNeeds(d);
+      buildJobs(d);
+      buildMoney(d);
+      buildPipeline(d);
+      buildOnHold(d);
+
+      if (d.errors) {
+        $('banner').hidden = false;
+        $('banner').textContent = 'Some sections did not load: ' + Object.keys(d.errors).join(', ');
+      }
+    } catch (err) {
+      ['needs','jobs','payables','receivables','pipeline','onhold'].forEach(function (id) {
+        fail(id, 'Could not reach JobTread.');
+      });
+      $('banner').hidden = false;
+      $('banner').textContent = err.message + ' — check that api/jobtread.js is deployed and JOBTREAD_GRANT_KEY is set in Vercel.';
+    } finally {
+      loading = false;
+      $('refresh').disabled = false;
+    }
+  }
+
+  $('refresh').addEventListener('click', function () { load(); buildGoals(); });
+  load();
+  buildGoals();
+</script>
+</body>
+</html>
